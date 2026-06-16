@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-anime-bg: #0B0C10;
+  --color-anime-card: rgba(31, 40, 51, 0.45);
+  --color-anime-border: rgba(102, 252, 241, 0.15);
+  --color-anime-hoverBorder: rgba(102, 252, 241, 0.4);
+  --color-anime-primary: #66FCF1;
+  --color-anime-secondary: #45A29E;
+  --color-anime-purple: #9b5de5;
+  --color-anime-pink: #f15bb5;
+  --color-anime-yellow: #fee440;
+  --color-anime-text: #C5C6C7;
+  --color-anime-light: #F5F5F7;
+  --font-outfit: "Outfit", sans-serif;
+  --font-inter: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-anime-bg);
+    color: var(--color-anime-text);
+    font-family: var(--font-inter);
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(at 10% 20%, rgba(155, 93, 229, 0.05) 0px, transparent 50%),
+      radial-gradient(at 90% 80%, rgba(102, 252, 241, 0.05) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-outfit);
+    color: #ffffff;
+    letter-spacing: 0.025em;
+  }
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0C10;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f2833;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #45A29E;
+}
+
+/* Custom styles for animations & glassmorphism */
+.glass-panel {
+  background: rgba(31, 40, 51, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(102, 252, 241, 0.1);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(31, 40, 51, 0.6);
+  border-color: rgba(102, 252, 241, 0.35);
+  box-shadow: 0 0 15px rgba(102, 252, 241, 0.1);
+  transform: translateY(-2px);
+}
+
+.neon-text-glow {
+  text-shadow: 0 0 8px rgba(102, 252, 241, 0.5);
+}
+
+.neon-border-glow {
+  box-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
+}
+
+/* Animation keyframes */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(102, 252, 241, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s infinite;
+}
