@@ -3,11 +3,14 @@ import { Search, Bell, User } from 'lucide-react';
 
 interface HeaderProps {
   title?: string;
+  isSidebarCollapsed?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ title = "Welcome back, Otaku!" }) => {
+const Header: React.FC<HeaderProps> = ({ title = "Welcome back, Otaku!", isSidebarCollapsed = false }) => {
   return (
-    <header className="h-20 w-[calc(100%-16rem)] fixed top-0 right-0 glass-panel border-b border-anime-border flex items-center justify-between px-8 z-40">
+    <header className={`h-20 fixed top-0 right-0 glass-panel border-b border-anime-border flex items-center justify-between px-8 z-40 transition-all duration-300 ${
+      isSidebarCollapsed ? 'w-[calc(100%-5rem)]' : 'w-[calc(100%-16rem)]'
+    }`}>
       {/* Page Title / Search */}
       <div className="flex items-center space-x-6">
         <h2 className="text-xl font-bold font-outfit text-white tracking-wide uppercase">

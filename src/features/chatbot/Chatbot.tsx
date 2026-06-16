@@ -50,9 +50,22 @@ const Chatbot: React.FC = () => {
     e.preventDefault();
     if (!inputText.trim() && !selectedImage) return;
 
+    let imageBase64: string | undefined;
+    let imageMediaType: string | undefined;
+
+    if (selectedImage) {
+      const match = selectedImage.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) {
+        imageMediaType = match[1];
+        imageBase64 = match[2];
+      }
+    }
+
     dispatch(sendMessage({
       text: inputText || "Analyze this character image",
-      image: selectedImage || undefined
+      imageUrl: selectedImage || undefined,
+      imageBase64,
+      imageMediaType
     }) as any);
 
     setInputText('');
@@ -60,7 +73,7 @@ const Chatbot: React.FC = () => {
   };
 
   const handleQuickPrompt = (prompt: string) => {
-    dispatch(sendMessage(prompt) as any);
+    dispatch(sendMessage({ text: prompt }) as any);
   };
 
   // File Upload handler

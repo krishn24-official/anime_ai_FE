@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import type { RootState } from '../../store';
+import type { RootState, AppDispatch } from '../../store';
 import { Calendar, ArrowRight, ChevronLeft, ChevronRight, Bot, Send, Sparkles } from 'lucide-react';
 import { sendMessage } from '../../store/slices/chatSlice';
+import { fetchHomeDataThunk } from '../../store/slices/homeSlice';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   
   const { slides, birthdays } = useSelector((state: RootState) => state.home);
   const { messages } = useSelector((state: RootState) => state.chat);
@@ -15,21 +16,10 @@ const Home: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [demoInput, setDemoInput] = useState('');
 
-  // Auto-play slider
+  // Fetch home data on mount
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [slides.length]);
-
-  const handleNextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const handlePrevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+    dispatch(fetchHomeDataThunk());
+  }, [dispatch]);
 
   const todayStr = (() => {
     const today = new Date();
@@ -40,10 +30,43 @@ const Home: React.FC = () => {
 
   const todayBirthdays = birthdays.filter(b => b.dob === todayStr);
 
+  const dynamicSlides = slides.map(slide => {
+    if (slide.id === 's1' && todayBirthdays.length > 0) {
+      const names = todayBirthdays.slice(0, 3).map(b => b.name).join(', ');
+      const extraCount = todayBirthdays.length - 3;
+      const subtitleText = extraCount > 0 
+        ? `Celebrate with ${names}, and ${extraCount} other characters who share their special day today!`
+        : `Celebrate with ${names} who share their special day today!`;
+
+      return {
+        ...slide,
+        subtitle: subtitleText,
+        image: todayBirthdays[0].image || slide.image
+      };
+    }
+    return slide;
+  });
+
+  // Auto-play slider
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % dynamicSlides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [dynamicSlides.length]);
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % dynamicSlides.length);
+  };
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + dynamicSlides.length) % dynamicSlides.length);
+  };
+
   const handleSendDemoMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!demoInput.trim()) return;
-    dispatch(sendMessage(demoInput) as any);
+    dispatch(sendMessage({ text: demoInput }) as any);
     setDemoInput('');
     navigate('/chatbot');
   };
@@ -52,7 +75,7 @@ const Home: React.FC = () => {
     <div className="space-y-8 animate-fade-in pb-12">
       {/* Top Banner Carousel */}
       <div className="relative h-[380px] rounded-2xl overflow-hidden group border border-anime-border shadow-xl">
-        {slides.map((slide, index) => (
+        {dynamicSlides.map((slide, index) => (
           <div
             key={slide.id}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -104,7 +127,7 @@ const Home: React.FC = () => {
 
         {/* Indicators */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-          {slides.map((_, idx) => (
+          {dynamicSlides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}

@@ -8,7 +8,7 @@ import {
   addCommentThunk,
   fetchCommentsThunk
 } from '../../store/slices/contentSlice';
-import { Star, Plus, Check, MessageSquare, Send, X, Eye, Loader2 } from 'lucide-react';
+import { Star, Plus, Check, MessageSquare, Send, X, Eye, Loader2, Search } from 'lucide-react';
 import type { FrontendCategory } from '../../services/contentService';
 
 const Content: React.FC = () => {
@@ -19,6 +19,7 @@ const Content: React.FC = () => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     dispatch(fetchContentData());
@@ -29,7 +30,10 @@ const Content: React.FC = () => {
   const filteredItems = items.filter((item) => {
     const matchesTab = activeTab === 'All' || item.category === activeTab;
     const matchesWatchlist = !showWatchlistOnly || watchlist.includes(item.id);
-    return matchesTab && matchesWatchlist;
+    const matchesSearch = 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesWatchlist && matchesSearch;
   });
 
   const selectedItem = items.find(item => item.id === selectedItemId);
@@ -89,21 +93,36 @@ const Content: React.FC = () => {
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-2 border-b border-anime-border pb-2 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all w-fit shrink-0 ${
-              activeTab === tab
-                ? 'bg-anime-primary text-anime-bg shadow-lg shadow-anime-primary/20'
-                : 'text-anime-text hover:text-white hover:bg-white/5'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
+      {/* Filters & Search */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-anime-border pb-4">
+        {/* Tabs */}
+        <div className="flex space-x-2 overflow-x-auto pb-1 md:pb-0">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all w-fit shrink-0 ${
+                activeTab === tab
+                  ? 'bg-anime-primary text-anime-bg shadow-lg shadow-anime-primary/20'
+                  : 'text-anime-text hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative w-full md:w-80">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search content..."
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-anime-primary"
+          />
+          <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3.5" />
+        </div>
       </div>
 
       {/* Loading & Error States */}
@@ -208,8 +227,14 @@ const Content: React.FC = () => {
 
       {/* Detail & Comments Drawer Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-end z-50 transition-opacity">
-          <div className="w-full max-w-xl bg-anime-bg border-l border-anime-border h-full overflow-y-auto p-8 relative flex flex-col justify-between">
+        <div 
+          onClick={() => setSelectedItemId(null)}
+          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-opacity"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-xl bg-anime-bg border border-anime-border rounded-2xl max-h-[90vh] overflow-y-auto p-8 relative flex flex-col justify-between"
+          >
             
             {/* Close */}
             <button

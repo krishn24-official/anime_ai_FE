@@ -268,8 +268,14 @@ const Characters: React.FC = () => {
 
       {/* Detail Drawer Modal (Matches Content.tsx) */}
       {selectedChar && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-end z-50 transition-opacity">
-          <div className="w-full max-w-xl bg-anime-bg border-l border-anime-border h-full overflow-y-auto p-8 relative flex flex-col justify-between">
+        <div 
+          onClick={() => setSelectedCharId(null)}
+          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-opacity"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-xl bg-anime-bg border border-anime-border rounded-2xl max-h-[90vh] overflow-y-auto p-8 relative flex flex-col justify-between"
+          >
             
             {/* Close Button */}
             <button

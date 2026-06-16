@@ -1,5 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { BirthdayEntity } from '../../types';
+import { eventService } from '../../services/eventService';
 
 interface HomeState {
   slides: {
@@ -11,6 +12,8 @@ interface HomeState {
     ctaText: string;
   }[];
   birthdays: BirthdayEntity[];
+  loading: boolean;
+  error: string | null;
 }
 
 // Generate birthdays where some match today's date dynamically, and others are fixed.
@@ -76,6 +79,19 @@ const getDynamicBirthdays = (): BirthdayEntity[] => {
   ];
 };
 
+export const fetchHomeDataThunk = createAsyncThunk(
+  'home/fetchHomeData',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await eventService.fetchTodayEvents();
+      // map properties if they diverge slightly or cast
+      return data.birthdays as BirthdayEntity[];
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch home data');
+    }
+  }
+);
+
 const initialState: HomeState = {
   slides: [
     {
@@ -111,13 +127,30 @@ const initialState: HomeState = {
       ctaText: 'Play Game'
     }
   ],
-  birthdays: getDynamicBirthdays()
+  birthdays: getDynamicBirthdays(),
+  loading: false,
+  error: null
 };
 
 const homeSlice = createSlice({
   name: 'home',
   initialState,
-  reducers: {}
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchHomeDataThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchHomeDataThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.birthdays = action.payload;
+      })
+      .addCase(fetchHomeDataThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  }
 });
 
 export default homeSlice.reducer;

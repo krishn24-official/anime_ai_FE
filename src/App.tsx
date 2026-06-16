@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -11,6 +11,7 @@ import Chatbot from './features/chatbot/Chatbot';
 
 const App: React.FC = () => {
   const location = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Determine header title from path
   const getHeaderTitle = (pathname: string) => {
@@ -35,12 +36,12 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-anime-bg text-anime-text">
       {/* Sidebar fixed */}
-      <Sidebar />
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
       {/* Main Layout Area */}
-      <div className="pl-64">
+      <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'pl-20' : 'pl-64'}`}>
         {/* Header fixed */}
-        <Header title={getHeaderTitle(location.pathname)} />
+        <Header title={getHeaderTitle(location.pathname)} isSidebarCollapsed={isSidebarCollapsed} />
 
         {/* Content body offset for fixed Header */}
         <main className="pt-24 px-8 pb-8 min-h-screen">

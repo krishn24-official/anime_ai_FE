@@ -1,22 +1,20 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store';
-import { ChevronRight, User, Calendar, Clock, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from '../../store';
+import { fetchNewsThunk } from '../../store/slices/newsSlice';
+import { ChevronRight, User, Calendar, Clock, X, Loader2, AlertCircle, FileText } from 'lucide-react';
 
 const News: React.FC = () => {
-  const newsItems = useSelector((state: RootState) => state.news.items);
+  const dispatch = useDispatch<AppDispatch>();
+  const { items: newsItems, loading, error } = useSelector((state: RootState) => state.news);
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series'>('All');
   const [activeArticleId, setActiveArticleId] = useState<string | null>(null);
 
   const categories: ('All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series')[] = ['All', 'Anime', 'Games', 'Movies', 'TV-Series'];
 
-  const filteredNews = newsItems.filter((item) => {
-    if (selectedCategory === 'All') return true;
-    return item.category === selectedCategory;
-  });
-
-  // Limit to latest 10 items for the active view
-  const displayedNews = filteredNews.slice(0, 10);
+  useEffect(() => {
+    dispatch(fetchNewsThunk(selectedCategory));
+  }, [selectedCategory, dispatch]);
 
   const activeArticle = newsItems.find(item => item.id === activeArticleId);
 
@@ -37,82 +35,114 @@ const News: React.FC = () => {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
+            disabled={loading}
             className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all w-fit shrink-0 ${
               selectedCategory === cat
                 ? 'bg-anime-primary text-anime-bg shadow-lg shadow-anime-primary/20'
                 : 'text-anime-text hover:text-white hover:bg-white/5'
-            }`}
+            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      {/* News Grid (max 10 items) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {displayedNews.map((item, index) => (
-          <div
-            key={item.id}
-            onClick={() => setActiveArticleId(item.id)}
-            className={`glass-panel rounded-2xl overflow-hidden border border-anime-border flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-anime-primary/40 ${
-              index === 0 ? 'md:col-span-2 md:flex-row h-fit md:h-80' : 'h-full'
-            }`}
-          >
-            {/* Image */}
-            <div className={`relative overflow-hidden shrink-0 ${
-              index === 0 ? 'w-full md:w-1/2 h-56 md:h-full' : 'w-full h-48'
-            }`}>
-              <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/90 to-transparent z-10" />
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
-              />
-              <span className="absolute top-4 left-4 z-20 px-3 py-1 bg-black/60 border border-white/10 text-anime-primary text-[10px] font-bold rounded-lg uppercase tracking-wider">
-                {item.category}
-              </span>
-            </div>
+      {/* Loading State */}
+      {loading && newsItems.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <Loader2 className="w-10 h-10 text-anime-primary animate-spin" />
+          <p className="text-anime-text text-sm">Fetching fresh articles...</p>
+        </div>
+      )}
 
-            {/* Info */}
-            <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-              <div>
-                <div className="flex items-center space-x-3 text-xs text-anime-text/50">
-                  <span className="flex items-center space-x-1">
-                    <User className="w-3.5 h-3.5" />
-                    <span>{item.author}</span>
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center space-x-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{item.date}</span>
-                  </span>
+      {/* Error State */}
+      {error && (
+        <div className="glass-panel p-6 rounded-2xl border border-red-500/20 bg-red-500/5 flex items-center space-x-3 text-red-400">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <div className="text-sm">
+            <span className="font-semibold">Error:</span> {error}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && newsItems.length === 0 && (
+        <div className="glass-panel p-12 rounded-2xl border border-anime-border flex flex-col items-center justify-center text-center space-y-4">
+          <FileText className="w-12 h-12 text-anime-text/40" />
+          <h3 className="text-lg font-bold text-white font-outfit">No News Found</h3>
+          <p className="text-sm text-anime-text max-w-sm">
+            We couldn't find any articles in this category. Run the backend ingestion pipeline to populate the news feed.
+          </p>
+        </div>
+      )}
+
+      {/* News Grid */}
+      {newsItems.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {newsItems.map((item, index) => (
+            <div
+              key={item.id}
+              onClick={() => setActiveArticleId(item.id)}
+              className={`glass-panel rounded-2xl overflow-hidden border border-anime-border flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-anime-primary/40 ${
+                index === 0 ? 'md:col-span-2 md:flex-row h-fit md:h-80' : 'h-full'
+              }`}
+            >
+              {/* Image */}
+              <div className={`relative overflow-hidden shrink-0 ${
+                index === 0 ? 'w-full md:w-1/2 h-56 md:h-full' : 'w-full h-48'
+              }`}>
+                <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/90 to-transparent z-10" />
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                />
+                <span className="absolute top-4 left-4 z-20 px-3 py-1 bg-black/60 border border-white/10 text-anime-primary text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                  {item.category}
+                </span>
+              </div>
+
+              {/* Info */}
+              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center space-x-3 text-xs text-anime-text/50">
+                    <span className="flex items-center space-x-1">
+                      <User className="w-3.5 h-3.5" />
+                      <span>{item.author}</span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center space-x-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{item.date}</span>
+                    </span>
+                  </div>
+
+                  <h3 className={`font-bold font-outfit text-white group-hover:text-anime-primary transition-all mt-3 ${
+                    index === 0 ? 'text-xl md:text-2xl' : 'text-base'
+                  }`}>
+                    {item.title}
+                  </h3>
+                  
+                  <p className="text-xs text-anime-text mt-3 leading-relaxed line-clamp-3">
+                    {item.summary}
+                  </p>
                 </div>
 
-                <h3 className={`font-bold font-outfit text-white group-hover:text-anime-primary transition-all mt-3 ${
-                  index === 0 ? 'text-xl md:text-2xl' : 'text-base'
-                }`}>
-                  {item.title}
-                </h3>
-                
-                <p className="text-xs text-anime-text mt-3 leading-relaxed line-clamp-3">
-                  {item.summary}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between text-xs font-semibold text-anime-primary group-hover:text-white transition-all pt-3 border-t border-white/5">
-                <span className="flex items-center space-x-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>3 min read</span>
-                </span>
-                <span className="flex items-center space-x-1">
-                  <span>Read Article</span>
-                  <ChevronRight className="w-4 h-4" />
-                </span>
+                <div className="flex items-center justify-between text-xs font-semibold text-anime-primary group-hover:text-white transition-all pt-3 border-t border-white/5">
+                  <span className="flex items-center space-x-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>3 min read</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <span>Read Article</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Article Detail Drawer Modal */}
       {activeArticle && (
@@ -141,7 +171,7 @@ const News: React.FC = () => {
                 <div className="flex items-center space-x-4 text-xs text-anime-text/50">
                   <span className="flex items-center space-x-1">
                     <User className="w-3.5 h-3.5" />
-                    <span>Written by {activeArticle.author}</span>
+                    <span>Source: {activeArticle.author}</span>
                   </span>
                   <span>•</span>
                   <span className="flex items-center space-x-1">
