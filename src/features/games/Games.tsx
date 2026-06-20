@@ -1,24 +1,180 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { RootState } from '../../store';
 import {
-  startAkinator,
-  answerAkinatorQuestion,
-  resetAkinator,
   resetTiktokGame,
   addToTeam,
-  skipCard,
-  akinatorQuestionsList
+  skipCard
 } from '../../store/slices/gameSlice';
-import { Sparkles, RefreshCw, CheckCircle, XCircle, Heart, X, Play, HelpCircle } from 'lucide-react';
+import { apiClient } from '../../services/apiClient';
+import { Sparkles, RefreshCw, CheckCircle, XCircle, Heart, X, Play, HelpCircle, Loader2 } from 'lucide-react';
+import TierListList from '../tierList/TierListList';
+import TierListEditor from '../tierList/TierListEditor';
+import TierListView from '../tierList/TierListView';
+
+interface Character {
+  id: string;
+  name: string;
+  image: string;
+  anime_ids: string[];
+  game_properties: string[];
+}
+
+interface Question {
+  key: string;
+  text: string;
+}
 
 const Games: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [activeGame, setActiveGame] = useState<'akinator' | 'tiktok'>('akinator');
   
-  const { akinator, tiktok } = useSelector((state: RootState) => state.games);
+  const isTierListPath = location.pathname.startsWith('/games/tier-lists');
+  const [activeGame, setActiveGame] = useState<'akinator' | 'tiktok' | 'tierlist'>(
+    isTierListPath ? 'tierlist' : 'akinator'
+  );
 
-  const currentAkinatorQuestion = akinatorQuestionsList[akinator.currentQuestionIndex];
+  useEffect(() => {
+    if (location.pathname.startsWith('/games/tier-lists')) {
+      setActiveGame('tierlist');
+    } else if (location.pathname === '/games' || location.pathname === '/games/') {
+      if (activeGame === 'tierlist') {
+        setActiveGame('akinator');
+      }
+    }
+  }, [location.pathname]);
+
+  const handleTabChange = (tab: 'akinator' | 'tiktok' | 'tierlist') => {
+    setActiveGame(tab);
+    if (tab === 'tierlist') {
+      navigate('/games/tier-lists');
+    } else {
+      navigate('/games');
+    }
+  };
+
+  const { tiktok } = useSelector((state: RootState) => state.games);
+
+  // --- Dynamic Akinator State ---
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [allCharacters, setAllCharacters] = useState<Character[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+  const [candidates, setCandidates] = useState<Character[]>([]);
+  const [askedKeys, setAskedKeys] = useState<string[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [gameState, setGameState] = useState<'intro' | 'playing' | 'guessed' | 'failed'>('intro');
+  const [questionCount, setQuestionCount] = useState(0);
+  const [finalGuess, setFinalGuess] = useState<Character | null>(null);
+  const [revealedWho, setRevealedWho] = useState<string>('');
+
+  // Start/Restart Game
+  const startNewAkinatorGame = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiClient.get<{
+        total: number;
+        characters: Character[];
+        questions: Question[];
+      }>('/game/characters');
+
+      setAllCharacters(data.characters);
+      setAllQuestions(data.questions);
+      setCandidates(data.characters);
+      setAskedKeys([]);
+      setQuestionCount(0);
+      setFinalGuess(null);
+      setRevealedWho('');
+
+      // Find the first best question
+      const firstQuestion = getBestQuestion(data.characters, [], data.questions);
+      if (firstQuestion) {
+        setCurrentQuestion(firstQuestion);
+        setGameState('playing');
+      } else {
+        setGameState('failed');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load character database');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Pick the most balanced question (minimizes |yes_count - no_count|)
+  const getBestQuestion = (currentCandidates: Character[], currentAskedKeys: string[], questionsList: Question[]) => {
+    const available = questionsList.filter(q => !currentAskedKeys.includes(q.key));
+    let best: Question | null = null;
+    let bestScore = Infinity;
+
+    for (const q of available) {
+      const yes = currentCandidates.filter(c => c.game_properties.includes(q.key)).length;
+      const no = currentCandidates.length - yes;
+      if (yes === 0 || no === 0) continue; // skip useless questions
+      const score = Math.abs(yes - no);
+      if (score < bestScore) {
+        bestScore = score;
+        best = q;
+      }
+    }
+    return best;
+  };
+
+  // Handle Yes/No/Don't Know answers
+  const handleAnswer = (answerType: 'yes' | 'no' | 'dont_know') => {
+    if (!currentQuestion) return;
+
+    let nextCandidates = [...candidates];
+    const nextAskedKeys = [...askedKeys, currentQuestion.key];
+
+    if (answerType !== 'dont_know') {
+      const isYes = answerType === 'yes';
+      nextCandidates = candidates.filter(char =>
+        isYes
+          ? char.game_properties.includes(currentQuestion.key)
+          : !char.game_properties.includes(currentQuestion.key)
+      );
+    }
+
+    setCandidates(nextCandidates);
+    setAskedKeys(nextAskedKeys);
+    setQuestionCount(prev => prev + 1);
+
+    // Evaluate state
+    if (nextCandidates.length === 1) {
+      setFinalGuess(nextCandidates[0]);
+      setGameState('guessed');
+    } else if (nextCandidates.length === 0) {
+      setGameState('failed');
+    } else {
+      // Find next best question
+      const nextQ = getBestQuestion(nextCandidates, nextAskedKeys, allQuestions);
+      if (nextQ) {
+        setCurrentQuestion(nextQ);
+      } else {
+        // No more useful questions to distinguish remaining candidates
+        if (nextCandidates.length > 0) {
+          setFinalGuess(nextCandidates[0]);
+          setGameState('guessed');
+        } else {
+          setGameState('failed');
+        }
+      }
+    }
+  };
+
+  const resetAkinatorGame = () => {
+    setGameState('intro');
+    setCandidates([]);
+    setAskedKeys([]);
+    setCurrentQuestion(null);
+    setQuestionCount(0);
+    setFinalGuess(null);
+    setRevealedWho('');
+  };
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
@@ -35,20 +191,28 @@ const Games: React.FC = () => {
         {/* Game toggle */}
         <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 shrink-0">
           <button
-            onClick={() => setActiveGame('akinator')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            onClick={() => handleTabChange('akinator')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeGame === 'akinator' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
             }`}
           >
             Akinator Guesser
           </button>
           <button
-            onClick={() => setActiveGame('tiktok')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            onClick={() => handleTabChange('tiktok')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeGame === 'tiktok' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
             }`}
           >
             TikTok Team Builder
+          </button>
+          <button
+            onClick={() => handleTabChange('tierlist')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeGame === 'tierlist' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
+            }`}
+          >
+            Tier Maker
           </button>
         </div>
       </div>
@@ -62,96 +226,171 @@ const Games: React.FC = () => {
             </div>
           </div>
 
-          {akinator.gameState === 'intro' && (
+          {gameState === 'intro' && (
             <div className="space-y-4">
               <h2 className="text-2xl font-bold font-outfit text-white">Think of a Character</h2>
               <p className="text-xs text-anime-text max-w-sm mx-auto leading-relaxed">
                 Think of any popular anime character (e.g. Gojo Satoru, Kakashi, Naruto, Luffy, Levi Ackerman) and answer the questions. The AI will try to read your mind!
               </p>
+              {error && (
+                <p className="text-xs text-red-400 bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                  {error}
+                </p>
+              )}
               <button
-                onClick={() => dispatch(startAkinator())}
-                className="px-8 py-3 bg-gradient-to-r from-anime-primary to-anime-secondary hover:scale-105 transition-all text-anime-bg font-bold rounded-xl text-sm w-fit mx-auto flex items-center space-x-2 shadow-lg shadow-anime-primary/20"
+                onClick={startNewAkinatorGame}
+                disabled={loading}
+                className="px-8 py-3 bg-gradient-to-r from-anime-primary to-anime-secondary hover:scale-105 transition-all text-anime-bg font-bold rounded-xl text-sm w-fit mx-auto flex items-center space-x-2 shadow-lg shadow-anime-primary/20 disabled:opacity-50"
               >
-                <Play className="w-4 h-4 fill-anime-bg" />
-                <span>Start Guessing</span>
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Loading Characters...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-anime-bg" />
+                    <span>Start Guessing</span>
+                  </>
+                )}
               </button>
             </div>
           )}
 
-          {akinator.gameState === 'playing' && currentAkinatorQuestion && (
+          {gameState === 'playing' && currentQuestion && (
             <div className="space-y-6">
-              <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider">
-                Question {akinator.currentQuestionIndex + 1} of {akinatorQuestionsList.length}
-              </span>
-              <h3 className="text-xl font-bold text-white max-w-sm mx-auto">
-                {currentAkinatorQuestion.text}
+              {/* Progress bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-anime-secondary">
+                  <span>Progress: {questionCount} / {allQuestions.length}</span>
+                  <span>Candidates Left: {candidates.length}</span>
+                </div>
+                <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden border border-white/5">
+                  <div
+                    className="bg-anime-primary h-full transition-all duration-300"
+                    style={{
+                      width: `${Math.min(100, (questionCount / Math.max(1, allQuestions.length)) * 100)}%`
+                    }}
+                  />
+                </div>
+              </div>
+
+              <h3 className="text-xl font-bold text-white max-w-sm mx-auto min-h-[56px] flex items-center justify-center">
+                {currentQuestion.text}
               </h3>
 
               <div className="flex justify-center space-x-3">
                 <button
-                  onClick={() => dispatch(answerAkinatorQuestion('yes'))}
+                  onClick={() => handleAnswer('yes')}
                   className="px-6 py-2.5 bg-green-500/20 hover:bg-green-500/35 border border-green-500/30 text-green-300 font-bold rounded-xl text-xs transition-all"
                 >
                   Yes
                 </button>
                 <button
-                  onClick={() => dispatch(answerAkinatorQuestion('no'))}
+                  onClick={() => handleAnswer('no')}
                   className="px-6 py-2.5 bg-red-500/20 hover:bg-red-500/35 border border-red-500/30 text-red-300 font-bold rounded-xl text-xs transition-all"
                 >
                   No
                 </button>
                 <button
-                  onClick={() => dispatch(answerAkinatorQuestion('dont_know'))}
+                  onClick={() => handleAnswer('dont_know')}
                   className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl text-xs transition-all"
                 >
-                  Probably / Not Sure
+                  I don't know
                 </button>
               </div>
             </div>
           )}
 
-          {akinator.gameState === 'guessed' && akinator.guess && (
+          {gameState === 'guessed' && (
             <div className="space-y-6">
-              <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider flex items-center justify-center space-x-1">
-                <CheckCircle className="w-4 h-4" />
-                <span>Guess Complete!</span>
-              </span>
-              <div className="space-y-3">
-                <img
-                  src={akinator.guess.image}
-                  alt={akinator.guess.name}
-                  className="w-32 h-32 rounded-2xl object-cover mx-auto border border-anime-border shadow-lg"
-                />
-                <h3 className="text-2xl font-bold text-white">{akinator.guess.name}</h3>
-                <p className="text-xs text-anime-secondary font-semibold">{akinator.guess.anime}</p>
+              <div className="space-y-4">
+                <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider flex items-center justify-center space-x-1">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>I think it's...</span>
+                </span>
+                <div className="space-y-3 animate-fade-in">
+                  <img
+                    src={finalGuess?.image || (candidates.length > 0 ? candidates[0].image : 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500')}
+                    alt={finalGuess?.name || (candidates.length > 0 ? candidates[0].name : 'Character')}
+                    className="w-32 h-32 rounded-2xl object-cover mx-auto border border-anime-border shadow-lg shadow-anime-primary/10"
+                  />
+                  <h3 className="text-2xl font-bold text-white font-outfit">
+                    {finalGuess?.name || (candidates.length > 0 ? candidates[0].name : 'Unknown')}
+                  </h3>
+                </div>
+
+                <div className="flex justify-center space-x-3 pt-2">
+                  <button
+                    onClick={() => {
+                      alert("Hooray! The AI guessed it right!");
+                    }}
+                    className="px-6 py-2 bg-green-500/20 hover:bg-green-500/35 border border-green-500/30 text-green-300 font-bold rounded-xl text-xs transition-all"
+                  >
+                    Yes, that's correct!
+                  </button>
+                  <button
+                    onClick={() => {
+                      setGameState('failed');
+                    }}
+                    className="px-6 py-2 bg-red-500/20 hover:bg-red-500/35 border border-red-500/30 text-red-300 font-bold rounded-xl text-xs transition-all"
+                  >
+                    No, that's wrong
+                  </button>
+                </div>
               </div>
 
-              <button
-                onClick={() => dispatch(resetAkinator())}
-                className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-2 mx-auto"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Play Again</span>
-              </button>
+              <div className="pt-4 border-t border-white/5">
+                <button
+                  onClick={resetAkinatorGame}
+                  className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-2 mx-auto"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Play Again</span>
+                </button>
+              </div>
             </div>
           )}
 
-          {akinator.gameState === 'failed' && (
+          {gameState === 'failed' && (
             <div className="space-y-6">
               <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider flex items-center justify-center space-x-1">
                 <XCircle className="w-4 h-4" />
-                <span>Failed to Guess</span>
+                <span>I give up!</span>
               </span>
-              <p className="text-xs text-anime-text">
-                Your character is too mysterious or rare! Try playing again with a more mainstream anime star.
-              </p>
-              <button
-                onClick={() => dispatch(resetAkinator())}
-                className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-2 mx-auto"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Try Again</span>
-              </button>
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-white">Who were you thinking of?</h3>
+                <div className="max-w-xs mx-auto space-y-2">
+                  <select
+                    value={revealedWho}
+                    onChange={(e) => {
+                      setRevealedWho(e.target.value);
+                      if (e.target.value) {
+                        alert(`Ah, ${e.target.value}! I'll do better next time.`);
+                      }
+                    }}
+                    className="w-full bg-anime-bg/80 border border-anime-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-anime-primary"
+                  >
+                    <option value="">Select character...</option>
+                    {allCharacters
+                      .filter(c => !candidates.includes(c))
+                      .map(c => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5">
+                <button
+                  onClick={resetAkinatorGame}
+                  className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-2 mx-auto"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Try Again</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -261,6 +500,28 @@ const Games: React.FC = () => {
               Add 3 characters to trigger automatic compatibility evaluation.
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tier Maker Game views */}
+      {activeGame === 'tierlist' && (
+        <div className="animate-fade-in">
+          {(() => {
+            const path = location.pathname;
+            if (path === '/games/tier-lists' || path === '/games/tier-lists/') {
+              return <TierListList />;
+            }
+            if (path === '/games/tier-lists/create') {
+              return <TierListEditor />;
+            }
+            if (path.startsWith('/games/tier-lists/edit/')) {
+              return <TierListEditor />;
+            }
+            if (path.startsWith('/games/tier-lists/view/')) {
+              return <TierListView />;
+            }
+            return <TierListList />;
+          })()}
         </div>
       )}
     </div>

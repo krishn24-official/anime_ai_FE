@@ -44,3 +44,27 @@ export interface ChatMessage {
   timestamp: string;
   image?: string;
 }
+
+export interface TierListItem {
+  content_type: 'character' | 'anime' | 'manga' | 'movie' | 'tv_series';
+  content_id: string;
+  name: string;
+  image: string;
+}
+
+export interface Tier {
+  name: string;
+  color: string;
+  items: TierListItem[];
+}
+
+export interface TierList {
+  id: string;
+  user_id: string;
+  name: string;
+  tiers: Tier[];
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+

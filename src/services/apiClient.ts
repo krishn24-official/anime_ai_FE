@@ -6,6 +6,7 @@ interface RequestOptions extends RequestInit {
 
 class ApiClient {
   private token: string | null = localStorage.getItem('anime_ai_token');
+  private refreshToken: string | null = localStorage.getItem('anime_ai_refresh_token');
 
   setToken(token: string) {
     this.token = token;
@@ -14,6 +15,22 @@ class ApiClient {
 
   getToken(): string | null {
     return this.token;
+  }
+
+  setRefreshToken(token: string) {
+    this.refreshToken = token;
+    localStorage.setItem('anime_ai_refresh_token', token);
+  }
+
+  getRefreshToken(): string | null {
+    return this.refreshToken;
+  }
+
+  clearTokens() {
+    this.token = null;
+    this.refreshToken = null;
+    localStorage.removeItem('anime_ai_token');
+    localStorage.removeItem('anime_ai_refresh_token');
   }
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -36,7 +53,7 @@ class ApiClient {
       defaultHeaders['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       ...customOptions,
       headers: {
         ...defaultHeaders,
@@ -44,7 +61,27 @@ class ApiClient {
       },
     });
 
+    if (response.status === 401 && !endpoint.startsWith('/auth/')) {
+      this.clearTokens();
+      try {
+        const newToken = await this.ensureGuestSession();
+        defaultHeaders['Authorization'] = `Bearer ${newToken}`;
+        response = await fetch(url, {
+          ...customOptions,
+          headers: {
+            ...defaultHeaders,
+            ...headers,
+          },
+        });
+      } catch (authError) {
+        console.error('Failed to re-authenticate on 401:', authError);
+      }
+    }
+
     if (!response.ok) {
+      if (response.status === 401) {
+        this.clearTokens();
+      }
       let errorMessage = 'An error occurred';
       try {
         const errorData = await response.json();

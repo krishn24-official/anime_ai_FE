@@ -2,7 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchNewsThunk } from '../../store/slices/newsSlice';
-import { ChevronRight, User, Calendar, Clock, X, Loader2, AlertCircle, FileText } from 'lucide-react';
+import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText } from 'lucide-react';
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  
+  const day = date.getDate();
+  const fullMonths = [
+    'January', 'February', 'March', 'April', 'May', 'June', 
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  
+  let suffix = 'th';
+  if (day === 1 || day === 21 || day === 31) suffix = 'st';
+  else if (day === 2 || day === 22) suffix = 'nd';
+  else if (day === 3 || day === 23) suffix = 'rd';
+  
+  return `${day}${suffix} ${fullMonths[date.getMonth()]}`;
+};
 
 const News: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,33 +37,41 @@ const News: React.FC = () => {
 
   const activeArticle = newsItems.find(item => item.id === activeArticleId);
 
+  // Helper to format authors nicely
+  const formatAuthorName = (author: string) => {
+    if (!author) return 'Moctale Official';
+    // Title case formatting
+    return author
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   return (
     <div className="space-y-8 animate-fade-in pb-12 relative">
-      {/* Header */}
-      <div className="glass-panel p-8 rounded-2xl border border-anime-border">
-        <span className="text-anime-primary text-xs font-semibold uppercase tracking-wider">Stay Updated</span>
-        <h1 className="text-3xl font-bold font-outfit text-white mt-1">Latest News</h1>
-        <p className="text-sm text-anime-text mt-1">
-          Explore breaking stories, announcements, and coverage across Anime, Games, Movies, and TV-Series.
-        </p>
-      </div>
-
-      {/* Category Tabs */}
-      <div className="flex space-x-2 border-b border-anime-border pb-2 overflow-x-auto">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            disabled={loading}
-            className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all w-fit shrink-0 ${
-              selectedCategory === cat
-                ? 'bg-anime-primary text-anime-bg shadow-lg shadow-anime-primary/20'
-                : 'text-anime-text hover:text-white hover:bg-white/5'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      {/* Title Header Row */}
+      <div className="flex items-center justify-between pb-4 border-b border-white/5">
+        <div className="flex items-center space-x-3">
+          <FileText className="w-8 h-8 text-white" />
+          <h1 className="text-2xl md:text-3xl font-bold font-outfit text-white tracking-wide">
+            Latest News
+          </h1>
+        </div>
+        <div className="flex items-center space-x-4">
+          {/* Category selection inline dropdown for a cleaner look */}
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value as any)}
+            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer"
           >
-            {cat}
+            {categories.map(cat => (
+              <option key={cat} value={cat} className="bg-anime-bg text-white">{cat}</option>
+            ))}
+          </select>
+          <button className="p-2 hover:bg-white/5 rounded-xl transition-all cursor-pointer text-anime-text/60 hover:text-white">
+            <ChevronRight className="w-5 h-5 rotate-180" />
           </button>
-        ))}
+        </div>
       </div>
 
       {/* Loading State */}
@@ -76,68 +103,42 @@ const News: React.FC = () => {
         </div>
       )}
 
-      {/* News Grid */}
+      {/* News Grid (3 Columns) */}
       {newsItems.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {newsItems.map((item, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {newsItems.map((item) => (
             <div
               key={item.id}
               onClick={() => setActiveArticleId(item.id)}
-              className={`glass-panel rounded-2xl overflow-hidden border border-anime-border flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-anime-primary/40 ${
-                index === 0 ? 'md:col-span-2 md:flex-row h-fit md:h-80' : 'h-full'
-              }`}
+              className="flex flex-col space-y-4 cursor-pointer group transition-all duration-300"
             >
-              {/* Image */}
-              <div className={`relative overflow-hidden shrink-0 ${
-                index === 0 ? 'w-full md:w-1/2 h-56 md:h-full' : 'w-full h-48'
-              }`}>
-                <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/90 to-transparent z-10" />
+              {/* Card Image */}
+              <div className="relative aspect-[16/11] rounded-2xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-anime-primary/20 transition-all duration-300">
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                 />
-                <span className="absolute top-4 left-4 z-20 px-3 py-1 bg-black/60 border border-white/10 text-anime-primary text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                <span className="absolute top-3 left-3 z-20 px-2.5 py-0.5 bg-black/60 border border-white/10 text-anime-primary text-[9px] font-bold rounded uppercase tracking-wider">
                   {item.category}
                 </span>
               </div>
 
-              {/* Info */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                <div>
-                  <div className="flex items-center space-x-3 text-xs text-anime-text/50">
-                    <span className="flex items-center space-x-1">
-                      <User className="w-3.5 h-3.5" />
-                      <span>{item.author}</span>
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center space-x-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{item.date}</span>
-                    </span>
-                  </div>
-
-                  <h3 className={`font-bold font-outfit text-white group-hover:text-anime-primary transition-all mt-3 ${
-                    index === 0 ? 'text-xl md:text-2xl' : 'text-base'
-                  }`}>
-                    {item.title}
-                  </h3>
-                  
-                  <p className="text-xs text-anime-text mt-3 leading-relaxed line-clamp-3">
-                    {item.summary}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between text-xs font-semibold text-anime-primary group-hover:text-white transition-all pt-3 border-t border-white/5">
-                  <span className="flex items-center space-x-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>3 min read</span>
+              {/* Card Body */}
+              <div className="space-y-2.5 px-1">
+                <h3 className="text-sm md:text-[15px] font-semibold text-white leading-snug tracking-wide transition-all group-hover:text-anime-primary">
+                  {/* Underline first few words to simulate entity highlights from the design screenshot */}
+                  <span className="underline decoration-white/20 group-hover:decoration-anime-primary/40 mr-1">
+                    {item.title.split(' ').slice(0, 2).join(' ')}
                   </span>
-                  <span className="flex items-center space-x-1">
-                    <span>Read Article</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </span>
-                </div>
+                  <span>{item.title.split(' ').slice(2).join(' ')}</span>
+                  {item.summary && item.summary.length > 30 && (
+                    <span className="text-anime-text/40 font-normal"> ...more</span>
+                  )}
+                </h3>
+                <p className="text-[11px] text-anime-text/60 font-medium">
+                  By {formatAuthorName(item.author)} • {formatDate(item.date)}
+                </p>
               </div>
             </div>
           ))}
@@ -146,13 +147,13 @@ const News: React.FC = () => {
 
       {/* Article Detail Drawer Modal */}
       {activeArticle && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-end z-50 transition-opacity">
-          <div className="w-full max-w-2xl bg-anime-bg border-l border-anime-border h-full overflow-y-auto p-8 md:p-12 relative flex flex-col justify-between">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-end z-50 transition-opacity" onClick={() => setActiveArticleId(null)}>
+          <div className="w-full max-w-2xl bg-anime-bg border-l border-anime-border h-full overflow-y-auto p-8 md:p-12 relative flex flex-col justify-between" onClick={(e) => e.stopPropagation()}>
             
             {/* Close Button */}
             <button
               onClick={() => setActiveArticleId(null)}
-              className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
+              className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -171,12 +172,12 @@ const News: React.FC = () => {
                 <div className="flex items-center space-x-4 text-xs text-anime-text/50">
                   <span className="flex items-center space-x-1">
                     <User className="w-3.5 h-3.5" />
-                    <span>Source: {activeArticle.author}</span>
+                    <span>Source: {formatAuthorName(activeArticle.author)}</span>
                   </span>
                   <span>•</span>
                   <span className="flex items-center space-x-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>{activeArticle.date}</span>
+                    <span>{formatDate(activeArticle.date)}</span>
                   </span>
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold font-outfit text-white leading-tight">
@@ -190,12 +191,12 @@ const News: React.FC = () => {
               </p>
             </div>
 
-            {/* Footer comments or share options */}
+            {/* Footer */}
             <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs text-anime-text/60">Category: <strong className="text-white">{activeArticle.category}</strong></span>
               <button
                 onClick={() => setActiveArticleId(null)}
-                className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary text-white text-xs font-bold rounded-xl transition-all"
+                className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
               >
                 Close Article
               </button>

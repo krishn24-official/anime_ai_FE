@@ -3,9 +3,101 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchCharactersData, searchCharactersThunk } from '../../store/slices/characterSlice';
 import { Calendar, Search, Gift, Loader2, Sparkles, X, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const parseCharacterDescription = (description: string, charName: string) => {
+  if (!description) return { metadata: {} as Record<string, string>, biography: '' };
+
+  // Clean up common AniList/markdown tags
+  let cleaned = description
+    .replace(/__+/g, '') // Remove bold markers like __
+    .replace(/\*+/g, '')  // Remove italic markers like *
+    .trim();
+
+  // Clean word-wrapped bangs (e.g. !382,000,000! -> 382,000,000)
+  cleaned = cleaned.replace(/!(?=\S)/g, '').replace(/(?<=\S)!/g, '');
+
+  const metadata: Record<string, string> = {};
+  let biography = cleaned;
+
+  const keys = ['Height', 'Weight', 'Family', 'Affiliations', 'Bounty', 'Residence', 'Age', 'Blood Type', 'Relatives', 'Occupation', 'Rank', 'Status'];
+
+  let loop = true;
+  while (loop) {
+    biography = biography.trim().replace(/^[\s!~]+/, '').trim();
+    const match = biography.match(/^(Height|Weight|Family|Affiliations|Bounty|Residence|Age|Blood Type|Relatives|Occupation|Rank|Status):\s*/i);
+    if (match) {
+      const matchedKey = match[1];
+      const normalizedKey = matchedKey.charAt(0).toUpperCase() + matchedKey.slice(1).toLowerCase();
+      biography = biography.substring(match[0].length).trim();
+
+      // Find the end of this value
+      // 1. Next metadata key
+      let nextKeyIndex = -1;
+      for (const k of keys) {
+        const nextKeyRegex = new RegExp(`\\b${k}:`, 'i');
+        const searchMatch = biography.match(nextKeyRegex);
+        if (searchMatch && searchMatch.index !== undefined) {
+          if (nextKeyIndex === -1 || searchMatch.index < nextKeyIndex) {
+            nextKeyIndex = searchMatch.index;
+          }
+        }
+      }
+
+      // 2. Bang separator (if any)
+      const bangIndex = biography.indexOf('!');
+
+      // 3. Character name or pronouns (indicating start of narrative)
+      let nameIndex = -1;
+      const nameWords = charName.split(' ');
+      const firstName = nameWords[0];
+      const searchTerms = [charName, firstName, 'He is', 'She is', 'He was', 'She was', 'Born in', 'A member of'];
+      for (const term of searchTerms) {
+        if (!term || term.length < 3) continue;
+        const termRegex = new RegExp(`\\b${term}\\b`, 'i');
+        const termMatch = biography.match(termRegex);
+        if (termMatch && termMatch.index !== undefined) {
+          if (nameIndex === -1 || termMatch.index < nameIndex) {
+            nameIndex = termMatch.index;
+          }
+        }
+      }
+
+      let valueEndIndex = biography.length;
+      let cutLength = 0;
+
+      if (nextKeyIndex !== -1) {
+        valueEndIndex = Math.min(valueEndIndex, nextKeyIndex);
+      }
+      if (bangIndex !== -1) {
+        // Only use bang as separator if it appears before the next key or there is no next key
+        if (nextKeyIndex === -1 || bangIndex < nextKeyIndex) {
+          valueEndIndex = Math.min(valueEndIndex, bangIndex);
+          cutLength = 1;
+        }
+      }
+      if (nameIndex !== -1) {
+        // Only split by name/pronoun if it occurs after some value content (e.g. at least 3 chars)
+        if (nameIndex > 3 && (nextKeyIndex === -1 || nameIndex < nextKeyIndex)) {
+          valueEndIndex = Math.min(valueEndIndex, nameIndex);
+        }
+      }
+
+      const val = biography.substring(0, valueEndIndex).trim();
+      metadata[normalizedKey] = val;
+      biography = biography.substring(valueEndIndex + cutLength).trim();
+    } else {
+      loop = false;
+    }
+  }
+
+  biography = biography.replace(/^[\s!~]+/, '').trim();
+  return { metadata, biography };
+};
 
 const Characters: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { characters, birthdays, loading, error } = useSelector((state: RootState) => state.characters);
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,6 +146,10 @@ const Characters: React.FC = () => {
 
   const selectedChar = characters.find(c => c.id === selectedCharId) || 
                        birthdays.find(b => b.id === selectedCharId);
+
+  const { metadata, biography } = selectedChar 
+    ? parseCharacterDescription(selectedChar.description, selectedChar.name) 
+    : { metadata: {} as Record<string, string>, biography: '' };
 
   const today = new Date();
 
@@ -312,10 +408,39 @@ const Characters: React.FC = () => {
                 </div>
               </div>
 
+              {/* Character Metadata Fields */}
+              {Object.keys(metadata).length > 0 && (
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(metadata).map(([key, value]) => (
+                    <div key={key} className="p-4 bg-white/5 rounded-xl border border-white/5">
+                      <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider block">{key}</span>
+                      <p className="text-xs font-semibold text-white mt-1 leading-relaxed">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Origin Anime list */}
-              <div className="p-4 bg-white/5 rounded-xl border border-white/5 space-y-1">
-                <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider">Appearance origins</span>
-                <p className="text-xs font-semibold text-white leading-relaxed">{selectedChar.anime}</p>
+              <div className="p-4 bg-white/5 rounded-xl border border-white/5 space-y-2">
+                <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider block">Appearance origins</span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedChar.anime.split(',').map((animeName) => {
+                    const trimmedName = animeName.trim();
+                    if (!trimmedName) return null;
+                    return (
+                      <button
+                        key={trimmedName}
+                        onClick={() => {
+                          setSelectedCharId(null);
+                          navigate('/content', { state: { searchQuery: trimmedName } });
+                        }}
+                        className="px-3 py-1.5 bg-anime-primary/10 border border-anime-primary/20 hover:border-anime-primary hover:bg-anime-primary/25 rounded-lg text-xs font-semibold text-anime-primary transition-all cursor-pointer"
+                      >
+                        {trimmedName}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Description Detail */}
@@ -324,8 +449,8 @@ const Characters: React.FC = () => {
                   <User className="w-3.5 h-3.5" />
                   <span>Biography & Description</span>
                 </h3>
-                <p className="text-xs text-anime-text leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
-                  {selectedChar.description}
+                <p className="text-xs text-anime-text leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5 whitespace-pre-wrap">
+                  {biography || 'No biography available.'}
                 </p>
               </div>
             </div>

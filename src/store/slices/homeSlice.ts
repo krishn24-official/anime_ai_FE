@@ -99,7 +99,7 @@ const initialState: HomeState = {
       title: "Today's Special Birthdays!",
       subtitle: "Celebrate with Naruto Uzumaki, Gojo Satoru, and more who share their special day today!",
       image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80',
-      route: '/birthdays',
+      route: '/characters',
       ctaText: 'View All Celebrations'
     },
     {

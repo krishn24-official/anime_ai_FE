@@ -1,5 +1,8 @@
 import React from 'react';
-import { Search, Bell, User } from 'lucide-react';
+import { Search, Bell, User, LogOut } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from '../store';
+import { logoutUserThunk } from '../store/slices/authSlice';
 
 interface HeaderProps {
   title?: string;
@@ -7,6 +10,13 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ title = "Welcome back, Otaku!", isSidebarCollapsed = false }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { currentUser } = useSelector((state: RootState) => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logoutUserThunk());
+  };
+
   return (
     <header className={`h-20 fixed top-0 right-0 glass-panel border-b border-anime-border flex items-center justify-between px-8 z-40 transition-all duration-300 ${
       isSidebarCollapsed ? 'w-[calc(100%-5rem)]' : 'w-[calc(100%-16rem)]'
@@ -42,9 +52,17 @@ const Header: React.FC<HeaderProps> = ({ title = "Welcome back, Otaku!", isSideb
             </div>
           </div>
           <div className="hidden lg:block text-left">
-            <p className="text-sm font-semibold text-white">Guest User</p>
+            <p className="text-sm font-semibold text-white">{currentUser?.display_name || currentUser?.username || 'Guest User'}</p>
             <p className="text-[10px] text-anime-secondary font-medium">Rank: S-Tier</p>
           </div>
+          
+          <button 
+            onClick={handleLogout}
+            title="Log Out"
+            className="p-2 ml-1 bg-white/5 rounded-xl border border-white/10 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-400 text-anime-text transition-all cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </header>

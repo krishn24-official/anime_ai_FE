@@ -10,20 +10,56 @@ import {
 } from '../../store/slices/contentSlice';
 import { Star, Plus, Check, MessageSquare, Send, X, Eye, Loader2, Search } from 'lucide-react';
 import type { FrontendCategory } from '../../services/contentService';
+import { useLocation } from 'react-router-dom';
 
 const Content: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { items, watchlist, ratings, comments, loading, error } = useSelector((state: RootState) => state.content);
   
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series'>('All');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [autoOpenTitle, setAutoOpenTitle] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchContentData());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (location.state && (location.state as any).searchQuery) {
+      const q = (location.state as any).searchQuery;
+      setSearchQuery(q);
+      setAutoOpenTitle(q);
+      // Reset the active tab to 'All' or match the category if needed so the item can actually be found
+      setActiveTab('All');
+      // Clear navigation state to prevent persistence on manual page refreshes
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (autoOpenTitle && items.length > 0) {
+      // Find exact or case-insensitive title match first
+      const exactMatch = items.find(
+        (item) => item.title.toLowerCase() === autoOpenTitle.toLowerCase()
+      );
+      if (exactMatch) {
+        setSelectedItemId(exactMatch.id);
+      } else {
+        // Fallback to closest partial match
+        const partialMatch = items.find(
+          (item) => item.title.toLowerCase().includes(autoOpenTitle.toLowerCase())
+        );
+        if (partialMatch) {
+          setSelectedItemId(partialMatch.id);
+        }
+      }
+      setAutoOpenTitle(null);
+    }
+  }, [autoOpenTitle, items]);
 
   const tabs: ('All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series')[] = ['All', 'Anime', 'Manga', 'Movies', 'TV-Series'];
 
@@ -145,7 +181,6 @@ const Content: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredItems.map((item) => {
             const isAdded = watchlist.includes(item.id);
-            const score = ratings[item.id] || 0;
             return (
               <div
                 key={item.id}
@@ -191,30 +226,12 @@ const Content: React.FC = () => {
                   <div>
                     <span className="text-[10px] text-anime-secondary font-semibold uppercase">{item.category}</span>
                     <h3 className="font-bold text-sm text-white line-clamp-1 mt-1">{item.title}</h3>
-                    <div className="flex items-center space-x-1 mt-1.5">
-                      <Star className="w-3.5 h-3.5 fill-anime-yellow text-anime-yellow" />
-                      <span className="text-xs text-white font-medium">{item.averageRating}</span>
-                      <span className="text-[10px] text-anime-text/50">({item.releaseYear})</span>
+                    <div className="text-xs text-anime-text/50 mt-1">
+                      <span>{item.releaseYear}</span>
                     </div>
                   </div>
 
-                  {/* Rating display */}
-                  <div className="flex items-center justify-between pt-2.5 border-t border-white/5">
-                    <span className="text-[10px] text-anime-text/60">Your Rating:</span>
-                    <div className="flex space-x-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onClick={() => handleRating(item.id, item.category, star)}
-                          className="focus:outline-none"
-                        >
-                          <Star className={`w-3.5 h-3.5 ${
-                            star <= score ? 'fill-anime-yellow text-anime-yellow' : 'text-anime-text/30'
-                          }`} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {/* Rating display removed from front */}
                 </div>
               </div>
             );

@@ -5,6 +5,8 @@ import contentReducer from './slices/contentSlice';
 import gamesReducer from './slices/gameSlice';
 import chatReducer from './slices/chatSlice';
 import characterReducer from './slices/characterSlice';
+import authReducer from './slices/authSlice';
+import tierListReducer from './slices/tierListSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +16,8 @@ export const store = configureStore({
     games: gamesReducer,
     chat: chatReducer,
     characters: characterReducer,
+    auth: authReducer,
+    tierList: tierListReducer,
   },
 });
 
