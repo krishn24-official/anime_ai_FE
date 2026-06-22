@@ -370,13 +370,13 @@ const Characters: React.FC = () => {
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xl bg-anime-bg border border-anime-border rounded-2xl max-h-[90vh] overflow-y-auto p-8 relative flex flex-col justify-between"
+            className="w-full max-w-xl bg-anime-bg border border-anime-border rounded-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-8 relative flex flex-col justify-between"
           >
             
             {/* Close Button */}
             <button
               onClick={() => setSelectedCharId(null)}
-              className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all z-10"
             >
               <X className="w-5 h-5" />
             </button>
@@ -387,7 +387,7 @@ const Characters: React.FC = () => {
                 <img 
                   src={selectedChar.image} 
                   alt={selectedChar.name} 
-                  className="w-24 rounded-xl border border-anime-border object-cover aspect-[3/4] bg-black/40" 
+                  className="w-24 rounded-xl border border-anime-border object-cover aspect-[3/4] bg-black/40 shrink-0" 
                 />
                 <div>
                   <span className="text-xs text-anime-secondary font-semibold uppercase">
@@ -410,9 +410,9 @@ const Characters: React.FC = () => {
 
               {/* Character Metadata Fields */}
               {Object.keys(metadata).length > 0 && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {Object.entries(metadata).map(([key, value]) => (
-                    <div key={key} className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div key={key} className="p-3 sm:p-4 bg-white/5 rounded-xl border border-white/5">
                       <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider block">{key}</span>
                       <p className="text-xs font-semibold text-white mt-1 leading-relaxed">{value}</p>
                     </div>

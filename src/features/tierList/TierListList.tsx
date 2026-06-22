@@ -160,7 +160,7 @@ const TierListList: React.FC = () => {
       {/* Tab Select & Create New Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         {/* Toggle between My Lists / Browse Public */}
-        <div className="flex bg-white/5 p-1.5 rounded-xl border border-white/5 shrink-0">
+        <div className="flex flex-wrap gap-1 bg-white/5 p-1.5 rounded-xl border border-white/5 shrink-0 justify-center">
           <button
             onClick={() => {
               setActiveSubTab('my');

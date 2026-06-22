@@ -1,13 +1,24 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
 import { Home, Newspaper, Film, Gamepad2, Bot, User, Sparkles, Menu } from 'lucide-react';
 
 interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ 
+  isCollapsed, 
+  onToggle, 
+  isMobileOpen = false, 
+  onMobileClose 
+}) => {
+  const { currentUser } = useSelector((state: RootState) => state.auth);
+
   const menuItems = [
     { name: 'Home', path: '/', icon: <Home className="w-5 h-5" /> },
     { name: 'News', path: '/news', icon: <Newspaper className="w-5 h-5" /> },
@@ -17,52 +28,79 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'AI Chatbot', path: '/chatbot', icon: <Bot className="w-5 h-5" /> },
   ];
 
+  if (currentUser?.is_admin) {
+    menuItems.push({
+      name: 'Admin News',
+      path: '/admin/news',
+      icon: <Sparkles className="w-5 h-5 text-anime-primary animate-pulse" />
+    });
+  }
+
   return (
-    <aside className={`h-screen fixed left-0 top-0 glass-panel border-r border-anime-border flex flex-col justify-between p-6 z-50 transition-all duration-300 ${
-      isCollapsed ? 'w-20 items-center px-3' : 'w-64'
-    }`}>
-      <div className="w-full">
-        {/* Top Header Row (Logo + Toggle) */}
-        <div className={`flex items-center justify-between mb-8 w-full ${isCollapsed ? 'flex-col space-y-4' : ''}`}>
-          {/* Logo Section */}
-          <div className={`flex items-center transition-all duration-300 ${
-            isCollapsed ? 'justify-center w-full' : 'space-x-3 px-2'
-          }`}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-anime-purple via-anime-pink to-anime-primary flex items-center justify-center shadow-lg shadow-anime-primary/20 shrink-0">
-              <Sparkles className="w-6 h-6 text-white animate-pulse" />
-            </div>
-            {!isCollapsed && (
-              <div className="transition-all duration-300 animate-fade-in">
-                <h1 className="text-xl font-bold font-outfit tracking-wider bg-gradient-to-r from-white via-anime-primary to-anime-secondary bg-clip-text text-transparent">
-                  ANIME AI
-                </h1>
-                <span className="text-[10px] text-anime-secondary tracking-widest block uppercase font-medium">Entertainment Hub</span>
+    <>
+      {/* Mobile Sidebar Overlay Backdrop */}
+      {isMobileOpen && (
+        <div 
+          onClick={onMobileClose}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-45 lg:hidden transition-opacity duration-300"
+        />
+      )}
+
+      <aside className={`h-screen fixed left-0 top-0 glass-panel border-r border-anime-border flex flex-col justify-between p-6 z-50 transition-transform duration-300 ${
+        isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'
+      } ${
+        isCollapsed ? 'lg:w-20 lg:items-center lg:px-3' : 'lg:w-64'
+      }`}>
+        <div className="w-full">
+          {/* Top Header Row (Logo + Toggle) */}
+          <div className={`flex items-center justify-between mb-8 w-full ${isCollapsed ? 'lg:flex-col lg:space-y-4' : ''}`}>
+            {/* Logo Section */}
+            <div className={`flex items-center transition-all duration-300 ${
+              isCollapsed ? 'lg:justify-center lg:w-full' : 'space-x-3 px-2'
+            }`}>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-anime-purple via-anime-pink to-anime-primary flex items-center justify-center shadow-lg shadow-anime-primary/20 shrink-0">
+                <Sparkles className="w-6 h-6 text-white animate-pulse" />
               </div>
+              {(!isCollapsed || isMobileOpen) && (
+                <div className="transition-all duration-300 animate-fade-in">
+                  <h1 className="text-xl font-bold font-outfit tracking-wider bg-gradient-to-r from-white via-anime-primary to-anime-secondary bg-clip-text text-transparent">
+                    ANIME AI
+                  </h1>
+                  <span className="text-[10px] text-anime-secondary tracking-widest block uppercase font-medium">Entertainment Hub</span>
+                </div>
+              )}
+            </div>
+
+            {/* Toggle Button (Desktop/Expanded) */}
+            {!isCollapsed && (
+              <button
+                onClick={onToggle}
+                className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shrink-0 cursor-pointer hidden lg:block"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
             )}
-          </div>
 
-          {/* Toggle Button (Desktop/Expanded) */}
-          {!isCollapsed && (
+            {/* Close Button (Mobile) */}
             <button
-              onClick={onToggle}
-              className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shrink-0 cursor-pointer"
+              onClick={onMobileClose}
+              className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shrink-0 cursor-pointer lg:hidden"
             >
               <Menu className="w-5 h-5" />
             </button>
+          </div>
+
+          {/* Toggle Button (Collapsed - rendered below the logo centered) */}
+          {isCollapsed && (
+            <div className="hidden lg:flex justify-center mb-6 w-full">
+              <button
+                onClick={onToggle}
+                className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shadow-lg shadow-black/40 z-50 cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
           )}
-        </div>
-
-        {/* Toggle Button (Collapsed - rendered below the logo centered) */}
-        {isCollapsed && (
-          <div className="flex justify-center mb-6 w-full">
-            <button
-              onClick={onToggle}
-              className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shadow-lg shadow-black/40 z-50 cursor-pointer"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
-        )}
 
         {/* Navigation Menu */}
         <nav className="space-y-2 w-full">
@@ -100,7 +138,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           <p className="text-[10px] text-anime-secondary">Powered by React & Redux</p>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

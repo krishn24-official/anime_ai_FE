@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchNewsThunk } from '../../store/slices/newsSlice';
-import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText } from 'lucide-react';
+import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink } from 'lucide-react';
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -194,12 +194,34 @@ const News: React.FC = () => {
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs text-anime-text/60">Category: <strong className="text-white">{activeArticle.category}</strong></span>
-              <button
-                onClick={() => setActiveArticleId(null)}
-                className="px-6 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
-              >
-                Close Article
-              </button>
+              <div className="flex items-center space-x-3">
+                {activeArticle.url && (
+                  <a
+                    href={activeArticle.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 bg-anime-primary hover:bg-anime-primary/95 text-black text-xs font-bold rounded-xl transition-all flex items-center space-x-2"
+                  >
+                    {activeArticle.url.includes('youtube.com') || activeArticle.url.includes('youtu.be') ? (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-black" />
+                        <span>Watch Video</span>
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Read Full Article</span>
+                      </>
+                    )}
+                  </a>
+                )}
+                <button
+                  onClick={() => setActiveArticleId(null)}
+                  className="px-5 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
 
           </div>

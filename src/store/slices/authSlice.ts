@@ -6,6 +6,7 @@ interface UserInfo {
   email: string;
   username: string;
   display_name?: string;
+  is_admin?: boolean;
 }
 
 interface AuthState {
@@ -44,6 +45,17 @@ interface AuthResponse {
 }
 
 // Async Thunks
+export const fetchCurrentUserThunk = createAsyncThunk(
+  'auth/fetchCurrentUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get<UserInfo>('/auth/me');
+      return response;
+    } catch (err: any) {
+      return rejectWithValue(err.message || 'Failed to fetch user profile');
+    }
+  }
+);
 export const registerUserThunk = createAsyncThunk(
   'auth/register',
   async (payload: { email: string; username: string; password: string }, { rejectWithValue }) => {
@@ -227,6 +239,21 @@ const authSlice = createSlice({
         state.forgotPasswordOtp = null;
       })
       .addCase(resetPasswordThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Fetch Current User
+      .addCase(fetchCurrentUserThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCurrentUserThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = action.payload;
+        localStorage.setItem('anime_ai_user', JSON.stringify(action.payload));
+      })
+      .addCase(fetchCurrentUserThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

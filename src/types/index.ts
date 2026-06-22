@@ -17,6 +17,7 @@ export interface NewsItem {
   date: string;
   image: string;
   author: string;
+  url?: string;
 }
 
 export interface ContentItem {

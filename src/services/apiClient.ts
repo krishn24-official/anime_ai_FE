@@ -45,9 +45,10 @@ class ApiClient {
       url += `?${searchParams.toString()}`;
     }
 
-    const defaultHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const defaultHeaders: Record<string, string> = {};
+    if (!(options.body instanceof FormData)) {
+      defaultHeaders['Content-Type'] = 'application/json';
+    }
 
     if (this.token) {
       defaultHeaders['Authorization'] = `Bearer ${this.token}`;
@@ -105,18 +106,20 @@ class ApiClient {
   }
 
   async post<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
+    const isFormData = body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
     });
   }
 
   async put<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
+    const isFormData = body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
     });
   }
 

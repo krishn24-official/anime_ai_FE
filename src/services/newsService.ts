@@ -72,9 +72,26 @@ export const newsService = {
         content: item.description || item.summary || 'No description available.',
         category: mappedCat,
         date: dateStr,
-        image: item.image || getCategoryFallbackImage(mappedCat, index),
-        author: item.youtube_channel || item.source ? (item.youtube_channel || item.source).toUpperCase() : 'ANONYMOUS'
+        image: item.image_url || item.image || getCategoryFallbackImage(mappedCat, index),
+        author: item.youtube_channel || item.source ? (item.youtube_channel || item.source).toUpperCase() : 'ANONYMOUS',
+        url: item.url || ''
       };
     });
+  },
+
+  async createNews(formData: FormData): Promise<any> {
+    return apiClient.post<any>('/admin/news', formData);
+  },
+
+  async getAdminNewsItem(id: string): Promise<any> {
+    return apiClient.get<any>(`/admin/news/${id}`);
+  },
+
+  async editNews(id: string, formData: FormData): Promise<any> {
+    return apiClient.put<any>(`/admin/news/${id}`, formData);
+  },
+
+  async deleteNews(id: string): Promise<any> {
+    return apiClient.delete<any>(`/admin/news/${id}`);
   }
 };

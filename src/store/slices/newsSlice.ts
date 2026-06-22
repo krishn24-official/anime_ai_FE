@@ -39,6 +39,11 @@ const newsSlice = createSlice({
     },
     selectNewsItem: (state, action: PayloadAction<string | null>) => {
       state.selectedItemId = action.payload;
+    },
+    addNewArticle: (state, action: PayloadAction<NewsItem>) => {
+      if (!state.items.find(item => item.id === action.payload.id)) {
+        state.items.unshift(action.payload);
+      }
     }
   },
   extraReducers: (builder) => {
@@ -58,5 +63,5 @@ const newsSlice = createSlice({
   }
 });
 
-export const { setCategoryFilter, selectNewsItem } = newsSlice.actions;
+export const { setCategoryFilter, selectNewsItem, addNewArticle } = newsSlice.actions;
 export default newsSlice.reducer;
