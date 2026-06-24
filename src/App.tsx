@@ -12,6 +12,7 @@ import Content from './features/content/Content';
 import Games from './features/games/Games';
 import Chatbot from './features/chatbot/Chatbot';
 import AuthPage from './features/auth/AuthPage';
+import SharePosterModal from './components/SharePosterModal';
 import { addNewArticle } from './store/slices/newsSlice';
 import { X } from 'lucide-react';
 
@@ -31,6 +32,27 @@ const App: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { currentUser } = useSelector((state: RootState) => state.auth);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
+
+  // Share Poster state
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareType, setShareType] = useState<'birthday' | 'event' | 'news'>('birthday');
+  const [shareData, setShareData] = useState<any>({});
+
+  // Listen for global open-share-poster events
+  useEffect(() => {
+    const handleOpenShare = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setShareType(customEvent.detail.type || 'birthday');
+        setShareData(customEvent.detail.data || {});
+        setIsShareOpen(true);
+      }
+    };
+    window.addEventListener('open-share-poster', handleOpenShare);
+    return () => {
+      window.removeEventListener('open-share-poster', handleOpenShare);
+    };
+  }, []);
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -232,6 +254,14 @@ const App: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Share Poster Generator Modal */}
+      <SharePosterModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        initialType={shareType}
+        initialData={shareData}
+      />
     </div>
   );
 };

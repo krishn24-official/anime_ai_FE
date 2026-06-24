@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../../store';
-import { Calendar, ArrowRight, ChevronLeft, ChevronRight, Bot, Send, Sparkles } from 'lucide-react';
+import { Calendar, ArrowRight, ChevronLeft, ChevronRight, Bot, Send, Sparkles, Share2 } from 'lucide-react';
 import { sendMessage } from '../../store/slices/chatSlice';
 import { fetchHomeDataThunk } from '../../store/slices/homeSlice';
 
@@ -170,7 +170,7 @@ const Home: React.FC = () => {
                   <div
                     key={item.id}
                     onClick={() => navigate('/characters')}
-                    className="p-4 bg-white/5 rounded-xl border border-white/5 hover:border-anime-pink/40 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:bg-white/10 group"
+                    className="p-4 bg-white/5 rounded-xl border border-white/5 hover:border-anime-pink/40 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:bg-white/10 group relative"
                   >
                     <div className="flex items-center space-x-4">
                       <img
@@ -178,15 +178,34 @@ const Home: React.FC = () => {
                         alt={item.name}
                         className="w-16 h-16 rounded-xl object-cover border border-white/10 shadow-lg shadow-black/40 group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider ${
                           item.type === 'character' ? 'bg-anime-primary/20 text-anime-primary' : 'bg-anime-purple/20 text-anime-purple'
                         }`}>
                           {item.type === 'character' ? 'Character' : 'Voice Actor'}
                         </span>
-                        <h4 className="font-bold text-white group-hover:text-anime-pink transition-all mt-1">{item.name}</h4>
-                        <p className="text-xs text-anime-text/70">{item.anime}</p>
+                        <h4 className="font-bold text-white group-hover:text-anime-pink transition-all mt-1 truncate">{item.name}</h4>
+                        <p className="text-xs text-anime-text/70 truncate">{item.anime}</p>
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.dispatchEvent(new CustomEvent('open-share-poster', {
+                            detail: {
+                              type: 'birthday',
+                              data: {
+                                name: item.name,
+                                image: item.image,
+                                subtitle: `Happy Birthday to the legendary character from ${item.anime}!`
+                              }
+                            }
+                          }));
+                        }}
+                        className="p-2 bg-black/40 hover:bg-anime-pink border border-white/10 hover:border-anime-pink rounded-xl text-white transition-all cursor-pointer z-20 shrink-0 self-center"
+                        title="Share Birthday Poster"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}

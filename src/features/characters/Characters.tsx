@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchCharactersData, searchCharactersThunk } from '../../store/slices/characterSlice';
-import { Calendar, Search, Gift, Loader2, Sparkles, X, User, MessageCircle } from 'lucide-react';
+import { Calendar, Search, Gift, Loader2, Sparkles, X, User, MessageCircle, Share2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const parseCharacterDescription = (description: string, charName: string) => {
@@ -318,6 +318,27 @@ const Characters: React.FC = () => {
                         <MessageCircle className="w-4 h-4" />
                       </button>
 
+                      {/* Share Poster button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.dispatchEvent(new CustomEvent('open-share-poster', {
+                            detail: {
+                              type: 'birthday',
+                              data: {
+                                name: item.name,
+                                image: item.image,
+                                subtitle: `Celebrate with us! Happy Birthday ${item.name}`
+                              }
+                            }
+                          }));
+                        }}
+                        className="absolute top-3 left-14 p-2 bg-black/60 hover:bg-anime-pink hover:text-white border border-white/10 text-white rounded-xl transition-all cursor-pointer z-20"
+                        title={`Share birthday poster for ${item.name}`}
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+
                       <div className="absolute top-3 right-3 z-20">
                         <span className="px-2 py-0.5 bg-anime-pink text-white text-[9px] font-bold rounded uppercase tracking-wider">
                           Birthday!
@@ -381,6 +402,27 @@ const Characters: React.FC = () => {
                         <MessageCircle className="w-4 h-4" />
                       </button>
 
+                      {/* Share Poster button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.dispatchEvent(new CustomEvent('open-share-poster', {
+                            detail: {
+                              type: 'birthday',
+                              data: {
+                                name: char.name,
+                                image: char.image,
+                                subtitle: `Check out ${char.name} from ${char.anime}!`
+                              }
+                            }
+                          }));
+                        }}
+                        className="absolute top-3 left-14 p-2 bg-black/60 hover:bg-anime-pink hover:text-white border border-white/10 text-white rounded-xl transition-all cursor-pointer z-20"
+                        title={`Share poster for ${char.name}`}
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+
                       {char.dob && (
                         <div className="absolute top-3 right-3 z-20">
                           <span className="px-2 py-0.5 bg-black/60 border border-white/10 text-white text-[9px] font-bold rounded">
@@ -424,6 +466,26 @@ const Characters: React.FC = () => {
             className="w-full max-w-xl bg-anime-bg border border-anime-border rounded-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-8 relative flex flex-col justify-between"
           >
             
+            {/* Share Button */}
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('open-share-poster', {
+                  detail: {
+                    type: 'birthday',
+                    data: {
+                      name: selectedChar.name,
+                      image: selectedChar.image,
+                      subtitle: `Celebrate with us! Happy Birthday ${selectedChar.name}`
+                    }
+                  }
+                }));
+              }}
+              className="absolute top-4 right-14 sm:top-6 sm:right-18 p-2 bg-white/5 hover:bg-anime-pink hover:text-white border border-white/10 rounded-xl text-white transition-all z-10 cursor-pointer"
+              title="Share Birthday Poster"
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+
             {/* Close Button */}
             <button
               onClick={() => setSelectedCharId(null)}

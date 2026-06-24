@@ -128,6 +128,34 @@ const Sidebar: React.FC<SidebarProps> = ({
               )}
             </NavLink>
           ))}
+
+          {/* Poster Studio button */}
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('open-share-poster', {
+                detail: {
+                  type: 'birthday',
+                  data: {
+                    name: 'Naruto Uzumaki',
+                    image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500',
+                    subtitle: 'Celebrate today!'
+                  }
+                }
+              }));
+            }}
+            className={`flex items-center rounded-xl transition-all duration-300 font-medium group relative w-full text-left cursor-pointer text-anime-text hover:text-white hover:bg-white/5 ${
+              isCollapsed ? 'justify-center px-0 py-3.5' : 'space-x-4 px-4 py-3'
+            }`}
+          >
+            <Sparkles className="w-5 h-5 text-anime-primary animate-pulse" />
+            {!isCollapsed ? (
+              <span className="font-outfit transition-all duration-300">Poster Studio</span>
+            ) : (
+              <span className="absolute left-full ml-4 px-3 py-2 bg-anime-bg/95 border border-anime-border text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50 shadow-xl">
+                Poster Studio
+              </span>
+            )}
+          </button>
         </nav>
       </div>
 

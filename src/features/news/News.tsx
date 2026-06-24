@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchNewsThunk } from '../../store/slices/newsSlice';
-import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink } from 'lucide-react';
+import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink, Share2 } from 'lucide-react';
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -122,6 +122,27 @@ const News: React.FC = () => {
                 <span className="absolute top-3 left-3 z-20 px-2.5 py-0.5 bg-black/60 border border-white/10 text-anime-primary text-[9px] font-bold rounded uppercase tracking-wider">
                   {item.category}
                 </span>
+                {/* Share Poster Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(new CustomEvent('open-share-poster', {
+                      detail: {
+                        type: 'news',
+                        data: {
+                          title: item.title,
+                          image: item.image,
+                          author: item.author,
+                          date: formatDate(item.date)
+                        }
+                      }
+                    }));
+                  }}
+                  className="absolute top-3 right-3 z-20 p-2 bg-black/60 hover:bg-anime-primary hover:text-black border border-white/10 rounded-xl text-white opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer animate-fade-in"
+                  title="Create Share Poster"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
               </div>
 
               {/* Card Body */}
@@ -195,6 +216,25 @@ const News: React.FC = () => {
             <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs text-anime-text/60">Category: <strong className="text-white">{activeArticle.category}</strong></span>
               <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('open-share-poster', {
+                      detail: {
+                        type: 'news',
+                        data: {
+                          title: activeArticle.title,
+                          image: activeArticle.image,
+                          author: activeArticle.author,
+                          date: formatDate(activeArticle.date)
+                        }
+                      }
+                    }));
+                  }}
+                  className="px-5 py-2.5 bg-white/5 border border-white/10 hover:border-anime-primary hover:text-white text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-2 cursor-pointer"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Share Poster</span>
+                </button>
                 {activeArticle.url && (
                   <a
                     href={activeArticle.url}
