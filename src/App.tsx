@@ -82,10 +82,9 @@ const App: React.FC = () => {
 
     const connect = () => {
       const lastChecked = localStorage.getItem('last_news_checked_time') || '0';
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? `ws://localhost:8000/ws?last_checked=${lastChecked}`
-        : `${wsProtocol}//${window.location.host}/ws?last_checked=${lastChecked}`;
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const wsUrlBase = apiUrl.replace(/^http/, 'ws');
+      const wsUrl = `${wsUrlBase}/ws?last_checked=${lastChecked}`;
 
       ws = new WebSocket(wsUrl);
 
