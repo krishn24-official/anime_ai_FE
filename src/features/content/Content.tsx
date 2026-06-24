@@ -10,10 +10,11 @@ import {
 } from '../../store/slices/contentSlice';
 import { Star, Plus, Check, MessageSquare, Send, X, Eye, Loader2, Search } from 'lucide-react';
 import type { FrontendCategory } from '../../services/contentService';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Content: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { items, watchlist, ratings, comments, loading, error } = useSelector((state: RootState) => state.content);
   
   const location = useLocation();
@@ -186,40 +187,52 @@ const Content: React.FC = () => {
                 key={item.id}
                 className="glass-panel rounded-2xl overflow-hidden border border-anime-border flex flex-col group relative hover:border-anime-primary/30 transition-all duration-300 shadow-lg"
               >
-                {/* Poster Image */}
-                <div className="relative aspect-[3/4] overflow-hidden bg-black/40">
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
-                    loading="lazy"
-                  />
-                  
-                  {/* Watchlist quick button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleWatchlist(item.id, item.category);
-                    }}
-                    className={`absolute top-3 right-3 p-2 rounded-xl transition-all z-20 border ${
-                      isAdded
-                        ? 'bg-anime-primary border-anime-primary text-anime-bg'
-                        : 'bg-black/60 border-white/10 text-white hover:bg-anime-primary hover:text-anime-bg'
-                    }`}
-                  >
-                    {isAdded ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                  </button>
+                  {/* Poster Image */}
+                  <div className="relative aspect-[3/4] overflow-hidden bg-black/40">
+                    <img
+                      src={item.poster}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                      loading="lazy"
+                    />
 
-                  {/* Hover Quick View overlay */}
-                  <div 
-                    onClick={() => setSelectedItemId(item.id)}
-                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-10 cursor-pointer"
-                  >
-                    <span className="px-4 py-2 bg-anime-primary text-anime-bg font-bold text-xs rounded-xl shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                      View Details
-                    </span>
+                    {/* Chatbot icon button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/chatbot', { state: { initialPrompt: `Tell me about the ${item.category.toLowerCase()} ${item.title}` } });
+                      }}
+                      className="absolute top-3 left-3 p-2 bg-black/60 hover:bg-anime-primary hover:text-anime-bg border border-white/10 text-white rounded-xl transition-all cursor-pointer z-20"
+                      title={`Ask chatbot about ${item.title}`}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </button>
+                    
+                    {/* Watchlist quick button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleWatchlist(item.id, item.category);
+                      }}
+                      className={`absolute top-3 right-3 p-2 rounded-xl transition-all z-20 border ${
+                        isAdded
+                          ? 'bg-anime-primary border-anime-primary text-anime-bg'
+                          : 'bg-black/60 border-white/10 text-white hover:bg-anime-primary hover:text-anime-bg'
+                      }`}
+                    >
+                      {isAdded ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    </button>
+
+                    {/* Hover Quick View overlay */}
+                    <div 
+                      onClick={() => setSelectedItemId(item.id)}
+                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-10 cursor-pointer"
+                    >
+                      <span className="px-4 py-2 bg-anime-primary text-anime-bg font-bold text-xs rounded-xl shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform">
+                        View Details
+                      </span>
+                    </div>
                   </div>
-                </div>
 
                 {/* Title & Info */}
                 <div className="p-4 flex-1 flex flex-col justify-between space-y-2">

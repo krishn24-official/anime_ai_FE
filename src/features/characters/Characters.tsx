@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchCharactersData, searchCharactersThunk } from '../../store/slices/characterSlice';
-import { Calendar, Search, Gift, Loader2, Sparkles, X, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Calendar, Search, Gift, Loader2, Sparkles, X, User, MessageCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const parseCharacterDescription = (description: string, charName: string) => {
   if (!description) return { metadata: {} as Record<string, string>, biography: '' };
@@ -98,6 +98,7 @@ const parseCharacterDescription = (description: string, charName: string) => {
 const Characters: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { characters, birthdays, loading, error } = useSelector((state: RootState) => state.characters);
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,6 +110,30 @@ const Characters: React.FC = () => {
   useEffect(() => {
     dispatch(fetchCharactersData());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (location.state && (location.state as any).autoOpenName && characters.length > 0) {
+      const targetName = (location.state as any).autoOpenName;
+      const match = characters.find(
+        (c) => c.name.toLowerCase() === targetName.toLowerCase()
+      ) || birthdays.find(
+        (b) => b.name.toLowerCase() === targetName.toLowerCase()
+      );
+      if (match) {
+        setSelectedCharId(match.id);
+      } else {
+        const partial = characters.find(
+          (c) => c.name.toLowerCase().includes(targetName.toLowerCase())
+        ) || birthdays.find(
+          (b) => b.name.toLowerCase().includes(targetName.toLowerCase())
+        );
+        if (partial) {
+          setSelectedCharId(partial.id);
+        }
+      }
+      window.history.replaceState({}, document.title);
+    }
+  }, [location, characters, birthdays]);
 
   // Handle live search dispatch without losing focus
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,6 +305,19 @@ const Characters: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                         loading="lazy"
                       />
+                      
+                      {/* Chatbot icon button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/chatbot', { state: { initialPrompt: `Tell me about ${item.name}` } });
+                        }}
+                        className="absolute top-3 left-3 p-2 bg-black/60 hover:bg-anime-primary hover:text-anime-bg border border-white/10 text-white rounded-xl transition-all cursor-pointer z-20"
+                        title={`Ask chatbot about ${item.name}`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+
                       <div className="absolute top-3 right-3 z-20">
                         <span className="px-2 py-0.5 bg-anime-pink text-white text-[9px] font-bold rounded uppercase tracking-wider">
                           Birthday!
@@ -330,6 +368,19 @@ const Characters: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                         loading="lazy"
                       />
+
+                      {/* Chatbot icon button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/chatbot', { state: { initialPrompt: `Tell me about ${char.name}` } });
+                        }}
+                        className="absolute top-3 left-3 p-2 bg-black/60 hover:bg-anime-primary hover:text-anime-bg border border-white/10 text-white rounded-xl transition-all cursor-pointer z-20"
+                        title={`Ask chatbot about ${char.name}`}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+
                       {char.dob && (
                         <div className="absolute top-3 right-3 z-20">
                           <span className="px-2 py-0.5 bg-black/60 border border-white/10 text-white text-[9px] font-bold rounded">

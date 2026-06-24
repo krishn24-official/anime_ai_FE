@@ -77,11 +77,17 @@ const shouldRouteToChat = (text: string, state: RootState): boolean => {
     });
   }
 
+  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   const allCharacterWords = Array.from(new Set([...defaultCharacterNames, ...storeCharacterWords]));
 
   const hasCharacterName = allCharacterWords.some(word => {
-    const regex = new RegExp(`\\b${word}\\b`, 'i');
-    return regex.test(lowerMsg);
+    try {
+      const regex = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i');
+      return regex.test(lowerMsg);
+    } catch (e) {
+      return false;
+    }
   });
   if (hasCharacterName) return true;
 

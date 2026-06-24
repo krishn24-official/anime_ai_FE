@@ -1,12 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import type { RootState } from '../../store';
 import { sendMessage, clearHistory } from '../../store/slices/chatSlice';
 import { Bot, Send, Trash2, Sparkles, User, Camera, Image, X } from 'lucide-react';
 
 const Chatbot: React.FC = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { messages, status } = useSelector((state: RootState) => state.chat);
+  const processedPromptRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (location.state && (location.state as any).initialPrompt) {
+      const prompt = (location.state as any).initialPrompt;
+      if (processedPromptRef.current !== prompt) {
+        processedPromptRef.current = prompt;
+        dispatch(sendMessage({ text: prompt }) as any);
+        // Clear navigation state to prevent re-sending on page refresh
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [location, dispatch]);
   
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
