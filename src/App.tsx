@@ -32,6 +32,19 @@ const App: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { currentUser } = useSelector((state: RootState) => state.auth);
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
+  const [notifications, setNotifications] = useState<ToastNotification[]>(() => {
+    try {
+      const saved = localStorage.getItem('stored_notifications');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Persist notifications to localStorage
+  useEffect(() => {
+    localStorage.setItem('stored_notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
   // Share Poster state
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -117,17 +130,19 @@ const App: React.FC = () => {
             // Inject the new article directly into Redux (live page update)
             dispatch(addNewArticle(item));
 
-            // Create notification toast
+            // Create notification toast & store persistent notification
             const toastId = String(Date.now()) + Math.random();
-            setToasts(prev => [...prev, {
+            const notificationItem = {
               id: toastId,
               title: item.title,
               category: item.category,
               image: item.image,
               url: item.url
-            }]);
+            };
+            setToasts(prev => [...prev, notificationItem]);
+            setNotifications(prev => [...prev, notificationItem]);
 
-            // Dismiss after 6 seconds
+            // Dismiss toast popup after 6 seconds (remains in notifications)
             setTimeout(() => {
               setToasts(prev => prev.filter(t => t.id !== toastId));
             }, 6000);
@@ -202,8 +217,9 @@ const App: React.FC = () => {
         <Header 
           title={getHeaderTitle(location.pathname)} 
           isSidebarCollapsed={isSidebarCollapsed} 
-          notifications={toasts}
-          onClearNotifications={() => setToasts([])}
+          notifications={notifications}
+          onClearNotifications={() => setNotifications([])}
+          onDismissNotification={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 

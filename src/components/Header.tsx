@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, User, LogOut, Menu } from 'lucide-react';
+import { Search, Bell, User, LogOut, Menu, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store';
@@ -18,6 +18,7 @@ interface HeaderProps {
     url?: string;
   }[];
   onClearNotifications?: () => void;
+  onDismissNotification?: (id: string) => void;
   onToggleMobileSidebar?: () => void;
 }
 
@@ -26,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({
   isSidebarCollapsed = false,
   notifications = [],
   onClearNotifications,
+  onDismissNotification,
   onToggleMobileSidebar
 }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -344,15 +346,25 @@ const Header: React.FC<HeaderProps> = ({
                         navigate('/news');
                         setIsDropdownOpen(false);
                       }}
-                      className="p-3.5 flex items-start space-x-3 cursor-pointer hover:bg-white/5 transition-all"
+                      className="p-3.5 flex items-start space-x-3 cursor-pointer hover:bg-white/5 transition-all relative group"
                     >
                       <img src={n.image} alt="" className="w-12 h-9 rounded-lg object-cover bg-white/5 shrink-0" />
-                      <div className="flex-1 min-w-0 space-y-0.5">
+                      <div className="flex-1 min-w-0 space-y-0.5 pr-6">
                         <span className="text-[9px] font-bold text-anime-primary uppercase tracking-wider">{n.category}</span>
                         <p className="text-xs font-medium text-white line-clamp-2 leading-snug">
                           {n.title}
                         </p>
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onDismissNotification) onDismissNotification(n.id);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg text-anime-text/40 hover:text-white transition-all cursor-pointer opacity-0 group-hover:opacity-100 shrink-0 z-10"
+                        title="Dismiss Notification"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   ))
                 )}
