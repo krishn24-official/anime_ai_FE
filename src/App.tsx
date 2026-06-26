@@ -13,6 +13,7 @@ import Games from './features/games/Games';
 import Chatbot from './features/chatbot/Chatbot';
 import AuthPage from './features/auth/AuthPage';
 import SharePosterModal from './components/SharePosterModal';
+import InstallPrompt from './components/InstallPrompt';
 import { addNewArticle } from './store/slices/newsSlice';
 import { X } from 'lucide-react';
 
@@ -277,6 +278,9 @@ const App: React.FC = () => {
         initialType={shareType}
         initialData={shareData}
       />
+
+      {/* PWA Install Banner */}
+      <InstallPrompt />
     </div>
   );
 };
