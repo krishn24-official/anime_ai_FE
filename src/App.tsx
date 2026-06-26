@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from './store';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-const Home = React.lazy(() => import('./features/home/Home'));
+import Home from './features/home/Home';
 const Characters = React.lazy(() => import('./features/characters/Characters'));
 const News = React.lazy(() => import('./features/news/News'));
 const AdminNews = React.lazy(() => import('./features/news/AdminNews'));
