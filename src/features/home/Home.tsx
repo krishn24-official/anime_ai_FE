@@ -91,6 +91,8 @@ const Home: React.FC = () => {
             
             <img
               src={getOptimizedImageUrl(slide.image, 1200)}
+              srcSet={`${getOptimizedImageUrl(slide.image, 600)} 600w, ${getOptimizedImageUrl(slide.image, 1200)} 1200w`}
+              sizes="(max-width: 640px) 600px, 1200px"
               alt={slide.title}
               width={1200}
               height={380}
