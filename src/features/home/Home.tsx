@@ -5,6 +5,7 @@ import type { RootState, AppDispatch } from '../../store';
 import { Calendar, ArrowRight, ChevronLeft, ChevronRight, Bot, Send, Sparkles, Share2 } from 'lucide-react';
 import { sendMessage } from '../../store/slices/chatSlice';
 import { fetchHomeDataThunk } from '../../store/slices/homeSlice';
+import { getOptimizedImageUrl } from '../../services/imageHelper';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -89,8 +90,12 @@ const Home: React.FC = () => {
             <div className="absolute top-1/4 left-10 w-96 h-96 bg-anime-primary/10 rounded-full blur-3xl mix-blend-screen animate-float pointer-events-none z-10" />
             
             <img
-              src={slide.image}
+              src={getOptimizedImageUrl(slide.image, 1200)}
               alt={slide.title}
+              width={1200}
+              height={380}
+              loading={index === 0 ? "eager" : "lazy"}
+              {...(index === 0 ? { fetchPriority: "high" } : {})}
               className="absolute inset-0 w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-all duration-[6000ms]"
             />
             {/* Content */}
@@ -174,8 +179,11 @@ const Home: React.FC = () => {
                   >
                     <div className="flex items-center space-x-4">
                       <img
-                        src={item.image}
+                        src={getOptimizedImageUrl(item.image, 128)}
                         alt={item.name}
+                        width={64}
+                        height={64}
+                        loading="lazy"
                         className="w-16 h-16 rounded-xl object-cover border border-white/10 shadow-lg shadow-black/40 group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="flex-1 min-w-0">

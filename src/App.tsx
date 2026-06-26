@@ -4,16 +4,16 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from './store';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import Home from './features/home/Home';
-import Characters from './features/characters/Characters';
-import News from './features/news/News';
-import AdminNews from './features/news/AdminNews';
-import Content from './features/content/Content';
-import Games from './features/games/Games';
-import Chatbot from './features/chatbot/Chatbot';
-import AuthPage from './features/auth/AuthPage';
-import SharePosterModal from './components/SharePosterModal';
+const Home = React.lazy(() => import('./features/home/Home'));
+const Characters = React.lazy(() => import('./features/characters/Characters'));
+const News = React.lazy(() => import('./features/news/News'));
+const AdminNews = React.lazy(() => import('./features/news/AdminNews'));
+const Content = React.lazy(() => import('./features/content/Content'));
+const Games = React.lazy(() => import('./features/games/Games'));
+const Chatbot = React.lazy(() => import('./features/chatbot/Chatbot'));
+const SharePosterModal = React.lazy(() => import('./components/SharePosterModal'));
 import InstallPrompt from './components/InstallPrompt';
+import AuthPage from './features/auth/AuthPage';
 import { addNewArticle } from './store/slices/newsSlice';
 import { X } from 'lucide-react';
 
@@ -225,15 +225,22 @@ const App: React.FC = () => {
 
         {/* Content body offset for fixed Header */}
         <main className="pt-24 px-4 sm:px-8 pb-8 min-h-screen">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/news" element={<News />} />
-            <Route path="/admin/news" element={<AdminNews />} />
-            <Route path="/content" element={<Content />} />
-            <Route path="/characters" element={<Characters />} />
-            <Route path="/games/*" element={<Games />} />
-            <Route path="/chatbot" element={<Chatbot />} />
-          </Routes>
+          <React.Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+              <div className="w-12 h-12 border-4 border-anime-primary/20 border-t-anime-primary rounded-full animate-spin"></div>
+              <p className="text-xs font-semibold text-anime-primary uppercase tracking-widest animate-pulse">Loading Anime AI...</p>
+            </div>
+          }>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/news" element={<News />} />
+              <Route path="/admin/news" element={<AdminNews />} />
+              <Route path="/content" element={<Content />} />
+              <Route path="/characters" element={<Characters />} />
+              <Route path="/games/*" element={<Games />} />
+              <Route path="/chatbot" element={<Chatbot />} />
+            </Routes>
+          </React.Suspense>
         </main>
       </div>
 
@@ -272,12 +279,14 @@ const App: React.FC = () => {
       </div>
 
       {/* Share Poster Generator Modal */}
-      <SharePosterModal
-        isOpen={isShareOpen}
-        onClose={() => setIsShareOpen(false)}
-        initialType={shareType}
-        initialData={shareData}
-      />
+      <React.Suspense fallback={null}>
+        <SharePosterModal
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+          initialType={shareType}
+          initialData={shareData}
+        />
+      </React.Suspense>
 
       {/* PWA Install Banner */}
       <InstallPrompt />
