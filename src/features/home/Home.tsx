@@ -125,12 +125,14 @@ const Home: React.FC = () => {
         {/* Carousel Buttons */}
         <button
           onClick={handlePrevSlide}
+          aria-label="Previous slide"
           className="absolute left-6 top-1/2 -translate-y-1/2 z-30 p-3 bg-black/50 hover:bg-anime-primary/20 border border-white/10 hover:border-anime-primary/80 rounded-2xl text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-md cursor-pointer"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           onClick={handleNextSlide}
+          aria-label="Next slide"
           className="absolute right-6 top-1/2 -translate-y-1/2 z-30 p-3 bg-black/50 hover:bg-anime-primary/20 border border-white/10 hover:border-anime-primary/80 rounded-2xl text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-md cursor-pointer"
         >
           <ChevronRight className="w-5 h-5" />
@@ -142,6 +144,7 @@ const Home: React.FC = () => {
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
               className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                 idx === currentSlide ? 'bg-anime-primary w-8 shadow-[0_0_8px_#66FCF1]' : 'bg-white/30 w-2 hover:bg-white/60'
               }`}
@@ -211,6 +214,7 @@ const Home: React.FC = () => {
                             }
                           }));
                         }}
+                        aria-label="Share Birthday Poster"
                         className="p-2 bg-black/40 hover:bg-anime-pink border border-white/10 hover:border-anime-pink rounded-xl text-white transition-all cursor-pointer z-20 shrink-0 self-center"
                         title="Share Birthday Poster"
                       >
