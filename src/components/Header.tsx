@@ -85,8 +85,9 @@ const Header: React.FC<HeaderProps> = ({
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  const handleLogout = () => {
-    dispatch(logoutUserThunk());
+  const handleLogout = async () => {
+    await dispatch(logoutUserThunk());
+    navigate('/');
   };
 
   const hasResults = searchResults && (
