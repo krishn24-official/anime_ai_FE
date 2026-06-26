@@ -75,6 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && (
               <button
                 onClick={onToggle}
+                aria-label="Collapse sidebar"
                 className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shrink-0 cursor-pointer hidden lg:block"
               >
                 <Menu className="w-5 h-5" />
@@ -84,6 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Close Button (Mobile) */}
             <button
               onClick={onMobileClose}
+              aria-label="Close mobile sidebar"
               className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shrink-0 cursor-pointer lg:hidden"
             >
               <Menu className="w-5 h-5" />
@@ -95,6 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="hidden lg:flex justify-center mb-6 w-full">
               <button
                 onClick={onToggle}
+                aria-label="Expand sidebar"
                 className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shadow-lg shadow-black/40 z-50 cursor-pointer"
               >
                 <Menu className="w-5 h-5" />
@@ -129,7 +132,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             </NavLink>
           ))}
 
-          {/* Poster Studio button */}
           <button
             onClick={() => {
               window.dispatchEvent(new CustomEvent('open-share-poster', {
@@ -143,6 +145,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }
               }));
             }}
+            aria-label="Open Poster Studio"
             className={`flex items-center rounded-xl transition-all duration-300 font-medium group relative w-full text-left cursor-pointer text-anime-text hover:text-white hover:bg-white/5 ${
               isCollapsed ? 'justify-center px-0 py-3.5' : 'space-x-4 px-4 py-3'
             }`}

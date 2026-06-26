@@ -107,6 +107,7 @@ const Header: React.FC<HeaderProps> = ({
         {/* Mobile Hamburger menu */}
         <button
           onClick={onToggleMobileSidebar}
+          aria-label="Open navigation sidebar"
           className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white lg:hidden cursor-pointer shrink-0"
         >
           <Menu className="w-5 h-5" />
@@ -161,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({
                           >
                             <img
                               src={char.images?.profile || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                              alt=""
+                              alt={char.name}
                               className="w-8 h-10 rounded-lg object-cover bg-white/5"
                             />
                             <div className="flex-1 min-w-0">
@@ -192,7 +193,7 @@ const Header: React.FC<HeaderProps> = ({
                           >
                             <img
                               src={item.images?.poster || 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=100'}
-                              alt=""
+                              alt={item.title?.english || item.title?.romaji || 'Anime poster'}
                               className="w-8 h-10 rounded-lg object-cover bg-white/5"
                             />
                             <div className="flex-1 min-w-0">
@@ -222,7 +223,7 @@ const Header: React.FC<HeaderProps> = ({
                           >
                             <img
                               src={item.cover_image || 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=100'}
-                              alt=""
+                              alt={item.name}
                               className="w-8 h-10 rounded-lg object-cover bg-white/5"
                             />
                             <div className="flex-1 min-w-0">
@@ -252,7 +253,7 @@ const Header: React.FC<HeaderProps> = ({
                           >
                             <img
                               src={item.images?.poster || 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=100'}
-                              alt=""
+                              alt={item.title}
                               className="w-8 h-10 rounded-lg object-cover bg-white/5"
                             />
                             <div className="flex-1 min-w-0">
@@ -282,7 +283,7 @@ const Header: React.FC<HeaderProps> = ({
                           >
                             <img
                               src={item.images?.poster || 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=100'}
-                              alt=""
+                              alt={item.title}
                               className="w-8 h-10 rounded-lg object-cover bg-white/5"
                             />
                             <div className="flex-1 min-w-0">
@@ -349,7 +350,7 @@ const Header: React.FC<HeaderProps> = ({
                       }}
                       className="p-3.5 flex items-start space-x-3 cursor-pointer hover:bg-white/5 transition-all relative group"
                     >
-                      <img src={n.image} alt="" className="w-12 h-9 rounded-lg object-cover bg-white/5 shrink-0" />
+                      <img src={n.image} alt={n.title} className="w-12 h-9 rounded-lg object-cover bg-white/5 shrink-0" />
                       <div className="flex-1 min-w-0 space-y-0.5 pr-6">
                         <span className="text-[9px] font-bold text-anime-primary uppercase tracking-wider">{n.category}</span>
                         <p className="text-xs font-medium text-white line-clamp-2 leading-snug">
