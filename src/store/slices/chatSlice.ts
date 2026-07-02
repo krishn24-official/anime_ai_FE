@@ -49,7 +49,7 @@ export const sendMessage = createAsyncThunk(
     dispatch(setStatus('typing'));
 
     try {
-      if (imageBase64 || shouldRouteToChat(text)) {
+      if (imageBase64 || shouldRouteToChat()) {
         // Image attached or character/relationship query → POST /chat
         const res = await chatService.sendChatMessage(text, imageBase64, imageMediaType);
         const botMsg: ChatMessage = {
