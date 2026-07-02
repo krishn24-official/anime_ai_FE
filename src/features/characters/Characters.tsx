@@ -219,60 +219,58 @@ const Characters: React.FC = () => {
       </div>
 
       {/* Persistent Search & Filters Container (Never unmounted) */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          {/* Gender Filter Buttons */}
-          <div className="flex space-x-2 bg-white/5 p-1.5 rounded-xl border border-white/5 w-fit">
-            <button
-              onClick={() => setFilterGender('all')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                filterGender === 'all' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
-              }`}
-            >
-              All Characters
-            </button>
-            <button
-              onClick={() => setFilterGender('male')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                filterGender === 'male' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
-              }`}
-            >
-              Male
-            </button>
-            <button
-              onClick={() => setFilterGender('female')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                filterGender === 'female' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
-              }`}
-            >
-              Female
-            </button>
-          </div>
-
-          {/* Anime Filter Dropdown */}
-          <select
-            value={filterAnime}
-            onChange={(e) => setFilterAnime(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-anime-primary"
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Gender Filter Buttons */}
+        <div className="flex space-x-2 bg-white/5 p-1.5 rounded-xl border border-white/5 w-fit">
+          <button
+            onClick={() => setFilterGender('all')}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              filterGender === 'all' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
+            }`}
           >
-            <option value="all" className="bg-anime-bg text-white">All Anime</option>
-            {uniqueAnimeNames.map((name) => (
-              <option key={name} value={name} className="bg-anime-bg text-white">{name}</option>
-            ))}
-          </select>
-
-          {/* Alphabetical Sort Dropdown */}
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-anime-primary"
+            All Characters
+          </button>
+          <button
+            onClick={() => setFilterGender('male')}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              filterGender === 'male' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
+            }`}
           >
-            <option value="asc" className="bg-anime-bg text-white">Name: A to Z</option>
-            <option value="desc" className="bg-anime-bg text-white">Name: Z to A</option>
-          </select>
+            Male
+          </button>
+          <button
+            onClick={() => setFilterGender('female')}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              filterGender === 'female' ? 'bg-anime-primary text-anime-bg' : 'text-anime-text hover:text-white'
+            }`}
+          >
+            Female
+          </button>
         </div>
 
-        <div className="relative w-full md:w-80">
+        {/* Anime Filter Dropdown */}
+        <select
+          value={filterAnime}
+          onChange={(e) => setFilterAnime(e.target.value)}
+          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-anime-primary min-w-[200px]"
+        >
+          <option value="all" className="bg-anime-bg text-white">All Anime</option>
+          {uniqueAnimeNames.map((name) => (
+            <option key={name} value={name} className="bg-anime-bg text-white">{name}</option>
+          ))}
+        </select>
+
+        {/* Alphabetical Sort Dropdown */}
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-anime-primary"
+        >
+          <option value="asc" className="bg-anime-bg text-white">Name: A to Z</option>
+          <option value="desc" className="bg-anime-bg text-white">Name: Z to A</option>
+        </select>
+
+        <div className="relative w-full md:w-80 md:ml-auto">
           <input
             type="text"
             value={searchTerm}
