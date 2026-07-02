@@ -44,6 +44,12 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   image?: string;
+  /** Set when the bot needs the user to clarify which character they meant. */
+  disambiguationOptions?: string[];
+  /** Full original user message — used to reconstruct the query after disambiguation. */
+  originalQuery?: string;
+  /** The ambiguous name fragment extracted from the original query. */
+  nameQuery?: string;
 }
 
 export interface TierListItem {

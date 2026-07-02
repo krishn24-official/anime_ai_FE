@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchCharactersData, searchCharactersThunk } from '../../store/slices/characterSlice';
@@ -135,12 +135,28 @@ const Characters: React.FC = () => {
     }
   }, [location, characters, birthdays]);
 
+  const isFirstRender = useRef(true);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   // Handle live search dispatch without losing focus
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    dispatch(searchCharactersThunk(value));
+    setSearchTerm(e.target.value);
   };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    dispatch(searchCharactersThunk(debouncedSearch));
+  }, [debouncedSearch, dispatch]);
 
   // Extract unique anime names for dropdown
   const uniqueAnimeNames = Array.from(

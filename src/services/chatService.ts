@@ -2,6 +2,12 @@ import { apiClient } from './apiClient';
 
 export interface ChatResponse {
   answer: string;
+  /** Present when the backend found multiple characters matching the query. */
+  disambiguation?: string[];
+  /** The ambiguous name fragment the backend extracted from the user message. */
+  name_query?: string;
+  /** The full original user message, used client-side to reconstruct the resolved query. */
+  original_message?: string;
 }
 
 export interface AgentResponse {

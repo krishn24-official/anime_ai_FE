@@ -22,76 +22,12 @@ const initialState: ChatState = {
 import { chatService } from '../../services/chatService';
 import type { RootState } from '../index';
 
-// Helper to determine if the message is character-specific and should route to /chat
-const shouldRouteToChat = (text: string, state: RootState): boolean => {
-  const lowerMsg = text.toLowerCase();
-
-  // 0. Exclude /agent specific keywords (news, birthdays, trending, search, etc.)
-  const agentKeywords = ['news', 'birthday', 'birthdays', 'trending', 'search', 'anniversary', 'anniversaries', 'latest', 'upcoming'];
-  const hasAgentKeyword = agentKeywords.some(word => {
-    const regex = new RegExp(`\\b${word}\\b`, 'i');
-    return regex.test(lowerMsg);
-  });
-  if (hasAgentKeyword) return false;
-
-  // 1. Relationship words
-  const relationshipWords = ['father', 'mother', 'brother', 'sister', 'sensei', 'rival', 'team', 'family'];
-  const hasRelationshipWord = relationshipWords.some(word => {
-    const regex = new RegExp(`\\b${word}\\b`, 'i');
-    return regex.test(lowerMsg);
-  });
-  if (hasRelationshipWord) return true;
-
-  // 2. Character-specific question patterns:
-  // - "who is X"
-  // - "tell me about X"
-  // - "relationship between X and Y"
-  const questionPatterns = [
-    /\bwho\s+is\s+[a-z]+/i,
-    /\bwho's\s+[a-z]+/i,
-    /\btell\s+me\s+about\s+[a-z]+/i,
-    /\brelationship\s+between\s+[a-z]+\s+and\s+[a-z]+/i
-  ];
-  const matchesQuestionPattern = questionPatterns.some(pattern => pattern.test(text));
-  if (matchesQuestionPattern) return true;
-
-  // 3. Known character names (including store characters & default anime characters)
-  const defaultCharacterNames = [
-    'naruto', 'uzumaki', 'gojo', 'satoru', 'kakashi', 'hatake',
-    'luffy', 'monkey', 'madara', 'uchiha', 'levi', 'ackerman',
-    'zoro', 'sukuna', 'saitama', 'killua', 'zenitsu', 'lelouch'
-  ];
-
-  const storeCharacterWords: string[] = [];
-  const characters = state.characters?.characters;
-  if (Array.isArray(characters)) {
-    characters.forEach(char => {
-      if (char.name) {
-        const parts = char.name.toLowerCase().split(/[\s'\-_]+/);
-        parts.forEach((part: string) => {
-          if (part.length >= 3) {
-            storeCharacterWords.push(part);
-          }
-        });
-      }
-    });
-  }
-
-  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-  const allCharacterWords = Array.from(new Set([...defaultCharacterNames, ...storeCharacterWords]));
-
-  const hasCharacterName = allCharacterWords.some(word => {
-    try {
-      const regex = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i');
-      return regex.test(lowerMsg);
-    } catch (e) {
-      return false;
-    }
-  });
-  if (hasCharacterName) return true;
-
-  return false;
+// Routing rule: send EVERYTHING to /chat.
+// The backend /chat endpoint handles characters, relationships, and has
+// fast-path intercepts for news, birthdays, and recommendations that
+// bypass Gemini entirely.
+const shouldRouteToChat = (text: string): boolean => {
+  return true;
 };
 
 export const sendMessage = createAsyncThunk(
@@ -114,25 +50,31 @@ export const sendMessage = createAsyncThunk(
     dispatch(setStatus('typing'));
 
     try {
-      let botResponse = '';
-      const state = getState() as RootState;
-      if (imageBase64 || shouldRouteToChat(text, state)) {
-        // Image attached or character-specific query → POST /chat
+      if (imageBase64 || shouldRouteToChat(text)) {
+        // Image attached or character/relationship query → POST /chat
         const res = await chatService.sendChatMessage(text, imageBase64, imageMediaType);
-        botResponse = res.answer;
+        const botMsg: ChatMessage = {
+          id: `msg_b_${Date.now()}`,
+          sender: 'bot',
+          text: res.answer,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          // Attach disambiguation payload if the backend returned multiple matches
+          disambiguationOptions: res.disambiguation,
+          originalQuery: res.original_message,
+          nameQuery: res.name_query,
+        };
+        dispatch(addMessage(botMsg));
       } else {
         // Otherwise → POST /agent
         const res = await chatService.sendAgentMessage(text);
-        botResponse = res.answer;
+        const botMsg: ChatMessage = {
+          id: `msg_b_${Date.now()}`,
+          sender: 'bot',
+          text: res.answer,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        dispatch(addMessage(botMsg));
       }
-
-      const botMsg: ChatMessage = {
-        id: `msg_b_${Date.now()}`,
-        sender: 'bot',
-        text: botResponse,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      dispatch(addMessage(botMsg));
     } catch (error: any) {
       const errorMsg: ChatMessage = {
         id: `msg_err_${Date.now()}`,

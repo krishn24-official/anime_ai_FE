@@ -22,6 +22,7 @@
     color: var(--color-anime-text);
     font-family: var(--font-inter);
     overflow-x: hidden;
+    overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
     background-image: 
       radial-gradient(at 10% 20%, rgba(155, 93, 229, 0.05) 0px, transparent 50%),
       radial-gradient(at 90% 80%, rgba(102, 252, 241, 0.05) 0px, transparent 50%);

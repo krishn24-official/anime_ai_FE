@@ -239,6 +239,32 @@ const Chatbot: React.FC = () => {
                     {formatMessage(msg.text)}
                   </div>
                 </div>
+
+                {/* Disambiguation options — shown when the bot found multiple character matches */}
+                {isBot && msg.disambiguationOptions && msg.disambiguationOptions.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {msg.disambiguationOptions.map((charName) => (
+                      <button
+                        key={charName}
+                        onClick={() => {
+                          const original = msg.originalQuery ?? '';
+                          const fragment = msg.nameQuery ?? '';
+                          // Replace the ambiguous fragment with the chosen full name (case-insensitive)
+                          const escapedFragment = fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                          const resolved = fragment && original
+                            ? original.replace(new RegExp(escapedFragment, 'gi'), charName)
+                            : `Tell me about ${charName}`;
+                          dispatch(sendMessage({ text: resolved }) as any);
+                        }}
+                        className="px-3 py-1.5 bg-anime-primary/10 hover:bg-anime-primary/20 border border-anime-primary/30 hover:border-anime-primary/60 text-anime-primary hover:text-white text-[10px] font-semibold rounded-xl transition-all duration-200 flex items-center gap-1.5"
+                      >
+                        <Sparkles className="w-3 h-3 shrink-0" />
+                        {charName}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <div className={`text-[9px] text-anime-text/40 px-1 ${!isBot && 'text-right'}`}>
                   {msg.timestamp}
                 </div>
