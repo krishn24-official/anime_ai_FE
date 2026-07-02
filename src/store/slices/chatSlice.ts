@@ -20,13 +20,12 @@ const initialState: ChatState = {
 };
 
 import { chatService } from '../../services/chatService';
-import type { RootState } from '../index';
 
 // Routing rule: send EVERYTHING to /chat.
 // The backend /chat endpoint handles characters, relationships, and has
 // fast-path intercepts for news, birthdays, and recommendations that
 // bypass Gemini entirely.
-const shouldRouteToChat = (text: string): boolean => {
+const shouldRouteToChat = (): boolean => {
   return true;
 };
 
@@ -34,7 +33,7 @@ export const sendMessage = createAsyncThunk(
   'chat/sendMessage',
   async (
     payload: { text: string; imageBase64?: string; imageMediaType?: string; imageUrl?: string },
-    { dispatch, getState }
+    { dispatch }
   ) => {
     const { text, imageBase64, imageMediaType, imageUrl } = payload;
 
