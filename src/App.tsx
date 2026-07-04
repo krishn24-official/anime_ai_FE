@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Home from './features/home/Home';
 const Characters = React.lazy(() => import('./features/characters/Characters'));
 const News = React.lazy(() => import('./features/news/News'));
+const Schedule = React.lazy(() => import('./features/schedule/Schedule'));
 const AdminNews = React.lazy(() => import('./features/news/AdminNews'));
 const Content = React.lazy(() => import('./features/content/Content'));
 const Games = React.lazy(() => import('./features/games/Games'));
@@ -184,6 +185,8 @@ const App: React.FC = () => {
         return "Welcome to Anime AI!";
       case '/news':
         return "Otaku Tribune News";
+      case '/schedule':
+        return "Upcoming Schedule";
       case '/admin/news':
         return "Admin News Hub";
       case '/content':
@@ -234,6 +237,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/news" element={<News />} />
+              <Route path="/schedule" element={<Schedule />} />
               <Route path="/admin/news" element={<AdminNews />} />
               <Route path="/content" element={<Content />} />
               <Route path="/characters" element={<Characters />} />

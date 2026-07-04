@@ -190,10 +190,6 @@ const AuthPage: React.FC = () => {
               Join our exclusive universe to track your favorite anime events, converse with AI companions, read the latest news, and play arcade games!
             </p>
             
-            <div className="flex items-center space-x-3 bg-white/5 rounded-xl border border-white/5 p-3.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-anime-primary animate-ping" />
-              <span className="text-xs text-anime-text font-medium">Active sessions globally: 13,842 Online</span>
-            </div>
           </div>
 
           <div className="text-[10px] text-anime-text/40">

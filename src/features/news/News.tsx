@@ -166,6 +166,7 @@ const News: React.FC = () => {
         </div>
       )}
 
+
       {/* Article Detail Drawer Modal */}
       {activeArticle && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-end z-50 transition-opacity" onClick={() => setActiveArticleId(null)}>

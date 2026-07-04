@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { Home, Newspaper, Film, Gamepad2, Bot, User, Sparkles, Menu } from 'lucide-react';
+import { Home, Newspaper, Calendar, Film, Gamepad2, Bot, User, Sparkles, Menu } from 'lucide-react';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -22,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { name: 'Home', path: '/', icon: <Home className="w-5 h-5" /> },
     { name: 'News', path: '/news', icon: <Newspaper className="w-5 h-5" /> },
+    { name: 'Schedule', path: '/schedule', icon: <Calendar className="w-5 h-5" /> },
     { name: 'Content', path: '/content', icon: <Film className="w-5 h-5" /> },
     { name: 'Characters', path: '/characters', icon: <User className="w-5 h-5" /> },
     { name: 'Games', path: '/games', icon: <Gamepad2 className="w-5 h-5" /> },
