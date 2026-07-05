@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, User, Star, ChevronRight, Play } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { getOptimizedImageUrl } from '../../services/imageHelper';
 import { eventService } from '../../services/eventService';
 
