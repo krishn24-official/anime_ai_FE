@@ -144,7 +144,7 @@ export const contentService = {
       const id = item.id || item._id;
       const year = item.release_date ? parseInt(item.release_date.split('-')[0]) : (item.year ? parseInt(item.year) : 2024);
       const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5);
-      
+
       return {
         id,
         title: item.title || 'Untitled Movie',

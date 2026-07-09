@@ -22,15 +22,12 @@ const initialState: ContentState = {
   error: null,
 };
 
-// Async Thunks
 export const fetchContentData = createAsyncThunk(
   'content/fetchContentData',
   async (_, { rejectWithValue }) => {
     try {
-      // 1. Ensure token exists
       await apiClient.ensureGuestSession();
 
-      // 2. Fetch all types concurrently
       const [anime, manga, movies, tvSeries, watchlistItems] = await Promise.all([
         contentService.fetchAnime(),
         contentService.fetchManga(),
@@ -111,7 +108,7 @@ const contentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch Content Data
+      // ── Initial Fetch ──────────────────────────────────────────────
       .addCase(fetchContentData.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -125,7 +122,8 @@ const contentSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Toggle Watchlist
+
+      // ── Toggle Watchlist ───────────────────────────────────────────
       .addCase(toggleWatchlistThunk.fulfilled, (state, action) => {
         const { id, isAdded } = action.payload;
         if (isAdded) {
@@ -136,17 +134,20 @@ const contentSlice = createSlice({
           state.watchlist = state.watchlist.filter((item) => item !== id);
         }
       })
-      // Rate Content
+
+      // ── Rate Content ───────────────────────────────────────────────
       .addCase(rateContentThunk.fulfilled, (state, action) => {
         const { id, rating } = action.payload;
         state.ratings[id] = rating;
       })
-      // Fetch Comments
+
+      // ── Fetch Comments ─────────────────────────────────────────────
       .addCase(fetchCommentsThunk.fulfilled, (state, action) => {
         const { id, comments } = action.payload;
         state.comments[id] = comments;
       })
-      // Add Comment
+
+      // ── Add Comment ────────────────────────────────────────────────
       .addCase(addCommentThunk.fulfilled, (state, action) => {
         const { id, comment } = action.payload;
         if (!state.comments[id]) {

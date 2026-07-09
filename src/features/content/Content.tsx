@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import {
@@ -16,6 +16,9 @@ const Content: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { items, watchlist, ratings, comments, loading, error } = useSelector((state: RootState) => state.content);
+
+  // Sentinel ref for IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<'All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series'>('All');
@@ -24,6 +27,7 @@ const Content: React.FC = () => {
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [autoOpenTitle, setAutoOpenTitle] = useState<string | null>(null);
+  const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
     dispatch(fetchContentData());
@@ -84,6 +88,42 @@ const Content: React.FC = () => {
     }
   }, [selectedItemId, dispatch]);
 
+  // IntersectionObserver for progressive rendering (infinite scroll)
+  const handleIntersect = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && !loading) {
+        setDisplayCount(prev => prev + 20);
+      }
+    },
+    [loading]
+  );
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(handleIntersect, {
+      root: null,
+      rootMargin: '200px',
+      threshold: 0,
+    });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [handleIntersect]);
+
+  // Progressive rendering slice
+  const visibleItems = searchQuery.trim() ? filteredItems : filteredItems.slice(0, displayCount);
+
+  // Auto-reveal background timer to fulfill "fetch even if user doesn't scroll"
+  useEffect(() => {
+    if (!searchQuery.trim() && !loading && items.length > 0 && displayCount < filteredItems.length) {
+      const timer = setTimeout(() => {
+        setDisplayCount(prev => Math.min(prev + 20, filteredItems.length));
+      }, 500); // Reveal 20 more every 500ms
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, loading, items.length, displayCount, filteredItems.length]);
+
   const handlePostComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedItem || !commentText.trim()) return;
@@ -113,6 +153,7 @@ const Content: React.FC = () => {
           <p className="text-sm text-anime-text mt-1">
             Browse through your favorite anime, manga, movies, and TV-series. Rate your matches, write feedback, and build your custom watchlist.
           </p>
+          <p className="text-xs text-anime-text/40 mt-1">{filteredItems.length} items found</p>
         </div>
 
         {/* Watchlist toggle */}
@@ -180,7 +221,7 @@ const Content: React.FC = () => {
       {/* Catalog Grid */}
       {!loading && !error && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredItems.map((item) => {
+          {visibleItems.map((item) => {
             const isAdded = watchlist.includes(item.id);
             return (
               <div
@@ -253,6 +294,22 @@ const Content: React.FC = () => {
             <p className="text-sm text-anime-text/60 italic col-span-4 py-8">No content found matching the criteria.</p>
           )}
         </div>
+      )}
+
+      {/* Infinite scroll sentinel + bottom spinner */}
+      {!loading && !error && (
+        <>
+          <div ref={sentinelRef} className="w-full h-10" />
+          {!searchQuery.trim() && displayCount < filteredItems.length && (
+            <div className="flex flex-col items-center justify-center py-8 space-y-2">
+              <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
+              <p className="text-xs text-anime-text/50">Loading more content...</p>
+            </div>
+          )}
+          {!searchQuery.trim() && items.length > 0 && displayCount >= filteredItems.length && (
+            <p className="text-center text-xs text-anime-text/30 py-4">All content loaded</p>
+          )}
+        </>
       )}
 
       {/* Detail & Comments Drawer Modal */}

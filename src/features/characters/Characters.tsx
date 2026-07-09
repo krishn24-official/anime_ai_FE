@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchCharactersData, searchCharactersThunk } from '../../store/slices/characterSlice';
@@ -100,12 +100,16 @@ const Characters: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { characters, birthdays, loading, error } = useSelector((state: RootState) => state.characters);
+
+  // Sentinel ref for IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGender, setFilterGender] = useState<'all' | 'male' | 'female'>('all');
   const [filterAnime, setFilterAnime] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
+  const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
     dispatch(fetchCharactersData());
@@ -137,6 +141,7 @@ const Characters: React.FC = () => {
 
   const isFirstRender = useRef(true);
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
   // Handle live search dispatch without losing focus
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,8 +160,32 @@ const Characters: React.FC = () => {
       isFirstRender.current = false;
       return;
     }
+    setIsSearchActive(!!debouncedSearch.trim());
     dispatch(searchCharactersThunk(debouncedSearch));
   }, [debouncedSearch, dispatch]);
+
+  // IntersectionObserver for progressive rendering (infinite scroll)
+  const handleIntersect = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && !loading && !isSearchActive) {
+        setDisplayCount(prev => prev + 20);
+      }
+    },
+    [loading, isSearchActive]
+  );
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(handleIntersect, {
+      root: null,
+      rootMargin: '200px',
+      threshold: 0,
+    });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [handleIntersect]);
 
   // Extract unique anime names for dropdown
   const uniqueAnimeNames = Array.from(
@@ -184,6 +213,19 @@ const Characters: React.FC = () => {
         return b.name.localeCompare(a.name);
       }
     });
+
+  // Progressive rendering slice
+  const visibleCharacters = isSearchActive ? filteredCharacters : filteredCharacters.slice(0, displayCount);
+
+  // Auto-reveal background timer to fulfill "fetch even if user doesn't scroll"
+  useEffect(() => {
+    if (!isSearchActive && !loading && characters.length > 0 && displayCount < filteredCharacters.length) {
+      const timer = setTimeout(() => {
+        setDisplayCount(prev => Math.min(prev + 20, filteredCharacters.length));
+      }, 500); // Reveal 20 more every 500ms in background
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchActive, loading, characters.length, displayCount, filteredCharacters.length]);
 
   const selectedChar = characters.find(c => c.id === selectedCharId) || 
                        birthdays.find(b => b.id === selectedCharId);
@@ -390,7 +432,7 @@ const Characters: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredCharacters.map((char) => (
+                {visibleCharacters.map((char) => (
                   <div
                     key={char.id}
                     onClick={() => setSelectedCharId(char.id)}
@@ -464,6 +506,18 @@ const Characters: React.FC = () => {
                   </p>
                 )}
               </div>
+            )}
+
+            {/* Infinite scroll sentinel + bottom spinner */}
+            <div ref={sentinelRef} className="w-full h-10" />
+            {!isSearchActive && displayCount < filteredCharacters.length && (
+              <div className="flex flex-col items-center justify-center py-8 space-y-2">
+                <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
+                <p className="text-xs text-anime-text/50">Loading more characters...</p>
+              </div>
+            )}
+            {!isSearchActive && characters.length > 0 && displayCount >= filteredCharacters.length && (
+              <p className="text-center text-xs text-anime-text/30 py-4">All characters loaded</p>
             )}
           </div>
         </>

@@ -47,12 +47,14 @@ const mapBackendCharacter = (item: any): FrontendCharacter => {
 
 export const characterService = {
   /**
-   * Fetch all characters
+   * Fetch all characters and sort them A-Z by default
    */
   async fetchCharacters(): Promise<FrontendCharacter[]> {
     const data = await apiClient.get<any>('/characters');
-    const items = Array.isArray(data) ? data : data.items || [];
-    return items.map(mapBackendCharacter);
+    const items = Array.isArray(data) ? data : (data?.items || []);
+    const mapped = items.map(mapBackendCharacter);
+    // Sort alphabetically A-Z by default as requested by user
+    return mapped.sort((a, b) => a.name.localeCompare(b.name));
   },
 
   /**

@@ -55,6 +55,19 @@ const AdminNews: React.FC = () => {
 
   // 1. Guard check and profile refresh on mount
   useEffect(() => {
+    const triggerCountdown = () => {
+      setIsVerifying(false);
+      const interval = setInterval(() => {
+        setRedirectCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            navigate('/');
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    };
+
     const verifyAdmin = async () => {
       try {
         const res = await dispatch(fetchCurrentUserThunk()).unwrap();
@@ -69,20 +82,7 @@ const AdminNews: React.FC = () => {
     };
     verifyAdmin();
     dispatch(fetchNewsThunk());
-  }, [dispatch]);
-
-  const triggerCountdown = () => {
-    setIsVerifying(false);
-    const interval = setInterval(() => {
-      setRedirectCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          navigate('/');
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
+  }, [dispatch, navigate]);
 
   // Image Selection Handlers
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
