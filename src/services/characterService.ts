@@ -54,7 +54,7 @@ export const characterService = {
     const items = Array.isArray(data) ? data : (data?.items || []);
     const mapped = items.map(mapBackendCharacter);
     // Sort alphabetically A-Z by default as requested by user
-    return mapped.sort((a, b) => a.name.localeCompare(b.name));
+    return mapped.sort((a: FrontendCharacter, b: FrontendCharacter) => a.name.localeCompare(b.name));
   },
 
   /**
