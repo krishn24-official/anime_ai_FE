@@ -105,7 +105,7 @@ const Home: React.FC = () => {
               <span className="px-3.5 py-1 bg-anime-primary/15 text-anime-primary text-xs font-semibold rounded-full border border-anime-primary/40 w-fit uppercase tracking-widest animate-pulse-glow">
                 Featured
               </span>
-              <h1 className="text-3xl md:text-5xl font-bold font-outfit text-white leading-tight neon-glow-primary">
+              <h1 className="text-3xl md:text-5xl font-bold font-fraunces text-white leading-tight neon-glow-primary">
                 {slide.title}
               </h1>
               <p className="text-anime-text text-sm md:text-base leading-relaxed max-w-xl">
@@ -163,7 +163,7 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
                 <Calendar className="w-6 h-6 text-anime-pink animate-float" />
-                <h3 className="text-xl font-bold font-outfit text-white neon-glow-pink">Today's Celebrations</h3>
+                <h3 className="text-xl font-bold font-fraunces text-white neon-glow-pink">Today's Celebrations</h3>
               </div>
               <button 
                 onClick={() => navigate('/characters')}
@@ -246,7 +246,7 @@ const Home: React.FC = () => {
           <div>
             <div className="flex items-center space-x-3 mb-4">
               <Bot className="w-6 h-6 text-anime-primary animate-float" />
-              <h3 className="text-xl font-bold font-outfit text-white neon-glow-primary">Ask Anime AI</h3>
+              <h3 className="text-xl font-bold font-fraunces text-white neon-glow-primary">Ask Anime AI</h3>
             </div>
             <p className="text-xs text-anime-text leading-relaxed mb-4">
               Need recommendations, character lore, or want to know what's trending? Ask below to start a chat.

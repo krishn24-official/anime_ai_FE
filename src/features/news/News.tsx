@@ -53,7 +53,7 @@ const News: React.FC = () => {
       <div className="flex items-center justify-between pb-4 border-b border-white/5">
         <div className="flex items-center space-x-3">
           <FileText className="w-8 h-8 text-white" />
-          <h1 className="text-2xl md:text-3xl font-bold font-outfit text-white tracking-wide">
+          <h1 className="text-2xl md:text-3xl font-bold font-fraunces text-white tracking-wide">
             Latest News
           </h1>
         </div>
@@ -96,7 +96,7 @@ const News: React.FC = () => {
       {!loading && newsItems.length === 0 && (
         <div className="glass-panel p-12 rounded-2xl border border-anime-border flex flex-col items-center justify-center text-center space-y-4">
           <FileText className="w-12 h-12 text-anime-text/40" />
-          <h3 className="text-lg font-bold text-white font-outfit">No News Found</h3>
+          <h3 className="text-lg font-bold text-white font-fraunces">No News Found</h3>
           <p className="text-sm text-anime-text max-w-sm">
             We couldn't find any articles in this category. Run the backend ingestion pipeline to populate the news feed.
           </p>
@@ -202,7 +202,7 @@ const News: React.FC = () => {
                     <span>{formatDate(activeArticle.date)}</span>
                   </span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold font-outfit text-white leading-tight">
+                <h2 className="text-2xl md:text-3xl font-bold font-fraunces text-white leading-tight">
                   {activeArticle.title}
                 </h2>
               </div>

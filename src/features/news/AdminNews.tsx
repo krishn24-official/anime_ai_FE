@@ -226,7 +226,7 @@ const AdminNews: React.FC = () => {
     return (
       <div className="max-w-md mx-auto mt-20 glass-panel p-8 rounded-2xl border border-red-500/25 bg-red-500/5 text-center space-y-6">
         <AlertCircle className="w-16 h-16 text-red-400 mx-auto animate-bounce" />
-        <h2 className="text-2xl font-bold font-outfit text-white">Access Denied</h2>
+        <h2 className="text-2xl font-bold font-fraunces text-white">Access Denied</h2>
         <p className="text-anime-text text-sm leading-relaxed">
           You do not have the required permissions to view this page. Only administrators are allowed access.
         </p>
@@ -251,7 +251,7 @@ const AdminNews: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-4 border-b border-white/5 space-y-4 md:space-y-0">
         <div className="flex items-center space-x-3">
           <Sparkles className="w-8 h-8 text-anime-primary animate-pulse" />
-          <h1 className="text-2xl md:text-3xl font-bold font-outfit text-white tracking-wide">
+          <h1 className="text-2xl md:text-3xl font-bold font-fraunces text-white tracking-wide">
             Admin News Center
           </h1>
         </div>
@@ -324,7 +324,7 @@ const AdminNews: React.FC = () => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-anime-primary/5 rounded-full blur-3xl pointer-events-none" />
             
             <div className="border-b border-white/5 pb-3">
-              <h3 className="text-lg font-bold font-outfit text-white">Create News Article</h3>
+              <h3 className="text-lg font-bold font-fraunces text-white">Create News Article</h3>
               <p className="text-xs text-anime-text/60">Publish a new manually written article directly into the public feed.</p>
             </div>
 
@@ -427,7 +427,7 @@ const AdminNews: React.FC = () => {
             <div className="premium-card p-6 rounded-2xl space-y-4">
               <div className="border-b border-white/5 pb-2 flex items-center space-x-2">
                 <ImageIcon className="w-5 h-5 text-anime-primary" />
-                <h3 className="text-sm font-bold font-outfit text-white">Image Previews ({imagePreviews.length})</h3>
+                <h3 className="text-sm font-bold font-fraunces text-white">Image Previews ({imagePreviews.length})</h3>
               </div>
               
               {imagePreviews.length === 0 ? (
@@ -474,7 +474,7 @@ const AdminNews: React.FC = () => {
         /* Manage Posts Tab */
         <div className="premium-card p-6 md:p-8 rounded-2xl space-y-6">
           <div className="border-b border-white/5 pb-3">
-            <h3 className="text-lg font-bold font-outfit text-white">Manage Manual News</h3>
+            <h3 className="text-lg font-bold font-fraunces text-white">Manage Manual News</h3>
             <p className="text-xs text-anime-text/60">View, update, or remove news articles that were manually published.</p>
           </div>
 
@@ -550,7 +550,7 @@ const AdminNews: React.FC = () => {
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Edit3 className="w-5 h-5 text-anime-primary" />
-                <h3 className="text-base font-bold font-outfit text-white">Edit News Article</h3>
+                <h3 className="text-base font-bold font-fraunces text-white">Edit News Article</h3>
               </div>
               <button
                 onClick={() => setEditingPost(null)}

@@ -182,7 +182,7 @@ const Games: React.FC = () => {
       <div className="glass-panel p-8 rounded-2xl border border-anime-border flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <span className="text-anime-primary text-xs font-semibold uppercase tracking-wider">Playground</span>
-          <h1 className="text-3xl font-bold font-outfit text-white mt-1">Anime Arcades</h1>
+          <h1 className="text-3xl font-bold font-fraunces text-white mt-1">Anime Arcades</h1>
           <p className="text-sm text-anime-text mt-1">
             Challenge our AI in guessing who you think of, or test your drafting skills in our TikTok Team builder.
           </p>
@@ -228,7 +228,7 @@ const Games: React.FC = () => {
 
           {gameState === 'intro' && (
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold font-outfit text-white">Think of a Character</h2>
+              <h2 className="text-2xl font-bold font-fraunces text-white">Think of a Character</h2>
               <p className="text-xs text-anime-text max-w-sm mx-auto leading-relaxed">
                 Think of any popular anime character (e.g. Gojo Satoru, Kakashi, Naruto, Luffy, Levi Ackerman) and answer the questions. The AI will try to read your mind!
               </p>
@@ -315,7 +315,7 @@ const Games: React.FC = () => {
                     alt={finalGuess?.name || (candidates.length > 0 ? candidates[0].name : 'Character')}
                     className="w-32 h-32 rounded-2xl object-cover mx-auto border border-anime-border shadow-lg shadow-anime-primary/10"
                   />
-                  <h3 className="text-2xl font-bold text-white font-outfit">
+                  <h3 className="text-2xl font-bold text-white font-fraunces">
                     {finalGuess?.name || (candidates.length > 0 ? candidates[0].name : 'Unknown')}
                   </h3>
                 </div>
@@ -451,11 +451,11 @@ const Games: React.FC = () => {
               </>
             ) : (
               <div className="space-y-6 my-auto">
-                <span className="w-16 h-16 rounded-full bg-anime-primary/10 flex items-center justify-center mx-auto text-4xl font-black font-outfit border border-anime-primary text-anime-primary">
+                <span className="w-16 h-16 rounded-full bg-anime-primary/10 flex items-center justify-center mx-auto text-4xl font-black font-inter border border-anime-primary text-anime-primary">
                   {tiktok.synergyTier}
                 </span>
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-bold font-outfit text-white">Draft Synergy Result</h3>
+                  <h3 className="text-2xl font-bold font-fraunces text-white">Draft Synergy Result</h3>
                   <p className="text-xs text-anime-text max-w-sm mx-auto leading-relaxed">{tiktok.synergyFeedback}</p>
                   <p className="text-xs text-anime-primary font-bold">Synergy Score: {tiktok.synergyScore}/100</p>
                 </div>

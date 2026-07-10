@@ -149,7 +149,7 @@ const Content: React.FC = () => {
       <div className="glass-panel p-8 rounded-2xl border border-anime-border flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <span className="text-anime-primary text-xs font-semibold uppercase tracking-wider">Media Catalog</span>
-          <h1 className="text-3xl font-bold font-outfit text-white mt-1">Explore Content</h1>
+          <h1 className="text-3xl font-bold font-fraunces text-white mt-1">Explore Content</h1>
           <p className="text-sm text-anime-text mt-1">
             Browse through your favorite anime, manga, movies, and TV-series. Rate your matches, write feedback, and build your custom watchlist.
           </p>
@@ -337,7 +337,7 @@ const Content: React.FC = () => {
                 <img src={selectedItem.poster} alt={selectedItem.title} className="w-24 rounded-xl border border-anime-border object-cover aspect-[3/4]" />
                 <div>
                   <span className="text-xs text-anime-secondary font-semibold uppercase">{selectedItem.category}</span>
-                  <h2 className="text-xl md:text-2xl font-bold font-outfit text-white leading-tight mt-1">{selectedItem.title}</h2>
+                  <h2 className="text-xl md:text-2xl font-bold font-fraunces text-white leading-tight mt-1">{selectedItem.title}</h2>
                   <div className="flex items-center space-x-2 mt-2">
                     <Star className="w-4 h-4 fill-anime-yellow text-anime-yellow" />
                     <span className="text-sm font-bold text-white">{selectedItem.averageRating}</span>

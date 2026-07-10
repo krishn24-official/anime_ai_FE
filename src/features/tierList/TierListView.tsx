@@ -50,7 +50,7 @@ const TierListView: React.FC = () => {
             <div className="absolute top-0 right-0 w-32 h-32 bg-anime-primary/5 rounded-full blur-3xl pointer-events-none" />
             <div className="space-y-2">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h2 className="text-2xl font-bold font-outfit text-white neon-glow-primary">
+                <h2 className="text-2xl font-bold font-fraunces text-white neon-glow-primary">
                   {currentList.name}
                 </h2>
                 <span className={`flex items-center space-x-1 text-[9px] px-2 py-0.5 rounded uppercase font-bold tracking-wider ${
@@ -75,7 +75,7 @@ const TierListView: React.FC = () => {
               >
                 {/* Colored Tier Swatch */}
                 <div
-                  className="w-24 sm:w-28 flex items-center justify-center p-2 shrink-0 border-r border-black/20 text-anime-bg font-black text-base uppercase font-outfit text-center break-all"
+                  className="w-24 sm:w-28 flex items-center justify-center p-2 shrink-0 border-r border-black/20 text-anime-bg font-black text-base uppercase font-inter text-center break-all"
                   style={{ backgroundColor: tier.color }}
                 >
                   {tier.name}

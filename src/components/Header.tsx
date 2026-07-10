@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className={`h-20 fixed top-0 right-0 glass-panel border-b border-anime-border flex items-center justify-between px-4 sm:px-8 z-40 transition-all duration-300 w-full ${
-      isSidebarCollapsed ? 'lg:w-[calc(100%-5rem)]' : 'lg:w-[calc(100%-16rem)]'
+      isSidebarCollapsed ? 'lg:w-[calc(100%-72px)]' : 'lg:w-[calc(100%-260px)]'
     }`}>
       {/* Page Title / Search */}
       <div className="flex items-center space-x-3 sm:space-x-6 min-w-0">
@@ -113,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({
           <Menu className="w-5 h-5" />
         </button>
 
-        <h2 className="text-sm sm:text-base md:text-xl font-bold font-outfit text-white tracking-wide uppercase truncate max-w-[140px] sm:max-w-xs md:max-w-none">
+        <h2 className="text-sm sm:text-base md:text-xl font-bold font-fraunces text-white tracking-wide uppercase truncate max-w-[140px] sm:max-w-xs md:max-w-none">
           {title}
         </h2>
         
@@ -128,7 +128,7 @@ const Header: React.FC<HeaderProps> = ({
               }
             }}
             placeholder="Search news, content, characters..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-anime-primary/50 focus:ring-1 focus:ring-anime-primary/20 transition-all placeholder:text-anime-text/40"
+            className="w-full bg-black/20 border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:bg-black/40 focus:border-anime-primary/40 focus:ring-1 focus:ring-anime-primary/20 transition-all placeholder:text-anime-text/40 font-inter"
           />
           <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3" />
 

@@ -43,7 +43,7 @@ const Schedule: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
         <div className="flex items-center space-x-3">
           <CalendarIcon className="w-8 h-8 text-anime-pink animate-pulse" />
-          <h2 className="text-2xl md:text-3xl font-bold font-outfit text-white tracking-wide">
+          <h2 className="text-2xl md:text-3xl font-bold font-fraunces text-white tracking-wide">
             Upcoming Schedule
           </h2>
         </div>
@@ -143,7 +143,7 @@ const Schedule: React.FC = () => {
       ) : (
         <div className="glass-panel p-12 rounded-2xl border border-anime-border flex flex-col items-center justify-center text-center space-y-4">
           <CalendarIcon className="w-12 h-12 text-anime-text/40" />
-          <h3 className="text-lg font-bold text-white font-outfit">No Events Scheduled</h3>
+          <h3 className="text-lg font-bold text-white font-fraunces">No Events Scheduled</h3>
           <p className="text-sm text-anime-text max-w-sm">
             We couldn't find any upcoming birthdays or events for the selected date range.
           </p>

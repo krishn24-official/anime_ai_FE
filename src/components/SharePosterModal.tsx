@@ -679,7 +679,7 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
         <div className="w-full md:w-[380px] flex flex-col justify-between space-y-6">
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold font-outfit text-white">Poster Studio</h2>
+              <h2 className="text-xl font-bold font-fraunces text-white">Poster Studio</h2>
               <p className="text-xs text-anime-text/70 mt-1">Design and download custom anime announcements.</p>
             </div>
 

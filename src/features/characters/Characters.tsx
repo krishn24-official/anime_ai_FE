@@ -242,7 +242,7 @@ const Characters: React.FC = () => {
       <div className="glass-panel p-8 rounded-2xl border border-anime-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="text-anime-primary text-xs font-semibold uppercase tracking-wider">Database & Celebrations</span>
-          <h1 className="text-3xl font-bold font-outfit text-white mt-1">Character Center</h1>
+          <h1 className="text-3xl font-bold font-fraunces text-white mt-1">Character Center</h1>
           <p className="text-sm text-anime-text mt-1">
             Explore detailed information on anime characters, their origins, and today's birthday events.
           </p>
@@ -342,7 +342,7 @@ const Characters: React.FC = () => {
           {/* Today's Birthdays */}
           {birthdays.length > 0 && !searchTerm && (
             <div className="space-y-4">
-              <h2 className="text-xl font-bold font-outfit text-white flex items-center space-x-2">
+              <h2 className="text-xl font-bold font-fraunces text-white flex items-center space-x-2">
                 <Gift className="w-5 h-5 text-anime-pink animate-bounce" />
                 <span>Today's Birthdays ({birthdays.length})</span>
               </h2>
@@ -420,7 +420,7 @@ const Characters: React.FC = () => {
 
           {/* Main Characters Index */}
           <div className="space-y-4 pt-4">
-            <h2 className="text-xl font-bold font-outfit text-white flex items-center space-x-2">
+            <h2 className="text-xl font-bold font-fraunces text-white flex items-center space-x-2">
               <Sparkles className="w-5 h-5 text-anime-yellow" />
               <span>Character Index ({filteredCharacters.length})</span>
             </h2>
@@ -574,7 +574,7 @@ const Characters: React.FC = () => {
                   <span className="text-xs text-anime-secondary font-semibold uppercase">
                     {selectedChar.gender || 'Character'}
                   </span>
-                  <h2 className="text-xl md:text-2xl font-bold font-outfit text-white leading-tight mt-1">
+                  <h2 className="text-xl md:text-2xl font-bold font-fraunces text-white leading-tight mt-1">
                     {selectedChar.name}
                   </h2>
                   {selectedChar.nativeName && (

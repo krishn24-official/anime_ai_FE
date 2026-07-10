@@ -69,7 +69,7 @@ const TierListList: React.FC = () => {
             <div>
               {/* Header Info */}
               <div className="flex justify-between items-start">
-                <h3 className="font-bold font-outfit text-white text-base group-hover:text-anime-primary transition-all line-clamp-1">
+                <h3 className="font-bold font-fraunces text-white text-base group-hover:text-anime-primary transition-all line-clamp-1">
                   {list.name}
                 </h3>
                 {isOwn && (

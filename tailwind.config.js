@@ -8,16 +8,35 @@ export default {
     extend: {
       colors: {
         anime: {
-          bg: "#0B0C10",
-          card: "rgba(31, 40, 51, 0.45)",
-          border: "rgba(102, 252, 241, 0.15)",
-          hoverBorder: "rgba(102, 252, 241, 0.4)",
-          primary: "#66FCF1",
-          secondary: "#45A29E",
+          // Semantic Tokens
+          background: "var(--bg-primary)",
+          surface: "var(--bg-surface)",
+          elevated: "var(--bg-elevated)",
+          hover: "var(--bg-hover)",
+          divider: "var(--border-subtle)",
+          
+          "text-primary": "var(--text-primary)",
+          "text-secondary": "var(--text-secondary)",
+          "text-muted": "var(--text-muted)",
+
+          accent: "var(--accent-interactive)",
+          indigo: "var(--accent-indigo)",
+          gold: "var(--accent-gold)",
+          red: "var(--accent-red)",
+          error: "var(--accent-error)",
+          success: "var(--accent-success)",
+
+          // Legacy mappings for backward compatibility
+          bg: "var(--bg-primary)",
+          card: "var(--bg-surface)",
+          border: "var(--border-subtle)",
+          hoverBorder: "var(--border-subtle)",
+          primary: "var(--accent-interactive)",
+          secondary: "var(--accent-indigo)",
           purple: "#9b5de5",
           pink: "#f15bb5",
-          yellow: "#fee440",
-          text: "#C5C6C7",
+          yellow: "var(--accent-gold)",
+          text: "var(--text-primary)",
           light: "#F5F5F7"
         }
       },
@@ -25,8 +44,22 @@ export default {
         xs: '2px',
       },
       fontFamily: {
-        outfit: ['Outfit', 'sans-serif'],
+        fraunces: ['Fraunces', 'serif'],
         inter: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      borderRadius: {
+        card: "18px",
+        btn: "14px",
+        input: "14px",
+        dialog: "22px"
+      },
+      boxShadow: {
+        soft: "0 8px 32px rgba(0,0,0,0.25)",
+        "soft-hover": "0 12px 40px rgba(0,0,0,0.35)",
+      },
+      transitionDuration: {
+        220: "220ms"
       }
     },
   },

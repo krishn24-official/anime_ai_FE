@@ -19,21 +19,38 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { currentUser } = useSelector((state: RootState) => state.auth);
 
-  const menuItems = [
-    { name: 'Home', path: '/', icon: <Home className="w-5 h-5" /> },
-    { name: 'News', path: '/news', icon: <Newspaper className="w-5 h-5" /> },
-    { name: 'Schedule', path: '/schedule', icon: <Calendar className="w-5 h-5" /> },
-    { name: 'Content', path: '/content', icon: <Film className="w-5 h-5" /> },
-    { name: 'Characters', path: '/characters', icon: <User className="w-5 h-5" /> },
-    { name: 'Games', path: '/games', icon: <Gamepad2 className="w-5 h-5" /> },
-    { name: 'AI Chatbot', path: '/chatbot', icon: <Bot className="w-5 h-5" /> },
+  const menuGroups = [
+    {
+      label: 'DISCOVER',
+      items: [
+        { name: 'Home', path: '/', icon: <Home className="w-5 h-5 shrink-0" /> },
+        { name: 'News', path: '/news', icon: <Newspaper className="w-5 h-5 shrink-0" /> },
+        { name: 'Calendar', path: '/schedule', icon: <Calendar className="w-5 h-5 shrink-0" /> },
+        { name: 'Characters', path: '/characters', icon: <User className="w-5 h-5 shrink-0" /> },
+        { name: 'Library', path: '/content', icon: <Film className="w-5 h-5 shrink-0" /> },
+      ]
+    },
+    {
+      label: 'ENTERTAINMENT',
+      items: [
+        { name: 'Arcade', path: '/games', icon: <Gamepad2 className="w-5 h-5 shrink-0" /> },
+        { name: 'AI Companion', path: '/chatbot', icon: <Bot className="w-5 h-5 shrink-0" /> },
+      ]
+    },
+    {
+      label: 'CREATE',
+      items: [
+        { name: 'Studio', isAction: true, icon: <Sparkles className="w-5 h-5 shrink-0" /> },
+      ]
+    }
   ];
 
-  if (currentUser?.is_admin) {
-    menuItems.push({
-      name: 'Admin News',
-      path: '/admin/news',
-      icon: <Sparkles className="w-5 h-5 text-anime-primary animate-pulse" />
+  if (currentUser?.role === 'admin' || currentUser?.is_admin) {
+    menuGroups.push({
+      label: 'ADMIN',
+      items: [
+        { name: 'Admin News', path: '/admin/news', icon: <Newspaper className="w-5 h-5 shrink-0" /> }
+      ]
     });
   }
 
@@ -47,27 +64,30 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      <aside className={`h-screen fixed left-0 top-0 glass-panel border-r border-anime-border flex flex-col justify-between p-6 z-50 transition-transform duration-300 ${
+      <aside className={`h-screen fixed left-0 top-0 bg-anime-bg/95 backdrop-blur-xl flex flex-col p-6 z-50 transition-all duration-300 ${
         isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'
       } ${
-        isCollapsed ? 'lg:w-20 lg:items-center lg:px-3' : 'lg:w-64'
+        isCollapsed ? 'lg:w-[72px] lg:px-3' : 'lg:w-[260px]'
       }`}>
-        <div className="w-full">
+        <div className="w-full flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {/* Top Header Row (Logo + Toggle) */}
-          <div className={`flex items-center justify-between mb-8 w-full ${isCollapsed ? 'lg:flex-col lg:space-y-4' : ''}`}>
+          <div className={`flex items-start justify-between mb-8 w-full ${isCollapsed ? 'lg:flex-col lg:items-center lg:space-y-4' : ''}`}>
+            
             {/* Logo Section */}
             <div className={`flex items-center transition-all duration-300 ${
-              isCollapsed ? 'lg:justify-center lg:w-full' : 'space-x-3 px-2'
+              isCollapsed ? 'lg:justify-center lg:w-full' : 'space-x-4 px-1'
             }`}>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-anime-purple via-anime-pink to-anime-primary flex items-center justify-center shadow-lg shadow-anime-primary/20 shrink-0">
-                <Sparkles className="w-6 h-6 text-white animate-pulse" />
+              <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               {(!isCollapsed || isMobileOpen) && (
-                <div className="transition-all duration-300 animate-fade-in">
-                  <h1 className="text-xl font-bold font-outfit tracking-wider bg-gradient-to-r from-white via-anime-primary to-anime-secondary bg-clip-text text-transparent">
-                    ANIME AI
+                <div className="transition-all duration-300 animate-fade-in flex flex-col justify-center">
+                  <h1 className="text-xl font-fraunces font-bold text-white tracking-wide leading-tight">
+                    AniVerse
                   </h1>
-                  <span className="text-[10px] text-anime-secondary tracking-widest block uppercase font-medium">Entertainment Hub</span>
+                  <span className="text-[9px] text-anime-text/50 font-inter mt-1.5 leading-tight">
+                    Everything Entertainment.<br/>One Place.
+                  </span>
                 </div>
               )}
             </div>
@@ -77,9 +97,9 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onToggle}
                 aria-label="Collapse sidebar"
-                className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shrink-0 cursor-pointer hidden lg:block"
+                className="p-1.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 text-white transition-all duration-200 shrink-0 cursor-pointer hidden lg:block"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-4 h-4" />
               </button>
             )}
 
@@ -87,9 +107,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={onMobileClose}
               aria-label="Close mobile sidebar"
-              className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shrink-0 cursor-pointer lg:hidden"
+              className="p-1.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 text-white transition-all duration-200 shrink-0 cursor-pointer lg:hidden"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4" />
             </button>
           </div>
 
@@ -99,77 +119,102 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onToggle}
                 aria-label="Expand sidebar"
-                className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all duration-300 shadow-lg shadow-black/40 z-50 cursor-pointer"
+                className="p-1.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 text-white transition-all duration-200 cursor-pointer"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-4 h-4" />
               </button>
             </div>
           )}
 
-        {/* Navigation Menu */}
-        <nav className="space-y-2 w-full">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center rounded-xl transition-all duration-300 font-medium group relative ${
-                  isCollapsed ? 'justify-center px-0 py-3.5' : 'space-x-4 px-4 py-3'
-                } ${
-                  isActive
-                    ? 'bg-anime-primary/10 text-anime-primary border-l-4 border-anime-primary shadow-[inset_4px_0_12px_rgba(102,252,241,0.05)]'
-                    : 'text-anime-text hover:text-white hover:bg-white/5'
-                }`
-              }
-            >
-              {item.icon}
-              {!isCollapsed ? (
-                <span className="font-outfit transition-all duration-300">{item.name}</span>
-              ) : (
-                <span className="absolute left-full ml-4 px-3 py-2 bg-anime-bg/95 border border-anime-border text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50 shadow-xl">
-                  {item.name}
-                </span>
-              )}
-            </NavLink>
-          ))}
+          {/* Navigation Menu */}
+          <nav className="w-full pb-4">
+            {menuGroups.map((group, groupIdx) => (
+              <div key={group.label} className={groupIdx > 0 ? "mt-5 pt-1" : ""}>
+                {groupIdx > 0 && (!isCollapsed || isMobileOpen) && (
+                  <hr className="border-white/5 mb-4" />
+                )}
+                {(!isCollapsed || isMobileOpen) && (
+                  <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-anime-text/40 mb-3 px-3">
+                    {group.label}
+                  </h3>
+                )}
+                <ul className="space-y-2 w-full">
+                  {group.items.map(item => {
+                    
+                    const renderItemContent = (isActive: boolean) => (
+                      <>
+                        {/* Active Indicator Pill */}
+                        {isActive && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[18px] bg-anime-primary rounded-r-full" />
+                        )}
+                        
+                        <div className={`w-5 h-5 flex items-center justify-center shrink-0 ${isActive ? 'text-white' : ''}`}>
+                          {item.icon}
+                        </div>
+                        
+                        {!isCollapsed || isMobileOpen ? (
+                          <span className="font-inter transition-all duration-300 truncate">
+                            {item.name}
+                          </span>
+                        ) : (
+                          <span className="absolute left-full ml-4 px-3 py-1.5 bg-anime-bg/95 border border-anime-border text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 delay-120 ease-out whitespace-nowrap pointer-events-none z-50 shadow-xl translate-x-[4px] group-hover:translate-x-0">
+                            {item.name}
+                          </span>
+                        )}
+                      </>
+                    );
 
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('open-share-poster', {
-                detail: {
-                  type: 'birthday',
-                  data: {
-                    name: 'Naruto Uzumaki',
-                    image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500',
-                    subtitle: 'Celebrate today!'
-                  }
-                }
-              }));
-            }}
-            aria-label="Open Poster Studio"
-            className={`flex items-center rounded-xl transition-all duration-300 font-medium group relative w-full text-left cursor-pointer text-anime-text hover:text-white hover:bg-white/5 ${
-              isCollapsed ? 'justify-center px-0 py-3.5' : 'space-x-4 px-4 py-3'
-            }`}
-          >
-            <Sparkles className="w-5 h-5 text-anime-primary animate-pulse" />
-            {!isCollapsed ? (
-              <span className="font-outfit transition-all duration-300">Poster Studio</span>
-            ) : (
-              <span className="absolute left-full ml-4 px-3 py-2 bg-anime-bg/95 border border-anime-border text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50 shadow-xl">
-                Poster Studio
-              </span>
-            )}
-          </button>
-        </nav>
-      </div>
+                    const baseClasses = `flex items-center rounded-[14px] transition-all duration-220 ease-out group relative w-full text-left cursor-pointer ${
+                      isCollapsed && !isMobileOpen ? 'justify-center px-0 py-2 h-[44px]' : 'space-x-4 px-3 py-2 h-[44px]'
+                    }`;
 
-      {/* Footer Info */}
-      <div className={`px-2 w-full transition-all duration-300 ${isCollapsed ? 'hidden' : 'block'}`}>
-        <div className="p-3 bg-white/5 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
-          <p className="text-xs font-semibold text-white">Version 1.0.0</p>
-          <p className="text-[10px] text-anime-secondary">Powered by React & Redux</p>
+                    if (item.isAction) {
+                      return (
+                        <li key={item.name}>
+                          <button
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('open-share-poster', {
+                                detail: {
+                                  type: 'birthday',
+                                  data: {
+                                    name: 'Naruto Uzumaki',
+                                    image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500',
+                                    subtitle: 'Celebrate today!'
+                                  }
+                                }
+                              }));
+                            }}
+                            aria-label={`Open ${item.name}`}
+                            className={`${baseClasses} font-medium text-anime-text/60 hover:text-white hover:bg-white/5 hover:translate-x-[2px]`}
+                          >
+                            {renderItemContent(false)}
+                          </button>
+                        </li>
+                      );
+                    }
+
+                    return (
+                      <li key={item.name}>
+                        <NavLink
+                          to={item.path!}
+                          className={({ isActive }) =>
+                            `${baseClasses} ${
+                              isActive
+                                ? 'bg-white/10 text-white font-semibold'
+                                : 'font-medium text-anime-text/60 hover:text-white hover:bg-white/5 hover:translate-x-[2px]'
+                            }`
+                          }
+                        >
+                          {({ isActive }) => renderItemContent(isActive)}
+                        </NavLink>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
-      </div>
       </aside>
     </>
   );

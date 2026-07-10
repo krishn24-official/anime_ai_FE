@@ -466,7 +466,7 @@ const TierListEditor: React.FC = () => {
                       type="text"
                       value={tier.name}
                       onChange={(e) => handleUpdateTierName(tierIdx, e.target.value)}
-                      className="w-full text-center bg-transparent border-b border-transparent hover:border-black/20 focus:border-black/40 text-anime-bg font-black text-sm uppercase outline-none font-outfit"
+                      className="w-full text-center bg-transparent border-b border-transparent hover:border-black/20 focus:border-black/40 text-anime-bg font-black text-sm uppercase outline-none font-inter"
                       maxLength={10}
                     />
                     <div className="flex justify-between items-center mt-auto">

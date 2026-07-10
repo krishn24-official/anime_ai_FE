@@ -177,13 +177,13 @@ const AuthPage: React.FC = () => {
               <Sparkles className="w-5 h-5 text-white animate-pulse" />
             </div>
             <div>
-              <h2 className="text-md font-bold font-outfit tracking-wider text-white">ANIME AI</h2>
+              <h2 className="text-md font-bold font-fraunces tracking-wider text-white">ANIME AI</h2>
               <span className="text-[9px] text-anime-secondary tracking-widest block uppercase font-medium">Entertainment Hub</span>
             </div>
           </div>
 
           <div className="my-auto space-y-6">
-            <h3 className="text-3xl font-extrabold font-outfit text-white leading-tight">
+            <h3 className="text-3xl font-extrabold font-fraunces text-white leading-tight">
               Unlock Your Ultimate <span className="bg-gradient-to-r from-anime-primary via-anime-pink to-anime-purple bg-clip-text text-transparent">Otaku Experience</span>
             </h3>
             <p className="text-sm text-anime-text/80 leading-relaxed">
@@ -202,7 +202,7 @@ const AuthPage: React.FC = () => {
           
           {/* Header Title depending on current view */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold font-outfit text-white tracking-wide flex items-center gap-2">
+            <h2 className="text-2xl font-bold font-fraunces text-white tracking-wide flex items-center gap-2">
               {view === 'login' && 'Welcome Back, Otaku!'}
               {view === 'register' && 'Create Your Account'}
               {view === 'forgot' && 'Reset Password Request'}
@@ -284,7 +284,7 @@ const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-outfit rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
+                className="w-full py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Register Now</span>}
               </button>
@@ -355,7 +355,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setView('register')}
-                  className="w-full sm:w-1/3 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold font-outfit rounded-2xl active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full sm:w-1/3 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold font-inter rounded-2xl active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -364,7 +364,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-outfit rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Login to Hub</span>}
                 </button>
@@ -394,7 +394,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setView('login')}
-                  className="w-full sm:w-1/3 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold font-outfit rounded-2xl active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full sm:w-1/3 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold font-inter rounded-2xl active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -403,7 +403,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-outfit rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Send OTP</span>}
                 </button>
@@ -434,7 +434,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setView('forgot')}
-                  className="w-full sm:w-1/3 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold font-outfit rounded-2xl active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full sm:w-1/3 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold font-inter rounded-2xl active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -443,7 +443,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-outfit rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Verify OTP</span>}
                 </button>
@@ -494,7 +494,7 @@ const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-outfit rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
+                className="w-full py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Reset Password</span>}
               </button>

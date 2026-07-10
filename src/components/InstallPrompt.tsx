@@ -49,7 +49,7 @@ export const InstallPrompt: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-[9999] bg-anime-bg/95 backdrop-blur-md border border-anime-border/45 p-5 rounded-2xl shadow-2xl flex flex-col space-y-3 animate-fade-in font-outfit">
+    <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-[9999] bg-anime-bg/95 backdrop-blur-md border border-anime-border/45 p-5 rounded-2xl shadow-2xl flex flex-col space-y-3 animate-fade-in font-inter">
       <div className="flex justify-between items-start">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-anime-secondary to-anime-purple flex items-center justify-center text-white font-bold shrink-0">
