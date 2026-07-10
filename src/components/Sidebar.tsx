@@ -11,6 +11,18 @@ interface SidebarProps {
   onMobileClose?: () => void;
 }
 
+type MenuItem = {
+  name: string;
+  icon: React.ReactNode;
+  path?: string;
+  isAction?: boolean;
+};
+
+type MenuGroup = {
+  label: string;
+  items: MenuItem[];
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ 
   isCollapsed, 
   onToggle, 
@@ -19,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { currentUser } = useSelector((state: RootState) => state.auth);
 
-  const menuGroups = [
+  const menuGroups: MenuGroup[] = [
     {
       label: 'DISCOVER',
       items: [
@@ -45,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  if (currentUser?.role === 'admin' || currentUser?.is_admin) {
+  if ((currentUser as any)?.role === 'admin' || currentUser?.is_admin) {
     menuGroups.push({
       label: 'ADMIN',
       items: [
