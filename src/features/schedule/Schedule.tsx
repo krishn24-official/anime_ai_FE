@@ -34,7 +34,7 @@ const Schedule: React.FC = () => {
   }, [dateMode, singleDate, startDate, endDate]);
 
   const formatDisplayDate = (dateString: string) => {
-    const d = new Date(dateString);
+    const d = new Date(dateString + 'T00:00:00');
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
 

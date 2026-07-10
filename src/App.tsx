@@ -37,7 +37,15 @@ const App: React.FC = () => {
   const [notifications, setNotifications] = useState<ToastNotification[]>(() => {
     try {
       const saved = localStorage.getItem('stored_notifications');
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed: ToastNotification[] = JSON.parse(saved);
+      // Deduplicate by title (keep the first occurrence)
+      const seen = new Set<string>();
+      return parsed.filter(n => {
+        if (seen.has(n.title)) return false;
+        seen.add(n.title);
+        return true;
+      });
     } catch (e) {
       return [];
     }
@@ -131,7 +139,7 @@ const App: React.FC = () => {
             // Inject the new article directly into Redux (live page update)
             dispatch(addNewArticle(item));
 
-            // Create notification toast & store persistent notification
+            // Create notification toast & store persistent notification (deduplicate by title)
             const toastId = String(Date.now()) + Math.random();
             const notificationItem = {
               id: toastId,
@@ -141,7 +149,11 @@ const App: React.FC = () => {
               url: item.url
             };
             setToasts(prev => [...prev, notificationItem]);
-            setNotifications(prev => [...prev, notificationItem]);
+            setNotifications(prev => {
+              const isDuplicate = prev.some(n => n.title === item.title);
+              if (isDuplicate) return prev;
+              return [...prev, notificationItem];
+            });
 
             // Dismiss toast popup after 6 seconds (remains in notifications)
             setTimeout(() => {

@@ -75,10 +75,13 @@ export const eventService = {
       const datesToProcess = [];
       const current = new Date(startDt);
       while (current <= endDt) {
+        const y = current.getFullYear();
+        const m = current.getMonth() + 1;
+        const d = current.getDate();
         datesToProcess.push({
-          dateStr: current.toISOString().split('T')[0],
-          m: current.getMonth() + 1,
-          d: current.getDate()
+          dateStr: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+          m,
+          d
         });
         current.setDate(current.getDate() + 1);
       }
