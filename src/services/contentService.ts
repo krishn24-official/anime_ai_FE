@@ -139,11 +139,11 @@ export const contentService = {
    * Fetches and normalizes movies list
    */
   async fetchMovies(): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>('/movies');
+    const data = await apiClient.get<any>('/movies?limit=1000');
     return getItems(data).map((item) => {
       const id = item.id || item._id;
       const year = item.release_date ? parseInt(item.release_date.split('-')[0]) : (item.year ? parseInt(item.year) : 2024);
-      const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5);
+      const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.tmdb ? parseFloat(item.rating.tmdb) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5));
 
       return {
         id,
@@ -162,11 +162,11 @@ export const contentService = {
    * Fetches and normalizes tv series list
    */
   async fetchTVSeries(): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>('/tv-series');
+    const data = await apiClient.get<any>('/tv-series?limit=1000');
     return getItems(data).map((item) => {
       const id = item.id || item._id;
       const year = item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : (item.year ? parseInt(item.year.split('–')[0]) : 2024);
-      const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5);
+      const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.tmdb ? parseFloat(item.rating.tmdb) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5));
 
       return {
         id,
