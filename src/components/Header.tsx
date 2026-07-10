@@ -99,8 +99,8 @@ const Header: React.FC<HeaderProps> = ({
   );
 
   return (
-    <header className={`h-20 fixed top-0 right-0 glass-panel border-b border-anime-border flex items-center justify-between px-4 sm:px-8 z-40 transition-all duration-300 w-full lg:w-[calc(100%-16rem)] ${
-      isSidebarCollapsed ? 'lg:w-[calc(100%-5rem)]' : ''
+    <header className={`h-20 fixed top-0 right-0 glass-panel border-b border-anime-border flex items-center justify-between px-4 sm:px-8 z-40 transition-all duration-300 w-full ${
+      isSidebarCollapsed ? 'lg:w-[calc(100%-5rem)]' : 'lg:w-[calc(100%-16rem)]'
     }`}>
       {/* Page Title / Search */}
       <div className="flex items-center space-x-3 sm:space-x-6 min-w-0">

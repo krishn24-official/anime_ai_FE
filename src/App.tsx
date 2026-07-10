@@ -227,7 +227,7 @@ const App: React.FC = () => {
       />
 
       {/* Main Layout Area */}
-      <div className={`transition-all duration-300 pl-0 lg:pl-64 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+      <div className={`transition-all duration-300 pl-0 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Header fixed */}
         <Header 
           title={getHeaderTitle(location.pathname)} 
