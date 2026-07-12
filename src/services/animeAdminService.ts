@@ -10,6 +10,7 @@ export interface AdminAnimeItem {
   year?: number;
   is_deleted?: boolean;
   needs_release_review?: boolean;
+  end_date?: any;
 }
 
 export const animeAdminService = {

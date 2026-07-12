@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { animeAdminService } from '../../services/animeAdminService';

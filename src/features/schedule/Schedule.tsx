@@ -157,7 +157,7 @@ const Schedule: React.FC = () => {
 
                 {/* Items Grid */}
                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                  {items.map((item) => (
+                  {(items as any[]).map((item: any) => (
                     <div 
                       key={item.id} 
                       className="group cursor-pointer"

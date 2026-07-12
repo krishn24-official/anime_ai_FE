@@ -84,7 +84,7 @@ export interface BackendTVSeries {
 }
 
 export interface UpcomingDatedItem {
-  content_type: 'movie' | 'tv_series';
+  content_type: 'movie' | 'tv_series' | 'anime';
   content_id: string;
   title: string;
   poster_image?: string;
@@ -92,7 +92,7 @@ export interface UpcomingDatedItem {
 }
 
 export interface UpcomingSeasonalItem {
-  content_type: 'anime';
+  content_type: 'movie' | 'tv_series' | 'anime';
   content_id: string;
   title: string;
   poster_image?: string;
@@ -103,7 +103,7 @@ export interface UpcomingSeasonalItem {
 
 export interface UpcomingReleasesResponse {
   dated: UpcomingDatedItem[];
-  seasonal: UpcomingSeasonalItem[];
+  estimated: UpcomingSeasonalItem[];
 }
 
 const parseGenres = (genres: any): string[] => {

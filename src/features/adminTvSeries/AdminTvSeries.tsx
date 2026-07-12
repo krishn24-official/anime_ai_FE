@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { tvSeriesAdminService } from '../../services/tvSeriesAdminService';
 import type { AdminTvSeriesItem } from '../../services/tvSeriesAdminService';

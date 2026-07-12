@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Loader2, RefreshCw } from 'lucide-react';
 import { movieAdminService } from '../../services/movieAdminService';
-import type { any } from '../../services/movieAdminService';
 import { MovieForm } from './MovieForm';
 
 export const AdminMovies: React.FC = () => {
