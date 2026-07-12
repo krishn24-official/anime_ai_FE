@@ -83,6 +83,29 @@ export interface BackendTVSeries {
   genres?: string;
 }
 
+export interface UpcomingDatedItem {
+  content_type: 'movie' | 'tv_series';
+  content_id: string;
+  title: string;
+  poster_image?: string;
+  release_date: string;
+}
+
+export interface UpcomingSeasonalItem {
+  content_type: 'anime';
+  content_id: string;
+  title: string;
+  poster_image?: string;
+  season?: string;
+  year?: number;
+  season_label: string;
+}
+
+export interface UpcomingReleasesResponse {
+  dated: UpcomingDatedItem[];
+  seasonal: UpcomingSeasonalItem[];
+}
+
 const parseGenres = (genres: any): string[] => {
   if (Array.isArray(genres)) return genres;
   if (typeof genres === 'string') {
@@ -294,5 +317,12 @@ export const contentService = {
       text: newCom.text,
       timestamp: new Date(newCom.created_at).toISOString().replace('T', ' ').substring(0, 16),
     };
+  },
+
+  /**
+   * Fetch upcoming releases
+   */
+  async fetchUpcomingReleases(datedLimit = 10, seasonalLimit = 10): Promise<UpcomingReleasesResponse> {
+    return apiClient.get<UpcomingReleasesResponse>(`/content/upcoming?dated_limit=${datedLimit}&seasonal_limit=${seasonalLimit}`);
   }
 };

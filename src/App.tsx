@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate, Navigate, Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from './store';
 import Sidebar from './components/Sidebar';
@@ -12,6 +12,16 @@ const AdminNews = React.lazy(() => import('./features/news/AdminNews'));
 const Content = React.lazy(() => import('./features/content/Content'));
 const Games = React.lazy(() => import('./features/games/Games'));
 const Chatbot = React.lazy(() => import('./features/chatbot/Chatbot'));
+
+// Admin Imports
+import AdminTrending from './features/trending/AdminTrending';
+import { AdminAnime } from './features/adminAnime/AdminAnime';
+import { AdminMovies } from './features/adminMovies/AdminMovies';
+import { AdminTvSeries } from './features/adminTvSeries/AdminTvSeries';
+
+const AdminLayout = () => {
+  return <div className="w-full"><Outlet /></div>;
+};
 const SharePosterModal = React.lazy(() => import('./components/SharePosterModal'));
 import InstallPrompt from './components/InstallPrompt';
 import AuthPage from './features/auth/AuthPage';
@@ -250,11 +260,22 @@ const App: React.FC = () => {
               <Route path="/" element={<Home />} />
               <Route path="/news" element={<News />} />
               <Route path="/schedule" element={<Schedule />} />
-              <Route path="/admin/news" element={<AdminNews />} />
               <Route path="/content" element={<Content />} />
               <Route path="/characters" element={<Characters />} />
               <Route path="/games/*" element={<Games />} />
               <Route path="/chatbot" element={<Chatbot />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Navigate to="/admin/trending" replace />} />
+                <Route path="news" element={<AdminNews />} />
+                <Route path="trending" element={<AdminTrending />} />
+                <Route path="anime" element={<AdminAnime />} />
+                <Route path="movies" element={<AdminMovies />} />
+                <Route path="tv-series" element={<AdminTvSeries />} />
+                <Route path="manga" element={<div className="p-6 text-white">Manga Admin (Coming Soon)</div>} />
+                <Route path="characters" element={<div className="p-6 text-white">Characters Admin (Coming Soon)</div>} />
+              </Route>
             </Routes>
           </React.Suspense>
         </main>

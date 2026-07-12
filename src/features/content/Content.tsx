@@ -34,14 +34,17 @@ const Content: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (location.state && (location.state as any).searchQuery) {
-      const q = (location.state as any).searchQuery;
-      setSearchQuery(q);
-      setAutoOpenTitle(q);
-      // Reset the active tab to 'All' or match the category if needed so the item can actually be found
-      setActiveTab('All');
-      // Clear navigation state to prevent persistence on manual page refreshes
-      window.history.replaceState({}, document.title);
+    if (location.state) {
+      const state = location.state as any;
+      if (state.contentId) {
+        setSelectedItemId(state.contentId);
+        window.history.replaceState({}, document.title);
+      } else if (state.searchQuery) {
+        setSearchQuery(state.searchQuery);
+        setAutoOpenTitle(state.searchQuery);
+        setActiveTab('All');
+        window.history.replaceState({}, document.title);
+      }
     }
   }, [location]);
 

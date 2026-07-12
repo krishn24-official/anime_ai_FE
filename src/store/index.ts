@@ -7,6 +7,8 @@ import chatReducer from './slices/chatSlice';
 import characterReducer from './slices/characterSlice';
 import authReducer from './slices/authSlice';
 import tierListReducer from './slices/tierListSlice';
+import trendingReducer from './slices/trendingSlice';
+import upcomingReducer from './slices/upcomingSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +20,8 @@ export const store = configureStore({
     characters: characterReducer,
     auth: authReducer,
     tierList: tierListReducer,
+    trending: trendingReducer,
+    upcoming: upcomingReducer,
   },
 });
 

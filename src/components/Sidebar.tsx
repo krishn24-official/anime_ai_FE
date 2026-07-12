@@ -61,7 +61,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     menuGroups.push({
       label: 'ADMIN',
       items: [
-        { name: 'Admin News', path: '/admin/news', icon: <Newspaper className="w-5 h-5 shrink-0" /> }
+        { name: 'Admin News', path: '/admin/news', icon: <Newspaper className="w-5 h-5 shrink-0" /> },
+        { name: 'Admin Trending', path: '/admin/trending', icon: <Sparkles className="w-5 h-5 shrink-0" /> },
+        { name: 'Manage Anime', path: '/admin/anime', icon: <Film className="w-5 h-5 shrink-0" /> },
+        { name: 'Manage Movies', path: '/admin/movies', icon: <Film className="w-5 h-5 shrink-0" /> },
+        { name: 'Manage TV Series', path: '/admin/tv-series', icon: <Film className="w-5 h-5 shrink-0" /> }
       ]
     });
   }

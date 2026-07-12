@@ -284,7 +284,7 @@ const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
+                className="w-full py-4 bg-white/10 border border-white/20 text-white font-bold font-inter rounded-2xl hover:bg-white/20 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Register Now</span>}
               </button>
@@ -364,7 +364,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                  className="w-full sm:w-2/3 py-4 bg-white/10 border border-white/20 text-white font-bold font-inter rounded-2xl hover:bg-white/20 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Login to Hub</span>}
                 </button>
@@ -403,7 +403,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                  className="w-full sm:w-2/3 py-4 bg-white/10 border border-white/20 text-white font-bold font-inter rounded-2xl hover:bg-white/20 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Send OTP</span>}
                 </button>
@@ -443,7 +443,7 @@ const AuthPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-2/3 py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                  className="w-full sm:w-2/3 py-4 bg-white/10 border border-white/20 text-white font-bold font-inter rounded-2xl hover:bg-white/20 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Verify OTP</span>}
                 </button>
@@ -494,7 +494,7 @@ const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-anime-primary to-anime-secondary text-black font-bold font-inter rounded-2xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
+                className="w-full py-4 bg-white/10 border border-white/20 text-white font-bold font-inter rounded-2xl hover:bg-white/20 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer mt-4"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Reset Password</span>}
               </button>

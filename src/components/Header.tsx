@@ -99,25 +99,28 @@ const Header: React.FC<HeaderProps> = ({
   );
 
   return (
-    <header className={`h-20 fixed top-0 right-0 glass-panel border-b border-anime-border flex items-center justify-between px-4 sm:px-8 z-40 transition-all duration-300 w-full ${
+    <header className={`h-[72px] fixed top-0 right-0 bg-anime-bg/95 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 sm:px-10 z-40 transition-all duration-300 w-full ${
       isSidebarCollapsed ? 'lg:w-[calc(100%-72px)]' : 'lg:w-[calc(100%-260px)]'
     }`}>
-      {/* Page Title / Search */}
-      <div className="flex items-center space-x-3 sm:space-x-6 min-w-0">
+      {/* LEFT: Page Title */}
+      <div className="flex items-center space-x-3 w-auto lg:w-1/4 min-w-0 shrink-0">
         {/* Mobile Hamburger menu */}
         <button
           onClick={onToggleMobileSidebar}
           aria-label="Open navigation sidebar"
-          className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white lg:hidden cursor-pointer shrink-0"
+          className="p-2 rounded-[14px] bg-white/5 hover:bg-white/10 text-white lg:hidden cursor-pointer shrink-0 transition-all"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-[18px] h-[18px]" strokeWidth={2} />
         </button>
 
-        <h2 className="text-sm sm:text-base md:text-xl font-bold font-fraunces text-white tracking-wide uppercase truncate max-w-[140px] sm:max-w-xs md:max-w-none">
+        <h1 className="text-lg md:text-xl lg:text-2xl font-bold font-fraunces text-white tracking-tight truncate">
           {title}
-        </h2>
-        
-        <div ref={searchContainerRef} className="relative w-64 hidden md:block shrink-0">
+        </h1>
+      </div>
+      
+      {/* CENTER: Global Search */}
+      <div ref={searchContainerRef} className="flex-1 flex justify-center max-w-[560px] px-4 hidden md:flex relative z-50">
+        <div className="relative w-full">
           <input
             type="text"
             value={searchQuery}
@@ -127,13 +130,13 @@ const Header: React.FC<HeaderProps> = ({
                 setIsSearchOpen(true);
               }
             }}
-            placeholder="Search news, content, characters..."
-            className="w-full bg-black/20 border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:bg-black/40 focus:border-anime-primary/40 focus:ring-1 focus:ring-anime-primary/20 transition-all placeholder:text-anime-text/40 font-inter"
+            placeholder="Search AniVerse..."
+            className="w-full bg-white/[0.04] border border-white/10 hover:bg-white/[0.12] focus:bg-white/[0.12] rounded-[14px] py-2.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-white/20 transition-all placeholder:text-anime-text/40 font-inter"
           />
-          <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3" />
+          <Search className="w-[18px] h-[18px] text-anime-text/50 absolute left-4 top-3" strokeWidth={2} />
 
           {isSearchOpen && (
-            <div className="absolute left-0 mt-3 w-[400px] bg-anime-bg/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[350px] overflow-y-auto">
+            <div className="absolute left-0 mt-3 w-full bg-anime-bg/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[400px] overflow-y-auto">
               {isSearchLoading ? (
                 <div className="p-6 text-center text-xs text-anime-text/60 flex items-center justify-center space-x-2">
                   <span className="animate-spin inline-block w-4 h-4 border-2 border-anime-primary border-t-transparent rounded-full" />
@@ -184,6 +187,7 @@ const Header: React.FC<HeaderProps> = ({
                           <div
                             key={item._id}
                             onClick={() => {
+                              searchService.logSearchClick('anime', item._id, searchQuery);
                               const title = item.title?.english || item.title?.romaji || 'Untitled';
                               navigate('/content', { state: { searchQuery: title } });
                               setSearchQuery('');
@@ -215,6 +219,7 @@ const Header: React.FC<HeaderProps> = ({
                           <div
                             key={item._id}
                             onClick={() => {
+                              searchService.logSearchClick('manga', item._id, searchQuery);
                               navigate('/content', { state: { searchQuery: item.name } });
                               setSearchQuery('');
                               setIsSearchOpen(false);
@@ -245,6 +250,7 @@ const Header: React.FC<HeaderProps> = ({
                           <div
                             key={item._id}
                             onClick={() => {
+                              searchService.logSearchClick('movie', item._id, searchQuery);
                               navigate('/content', { state: { searchQuery: item.title } });
                               setSearchQuery('');
                               setIsSearchOpen(false);
@@ -275,6 +281,7 @@ const Header: React.FC<HeaderProps> = ({
                           <div
                             key={item._id}
                             onClick={() => {
+                              searchService.logSearchClick('tv_series', item._id, searchQuery);
                               navigate('/content', { state: { searchQuery: item.title } });
                               setSearchQuery('');
                               setIsSearchOpen(false);
@@ -302,8 +309,8 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right Controls */}
-      <div className="flex items-center space-x-4">
+      {/* RIGHT: Notifications & Profile */}
+      <div className="flex items-center justify-end space-x-3 w-auto lg:w-1/4">
         {/* Notifications */}
         <div ref={notificationsRef} className="relative">
           <button 
@@ -311,16 +318,16 @@ const Header: React.FC<HeaderProps> = ({
               setIsDropdownOpen(!isDropdownOpen);
               localStorage.setItem('last_news_checked_time', String(Date.now() / 1000));
             }}
-            className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 text-anime-text hover:text-white transition-all relative cursor-pointer"
+            className="w-10 h-10 rounded-[14px] bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center relative cursor-pointer border border-transparent"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-[18px] h-[18px] text-anime-text" strokeWidth={2} />
             {notifications.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-anime-pink animate-pulse" />
+              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-anime-text/40" />
             )}
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-3 w-80 bg-anime-bg/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+            <div className="absolute right-0 mt-3 w-80 bg-anime-bg/95 backdrop-blur-md border border-white/20 ring-1 ring-white/5 rounded-2xl shadow-2xl overflow-hidden z-50">
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <span className="text-xs font-bold text-white uppercase tracking-wider">Notifications</span>
                 {notifications.length > 0 && (
@@ -376,19 +383,17 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Profile */}
-        <div ref={profileRef} className="relative flex items-center pl-2 border-l border-white/10">
+        <div ref={profileRef} className="relative">
           <button 
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-anime-primary to-anime-purple flex items-center justify-center p-0.5 cursor-pointer hover:scale-105 transition-all outline-none"
+            className="w-10 h-10 rounded-[14px] bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer border border-transparent outline-none"
             aria-label="Profile menu"
           >
-            <div className="w-full h-full bg-anime-bg rounded-[10px] flex items-center justify-center">
-              <User className="w-5 h-5 text-anime-primary" />
-            </div>
+            <User className="w-[18px] h-[18px] text-anime-text" strokeWidth={2} />
           </button>
           
           {isProfileOpen && (
-            <div className="absolute right-0 top-full mt-3 w-56 bg-anime-bg/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 top-full mt-3 w-56 bg-anime-bg/95 backdrop-blur-md border border-white/20 ring-1 ring-white/5 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="p-4 border-b border-white/5">
                 <p className="text-sm font-semibold text-white truncate">
                   {currentUser?.display_name || currentUser?.username || 'Guest User'}

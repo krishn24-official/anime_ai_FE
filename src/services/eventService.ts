@@ -55,9 +55,11 @@ export const eventService = {
    */
   async fetchScheduleRange(startDate: string, endDate: string) {
     try {
-      const [eventsRes, birthdaysRes] = await Promise.all([
+      const [eventsRes, birthdaysRes, releasesRes, announcedRes] = await Promise.all([
         apiClient.get<any[]>('/events/range', { params: { start_date: startDate, end_date: endDate } }),
-        apiClient.get<any[]>('/characters/birthdays/range', { params: { start_date: startDate, end_date: endDate } })
+        apiClient.get<any[]>('/characters/birthdays/range', { params: { start_date: startDate, end_date: endDate } }),
+        apiClient.get<any[]>('/content/releases-range', { params: { start_date: startDate, end_date: endDate } }),
+        apiClient.get<any[]>('/content/announced-range', { params: { start_date: startDate, end_date: endDate } })
       ]);
 
       const formatAnimeId = (id: string) => {
@@ -114,6 +116,37 @@ export const eventService = {
             image: b.images?.profile || 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=150&q=80',
             description: `Birthday celebration for ${b.name?.full || b.name}!`
           });
+        });
+      });
+
+      const releases = Array.isArray(releasesRes) ? releasesRes : [];
+      const announced = Array.isArray(announcedRes) ? announcedRes : [];
+
+      releases.forEach((r, idx) => {
+        let desc = `${r.title} releases today!`;
+        if (r.event_type === 'release_end') {
+          desc = `${r.title}'s run ends today`;
+        }
+        items.push({
+          id: `rel_${r.content_id}_${r.date}_${idx}`,
+          date: r.date,
+          type: r.event_type,
+          name: r.title,
+          anime: r.content_type === 'tv_series' ? 'TV Series' : r.content_type === 'movie' ? 'Movie' : 'Anime',
+          image: r.poster_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&q=80',
+          description: desc
+        });
+      });
+
+      announced.forEach((a, idx) => {
+        items.push({
+          id: `ann_${a.content_id}_${a.pinned_date}_${idx}`,
+          date: a.pinned_date,
+          type: a.event_type,
+          name: a.title,
+          anime: a.content_type === 'tv_series' ? 'TV Series' : a.content_type === 'movie' ? 'Movie' : 'Anime',
+          image: a.poster_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&q=80',
+          description: `${a.title} is expected around ${a.label}`
         });
       });
 

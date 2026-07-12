@@ -64,4 +64,12 @@ export const searchService = {
       params: { q: query },
     });
   },
+  logSearchClick(contentType: string, contentId: string, query: string): void {
+    // Fire-and-forget: we don't await this so it doesn't block navigation
+    apiClient.post('/search/log-click', {
+      content_type: contentType,
+      content_id: contentId,
+      query,
+    }).catch(err => console.error("Failed to log search click:", err));
+  },
 };

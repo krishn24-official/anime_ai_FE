@@ -123,6 +123,15 @@ class ApiClient {
     });
   }
 
+  async patch<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
+    const isFormData = body instanceof FormData;
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+    });
+  }
+
   async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
