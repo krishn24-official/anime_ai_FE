@@ -49,7 +49,7 @@ export const TodaysReleasesSection: React.FC = () => {
               {items.map((item) => (
                 <div 
                   key={`${item.content_type}-${item.content_id}`}
-                  onClick={() => navigate('/content', { state: { searchQuery: item.parent_title || item.title } })}
+                  onClick={() => navigate('/content', { state: { searchQuery: (item as any).parent_title || item.title } })}
                   className="flex-none w-[140px] md:w-[160px] lg:w-[180px] group cursor-pointer snap-start"
                 >
                   <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden mb-3 border border-white/5">
@@ -62,8 +62,8 @@ export const TodaysReleasesSection: React.FC = () => {
                       <span className="self-start px-2 py-1 text-[9px] font-bold uppercase rounded-md mb-2 shadow-lg bg-anime-primary/20 text-anime-primary border border-anime-primary/30 backdrop-blur-md">
                         {item.content_type === 'movie' ? 'Movie' : 
                          item.content_type === 'tv_series' ? 'TV Series' : 
-                         item.content_type === 'episode' ? 'Episode' :
-                         item.content_type === 'chapter' ? 'Chapter' : 'Anime'}
+                         (item.content_type as string) === 'episode' ? 'Episode' :
+                         (item.content_type as string) === 'chapter' ? 'Chapter' : 'Anime'}
                       </span>
                       <h3 className="text-white font-bold text-sm line-clamp-2 leading-tight">
                         {item.title}

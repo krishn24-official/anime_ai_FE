@@ -35,7 +35,7 @@ export const episodeChapterAdminService = {
   // Episodes
   listEpisodes: async (parentType: string, parentId: string, includeDeleted = false) => {
     const res = await apiClient.get<any[]>('/admin/episodes', {
-      params: { parent_type: parentType, parent_id: parentId, include_deleted: includeDeleted }
+      params: { parent_type: parentType, parent_id: parentId, include_deleted: includeDeleted ? 1 : 0 }
     });
     return res;
   },
@@ -58,7 +58,7 @@ export const episodeChapterAdminService = {
   // Chapters
   listChapters: async (mangaId: string, includeDeleted = false) => {
     const res = await apiClient.get<any[]>('/admin/chapters', {
-      params: { manga_id: mangaId, include_deleted: includeDeleted }
+      params: { manga_id: mangaId, include_deleted: includeDeleted ? 1 : 0 }
     });
     return res;
   },

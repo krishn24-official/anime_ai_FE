@@ -15,7 +15,7 @@ export const AdminEpisodesChapters: React.FC = () => {
   const [parentSearchQuery, setParentSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<any>(null);
 
   // Form State
   const [isEditing, setIsEditing] = useState(false);
