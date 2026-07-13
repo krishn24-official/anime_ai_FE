@@ -84,7 +84,7 @@ const AdminRelationships: React.FC = () => {
     if (!source || !target || !relationship.trim() || !type) return;
 
     try {
-      const res = await createRelationship({
+      await createRelationship({
         source_id: source.id,
         target_id: target.id,
         relationship: relationship.trim(),
@@ -129,7 +129,7 @@ const AdminRelationships: React.FC = () => {
     query: string, 
     setQuery: (q: string) => void, 
     results: RelationshipEntity[],
-    inputRef?: React.RefObject<HTMLInputElement>
+    inputRef?: React.RefObject<HTMLInputElement | null>
   ) => (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-400 mb-1">{label}</label>
