@@ -7,7 +7,7 @@ import { HeroSection } from './components/HeroSection';
 import { TrendingSection } from './components/TrendingSection';
 import { BirthdaySection } from './components/BirthdaySection';
 import { AISection } from './components/AISection';
-import { UpcomingSection } from './components/UpcomingSection';
+import { TodaysReleasesSection } from './components/TodaysReleasesSection';
 import { CollectionsSection } from './components/CollectionsSection';
 
 const Home: React.FC = () => {
@@ -43,8 +43,8 @@ const Home: React.FC = () => {
       {/* 4. AI Companion Dashboard */}
       <AISection />
 
-      {/* 5. Upcoming Releases Timeline */}
-      <UpcomingSection />
+      {/* 5. Today's Releases */}
+      <TodaysReleasesSection />
 
       {/* 6. Featured Collections */}
       <CollectionsSection />

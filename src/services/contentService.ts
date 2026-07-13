@@ -83,27 +83,13 @@ export interface BackendTVSeries {
   genres?: string;
 }
 
-export interface UpcomingDatedItem {
+export interface TodaysReleaseItem {
   content_type: 'movie' | 'tv_series' | 'anime';
   content_id: string;
   title: string;
   poster_image?: string;
-  release_date: string;
-}
-
-export interface UpcomingSeasonalItem {
-  content_type: 'movie' | 'tv_series' | 'anime';
-  content_id: string;
-  title: string;
-  poster_image?: string;
-  season?: string;
-  year?: number;
-  season_label: string;
-}
-
-export interface UpcomingReleasesResponse {
-  dated: UpcomingDatedItem[];
-  estimated: UpcomingSeasonalItem[];
+  date: string;
+  event_type: 'release_start' | 'release_end';
 }
 
 const parseGenres = (genres: any): string[] => {
@@ -320,9 +306,19 @@ export const contentService = {
   },
 
   /**
-   * Fetch upcoming releases
+   * Fetch today's releases
    */
-  async fetchUpcomingReleases(datedLimit = 10, seasonalLimit = 10): Promise<UpcomingReleasesResponse> {
-    return apiClient.get<UpcomingReleasesResponse>(`/content/upcoming?dated_limit=${datedLimit}&seasonal_limit=${seasonalLimit}`);
+  async fetchTodaysReleases(): Promise<TodaysReleaseItem[]> {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = today.getMonth() + 1;
+    const d = today.getDate();
+    const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    
+    const results = await apiClient.get<TodaysReleaseItem[]>(`/content/releases-range?start_date=${todayStr}&end_date=${todayStr}`);
+    
+    if (!Array.isArray(results)) return [];
+    
+    return results.filter(item => item.event_type === 'release_start');
   }
 };

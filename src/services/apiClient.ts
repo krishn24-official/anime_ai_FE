@@ -148,7 +148,7 @@ class ApiClient {
     try {
       // Try logging in first
       const loginRes = await this.post<{ access_token: string }>('/auth/login', {
-        email: guestEmail,
+        identifier: guestEmail,
         password: guestPassword,
       });
       this.setToken(loginRes.access_token);
@@ -159,12 +159,12 @@ class ApiClient {
         await this.post('/auth/register', {
           email: guestEmail,
           password: guestPassword,
-          display_name: 'Guest User',
+          username: 'Guest User',
         });
         
         // Login after successful registration
         const loginRes = await this.post<{ access_token: string }>('/auth/login', {
-          email: guestEmail,
+          identifier: guestEmail,
           password: guestPassword,
         });
         this.setToken(loginRes.access_token);

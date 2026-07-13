@@ -123,16 +123,21 @@ export const eventService = {
       const announced = Array.isArray(announcedRes) ? announcedRes : [];
 
       releases.forEach((r, idx) => {
-        let desc = `${r.title} releases today!`;
+        let desc = r.summary || `${r.title} releases today!`;
         if (r.event_type === 'release_end') {
           desc = `${r.title}'s run ends today`;
         }
+        
+        let parentTypeLabel = r.content_type === 'tv_series' ? 'TV Series' : r.content_type === 'movie' ? 'Movie' : 'Anime';
+        if (r.content_type === 'episode') parentTypeLabel = `Anime (${r.parent_title})`;
+        if (r.content_type === 'chapter') parentTypeLabel = `Manga (${r.parent_title})`;
+
         items.push({
           id: `rel_${r.content_id}_${r.date}_${idx}`,
           date: r.date,
           type: r.event_type,
           name: r.title,
-          anime: r.content_type === 'tv_series' ? 'TV Series' : r.content_type === 'movie' ? 'Movie' : 'Anime',
+          anime: parentTypeLabel,
           image: r.poster_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&q=80',
           description: desc
         });
@@ -149,6 +154,7 @@ export const eventService = {
           description: `${a.title} is expected around ${a.label}`
         });
       });
+
 
       return items;
     } catch (error) {

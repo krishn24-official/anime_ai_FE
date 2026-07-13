@@ -42,9 +42,9 @@ const Schedule: React.FC = () => {
   const filteredData = scheduleData.filter((item) => {
     if (activeFilter === 'All') return true;
     if (activeFilter === 'Character') return item.type === 'birthday';
-    if (activeFilter === 'Anime') return item.anime === 'Anime';
-    if (activeFilter === 'Movie') return item.anime === 'Movie';
-    if (activeFilter === 'TV Show') return item.anime === 'TV Series';
+    if (activeFilter === 'Anime') return item.anime?.includes('Anime');
+    if (activeFilter === 'Movie') return item.anime?.includes('Movie');
+    if (activeFilter === 'TV Show') return item.anime?.includes('TV Series');
     return true;
   });
 
