@@ -40,9 +40,14 @@ class ApiClient {
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, val]) => {
-        searchParams.append(key, String(val));
+        if (val !== undefined && val !== null) {
+          searchParams.append(key, String(val));
+        }
       });
-      url += `?${searchParams.toString()}`;
+      const queryString = searchParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
     }
 
     const defaultHeaders: Record<string, string> = {};

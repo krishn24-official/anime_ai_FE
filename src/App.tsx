@@ -20,6 +20,7 @@ import { AdminMovies } from './features/adminMovies/AdminMovies';
 import { AdminTvSeries } from './features/adminTvSeries/AdminTvSeries';
 import { AdminEpisodesChapters } from './features/adminEpisodes/AdminEpisodesChapters';
 import AdminRelationships from './features/adminRelationships/AdminRelationships';
+import { AdminCharacters } from './features/adminCharacters/AdminCharacters';
 
 const AdminLayout = () => {
   return <div className="w-full"><Outlet /></div>;
@@ -278,7 +279,7 @@ const App: React.FC = () => {
                 <Route path="episodes-chapters" element={<AdminEpisodesChapters />} />
                 <Route path="relationships" element={<AdminRelationships />} />
                 <Route path="manga" element={<div className="p-6 text-white">Manga Admin (Coming Soon)</div>} />
-                <Route path="characters" element={<div className="p-6 text-white">Characters Admin (Coming Soon)</div>} />
+                <Route path="characters" element={<AdminCharacters />} />
               </Route>
             </Routes>
           </React.Suspense>

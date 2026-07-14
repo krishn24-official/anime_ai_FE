@@ -29,6 +29,8 @@ const AdminRelationships: React.FC = () => {
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [keepSource, setKeepSource] = useState(true);
   const [sessionLog, setSessionLog] = useState<{msg: string, time: Date}[]>([]);
+  const [sourceError, setSourceError] = useState<string | null>(null);
+  const [targetError, setTargetError] = useState<string | null>(null);
   
   const targetInputRef = useRef<HTMLInputElement>(null);
 
@@ -39,23 +41,39 @@ const AdminRelationships: React.FC = () => {
 
   useEffect(() => {
     if (sourceQuery.length >= 2) {
+      setSourceError(null);
       const delayFn = setTimeout(() => {
-        searchEntities(sourceQuery).then(res => setSourceResults(res || []));
+        searchEntities(sourceQuery)
+          .then(res => setSourceResults(res || []))
+          .catch(err => {
+            console.error(err);
+            setSourceError("Couldn't load results");
+            setSourceResults([]);
+          });
       }, 300);
       return () => clearTimeout(delayFn);
     } else {
       setSourceResults([]);
+      setSourceError(null);
     }
   }, [sourceQuery]);
 
   useEffect(() => {
     if (targetQuery.length >= 2) {
+      setTargetError(null);
       const delayFn = setTimeout(() => {
-        searchEntities(targetQuery).then(res => setTargetResults(res || []));
+        searchEntities(targetQuery)
+          .then(res => setTargetResults(res || []))
+          .catch(err => {
+            console.error(err);
+            setTargetError("Couldn't load results");
+            setTargetResults([]);
+          });
       }, 300);
       return () => clearTimeout(delayFn);
     } else {
       setTargetResults([]);
+      setTargetError(null);
     }
   }, [targetQuery]);
 
@@ -84,7 +102,7 @@ const AdminRelationships: React.FC = () => {
     if (!source || !target || !relationship.trim() || !type) return;
 
     try {
-      await createRelationship({
+      const res = await createRelationship({
         source_id: source.id,
         target_id: target.id,
         relationship: relationship.trim(),
@@ -94,10 +112,20 @@ const AdminRelationships: React.FC = () => {
         overwrite: !!duplicateWarning
       });
 
-      setSessionLog(prev => [{
-        msg: `${source.name} (${source.entity_type}) —[ ${relationship.trim()} ]→ ${target.name} (${target.entity_type})`,
-        time: new Date()
-      }, ...prev]);
+      const forwardDoc = res?.docs?.[0];
+      const inverseDoc = res?.docs?.[1];
+
+      const forwardMsg = `${source.name} (${source.entity_type}) —[ ${forwardDoc?.relationship || relationship.trim()} ]→ ${target.name} (${target.entity_type})`;
+      const newLogs = [{ msg: forwardMsg, time: new Date() }];
+      
+      if (inverseDoc) {
+        newLogs.push({
+          msg: `${target.name} (${target.entity_type}) —[ ${inverseDoc.relationship} ]→ ${source.name} (${source.entity_type}) (auto-generated inverse)`,
+          time: new Date()
+        });
+      }
+
+      setSessionLog(prev => [...newLogs, ...prev]);
 
       if (keepSource) {
         setTarget(null);
@@ -129,6 +157,7 @@ const AdminRelationships: React.FC = () => {
     query: string, 
     setQuery: (q: string) => void, 
     results: RelationshipEntity[],
+    error: string | null,
     inputRef?: React.RefObject<HTMLInputElement | null>
   ) => (
     <div className="mb-4">
@@ -156,8 +185,13 @@ const AdminRelationships: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          {error && (
+            <div className="absolute z-50 w-full mt-1 bg-red-900/90 border border-red-500 rounded p-2 text-white text-sm">
+              {error}
+            </div>
+          )}
           {results.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-[#252525] border border-[#333] rounded shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-[#252525] border border-[#333] rounded shadow-lg max-h-60 overflow-y-auto">
               {results.map(r => (
                 <div 
                   key={r.id} 
@@ -197,8 +231,8 @@ const AdminRelationships: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] mb-6">
         <div className="grid grid-cols-2 gap-6">
-          {renderPicker("Source Entity", source, setSource, sourceQuery, setSourceQuery, sourceResults)}
-          {renderPicker("Target Entity", target, setTarget, targetQuery, setTargetQuery, targetResults, targetInputRef)}
+          {renderPicker("Source Entity", source, setSource, sourceQuery, setSourceQuery, sourceResults, sourceError)}
+          {renderPicker("Target Entity", target, setTarget, targetQuery, setTargetQuery, targetResults, targetError, targetInputRef)}
         </div>
 
         <div className="grid grid-cols-2 gap-6 mb-4">
@@ -248,31 +282,33 @@ const AdminRelationships: React.FC = () => {
           />
         </div>
 
-        <div className="mb-6">
-          <button 
-            type="button" 
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-xs text-red-500 hover:text-red-400 font-medium"
-          >
-            {showAdvanced ? '- Hide Advanced Options' : '+ Show Advanced Options'}
-          </button>
-          
-          {showAdvanced && (
-            <div className="mt-3 p-4 bg-[#252525] rounded border border-[#333]">
-              <label className="block text-sm font-medium text-gray-400 mb-1">Override Inverse Relationship</label>
-              <input
-                type="text"
-                className="w-full bg-[#1e1e1e] border border-[#333] rounded px-3 py-2 text-white focus:outline-none focus:border-red-500"
-                placeholder="e.g. daughter (if target is female and relationship is father)"
-                value={inverseOverride}
-                onChange={(e) => setInverseOverride(e.target.value)}
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Only needed when the auto-generated inverse would be wrong (like picking "son" vs "daughter" instead of a generic fallback).
-              </p>
-            </div>
-          )}
-        </div>
+        {(!source || source.entity_type === 'character') && (!target || target.entity_type === 'character') && (
+          <div className="mb-6">
+            <button 
+              type="button" 
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-xs text-red-500 hover:text-red-400 font-medium"
+            >
+              {showAdvanced ? '- Hide Advanced Options' : '+ Show Advanced Options'}
+            </button>
+            
+            {showAdvanced && (
+              <div className="mt-3 p-4 bg-[#252525] rounded border border-[#333]">
+                <label className="block text-sm font-medium text-gray-400 mb-1">Override Inverse Relationship</label>
+                <input
+                  type="text"
+                  className="w-full bg-[#1e1e1e] border border-[#333] rounded px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                  placeholder="e.g. daughter (if target is female and relationship is father)"
+                  value={inverseOverride}
+                  onChange={(e) => setInverseOverride(e.target.value)}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Only needed when the auto-generated inverse would be wrong (like picking "son" vs "daughter" instead of a generic fallback).
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {duplicateWarning && (
           <div className="mb-4 p-3 bg-yellow-900/30 border border-yellow-700/50 rounded text-yellow-500 text-sm">

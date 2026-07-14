@@ -24,22 +24,15 @@ export interface CreateRelationshipPayload {
 
 export const searchEntities = async (query: string): Promise<RelationshipEntity[]> => {
   if (!query || query.length < 2) return [];
-  try {
-    const response = await apiClient.get('/admin/relationships/search-entities', { params: { q: query } }) as any;
-    return response.data;
-  } catch (error) {
-    console.error('Error searching entities:', error);
-    return [];
-  }
+  return apiClient.get('/admin/relationships/search-entities', { params: { q: query } });
 };
 
 export const checkRelationship = async (sourceId: string, targetId: string, relationship: string): Promise<RelationshipDuplicateCheck | null> => {
   if (!sourceId || !targetId || !relationship) return null;
   try {
-    const response = await apiClient.get('/admin/relationships/check', {
+    return apiClient.get('/admin/relationships/check', {
       params: { source_id: sourceId, target_id: targetId, relationship }
-    }) as any;
-    return response.data;
+    });
   } catch (error) {
     console.error('Error checking relationship:', error);
     return null;
@@ -47,14 +40,12 @@ export const checkRelationship = async (sourceId: string, targetId: string, rela
 };
 
 export const createRelationship = async (payload: CreateRelationshipPayload): Promise<any> => {
-  const response = await apiClient.post('/admin/relationships', payload) as any;
-  return response.data;
+  return apiClient.post('/admin/relationships', payload);
 };
 
 export const fetchRelationshipTypes = async (): Promise<string[]> => {
   try {
-    const response = await apiClient.get('/admin/relationships/types') as any;
-    return response.data;
+    return apiClient.get('/admin/relationships/types');
   } catch (error) {
     console.error('Error fetching relationship types:', error);
     return [];
@@ -63,8 +54,7 @@ export const fetchRelationshipTypes = async (): Promise<string[]> => {
 
 export const fetchCommonWords = async (): Promise<string[]> => {
   try {
-    const response = await apiClient.get('/admin/relationships/common-words') as any;
-    return response.data;
+    return apiClient.get('/admin/relationships/common-words');
   } catch (error) {
     console.error('Error fetching common words:', error);
     return [];
