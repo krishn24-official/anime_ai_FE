@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { characterAdminService } from '../../services/characterAdminService';
 import { apiClient } from '../../services/apiClient';
@@ -51,21 +51,17 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
   // Search state for Anime
   const [animeQuery, setAnimeQuery] = useState('');
   const [animeResults, setAnimeResults] = useState<any[]>([]);
-  const [animeSearching, setAnimeSearching] = useState(false);
   
   // Search state for Manga
   const [mangaQuery, setMangaQuery] = useState('');
   const [mangaResults, setMangaResults] = useState<any[]>([]);
-  const [mangaSearching, setMangaSearching] = useState(false);
 
   useEffect(() => {
     if (animeQuery.length >= 2) {
-      setAnimeSearching(true);
       const delay = setTimeout(() => {
         apiClient.get(`/admin/relationships/search-entities?q=${animeQuery}&types=anime,movie,tv_series&limit=10`)
           .then((res: any) => setAnimeResults(res || []))
-          .catch(() => setAnimeResults([]))
-          .finally(() => setAnimeSearching(false));
+          .catch(() => setAnimeResults([]));
       }, 300);
       return () => clearTimeout(delay);
     } else {
@@ -75,12 +71,10 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
   
   useEffect(() => {
     if (mangaQuery.length >= 2) {
-      setMangaSearching(true);
       const delay = setTimeout(() => {
         apiClient.get(`/admin/relationships/search-entities?q=${mangaQuery}&types=manga&limit=10`)
           .then((res: any) => setMangaResults(res || []))
-          .catch(() => setMangaResults([]))
-          .finally(() => setMangaSearching(false));
+          .catch(() => setMangaResults([]));
       }, 300);
       return () => clearTimeout(delay);
     } else {

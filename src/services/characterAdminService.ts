@@ -41,7 +41,7 @@ export const characterAdminService = {
     limit?: number;
     skip?: number;
   }): Promise<CharacterListResponse> => {
-    const response = await apiClient.get('/admin/characters', { params }) as any;
+    const response = await apiClient.get('/admin/characters', { params: params as any }) as any;
     return response;
   },
 
