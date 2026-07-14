@@ -3,27 +3,22 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import {
   fetchContentData,
-  toggleWatchlistThunk,
-  rateContentThunk,
-  addCommentThunk,
-  fetchCommentsThunk
+  toggleWatchlistThunk
 } from '../../store/slices/contentSlice';
-import { Star, Plus, Check, MessageSquare, Send, X, Eye, Loader2, Search } from 'lucide-react';
+import { Plus, Check, MessageSquare, Eye, Loader2, Search } from 'lucide-react';
 import type { FrontendCategory } from '../../services/contentService';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const Content: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { items, watchlist, ratings, comments, loading, error } = useSelector((state: RootState) => state.content);
+  const { items, watchlist, loading, error } = useSelector((state: RootState) => state.content);
 
   // Sentinel ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<'All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series'>('All');
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState('');
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [autoOpenTitle, setAutoOpenTitle] = useState<string | null>(null);
@@ -37,7 +32,7 @@ const Content: React.FC = () => {
     if (location.state) {
       const state = location.state as any;
       if (state.contentId) {
-        setSelectedItemId(state.contentId);
+        navigate(`/content/${CATEGORY_MAP[state.category as FrontendCategory] || state.category || 'anime'}/${state.contentId}`);
         window.history.replaceState({}, document.title);
       } else if (state.searchQuery) {
         setSearchQuery(state.searchQuery);
@@ -55,19 +50,19 @@ const Content: React.FC = () => {
         (item) => item.title.toLowerCase() === autoOpenTitle.toLowerCase()
       );
       if (exactMatch) {
-        setSelectedItemId(exactMatch.id);
+        navigate(`/content/${CATEGORY_MAP[exactMatch.category as FrontendCategory] || exactMatch.category}/${exactMatch.id}`);
       } else {
         // Fallback to closest partial match
         const partialMatch = items.find(
           (item) => item.title.toLowerCase().includes(autoOpenTitle.toLowerCase())
         );
         if (partialMatch) {
-          setSelectedItemId(partialMatch.id);
+          navigate(`/content/${CATEGORY_MAP[partialMatch.category as FrontendCategory] || partialMatch.category}/${partialMatch.id}`);
         }
       }
       setAutoOpenTitle(null);
     }
-  }, [autoOpenTitle, items]);
+  }, [autoOpenTitle, items, navigate]);
 
   const tabs: ('All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series')[] = ['All', 'Anime', 'Manga', 'Movies', 'TV-Series'];
 
@@ -80,16 +75,12 @@ const Content: React.FC = () => {
     return matchesTab && matchesWatchlist && matchesSearch;
   });
 
-  const selectedItem = items.find(item => item.id === selectedItemId);
-  const activeComments = selectedItemId ? comments[selectedItemId] || [] : [];
-  const userRating = selectedItemId ? ratings[selectedItemId] || 0 : 0;
-
-  // Load comments when drawer is opened
-  useEffect(() => {
-    if (selectedItem) {
-      dispatch(fetchCommentsThunk({ category: selectedItem.category as FrontendCategory, id: selectedItem.id }));
-    }
-  }, [selectedItemId, dispatch]);
+  const CATEGORY_MAP: Record<string, string> = {
+    'Anime': 'anime',
+    'Manga': 'manga',
+    'Movies': 'movie',
+    'TV-Series': 'tv_series',
+  };
 
   // IntersectionObserver for progressive rendering (infinite scroll)
   const handleIntersect = useCallback(
@@ -126,21 +117,6 @@ const Content: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [searchQuery, loading, items.length, displayCount, filteredItems.length]);
-
-  const handlePostComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedItem || !commentText.trim()) return;
-    dispatch(addCommentThunk({
-      category: selectedItem.category as FrontendCategory,
-      id: selectedItem.id,
-      text: commentText
-    }));
-    setCommentText('');
-  };
-
-  const handleRating = (id: string, category: string, score: number) => {
-    dispatch(rateContentThunk({ category: category as FrontendCategory, id, stars: score }));
-  };
 
   const handleToggleWatchlist = (id: string, category: string) => {
     dispatch(toggleWatchlistThunk({ category: category as FrontendCategory, id }));
@@ -269,7 +245,7 @@ const Content: React.FC = () => {
 
                     {/* Hover Quick View overlay */}
                     <div 
-                      onClick={() => setSelectedItemId(item.id)}
+                      onClick={() => navigate(`/content/${CATEGORY_MAP[item.category as string] || item.category}/${item.id}`)}
                       className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-10 cursor-pointer"
                     >
                       <span className="px-4 py-2 bg-anime-primary text-anime-bg font-bold text-xs rounded-xl shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform">
@@ -315,132 +291,6 @@ const Content: React.FC = () => {
         </>
       )}
 
-      {/* Detail & Comments Drawer Modal */}
-      {selectedItem && (
-        <div 
-          onClick={() => setSelectedItemId(null)}
-          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-opacity"
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xl bg-anime-bg border border-anime-border rounded-2xl max-h-[90vh] overflow-y-auto p-8 relative flex flex-col justify-between"
-          >
-            
-            {/* Close */}
-            <button
-              onClick={() => setSelectedItemId(null)}
-              className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all animate-fade-in"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-6">
-              {/* Poster and Title banner */}
-              <div className="flex space-x-4 items-start pt-6">
-                <img src={selectedItem.poster} alt={selectedItem.title} className="w-24 rounded-xl border border-anime-border object-cover aspect-[3/4]" />
-                <div>
-                  <span className="text-xs text-anime-secondary font-semibold uppercase">{selectedItem.category}</span>
-                  <h2 className="text-xl md:text-2xl font-bold font-fraunces text-white leading-tight mt-1">{selectedItem.title}</h2>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <Star className="w-4 h-4 fill-anime-yellow text-anime-yellow" />
-                    <span className="text-sm font-bold text-white">{selectedItem.averageRating}</span>
-                    <span className="text-xs text-anime-text/60">• Released {selectedItem.releaseYear}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-anime-text leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
-                {selectedItem.description}
-              </p>
-
-              {/* Rating widget */}
-              <div className="p-4 bg-white/5 rounded-xl border border-white/5 flex items-center justify-between">
-                <span className="text-xs font-semibold text-white">Rate this title</span>
-                <div className="flex space-x-1.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      onClick={() => handleRating(selectedItem.id, selectedItem.category, star)}
-                      className="focus:outline-none transform hover:scale-110 transition-transform"
-                    >
-                      <Star className={`w-5 h-5 ${
-                        star <= userRating ? 'fill-anime-yellow text-anime-yellow' : 'text-anime-text/30'
-                      }`} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Watchlist toggle */}
-              <button
-                onClick={() => handleToggleWatchlist(selectedItem.id, selectedItem.category)}
-                className={`w-full py-3 rounded-xl border font-bold text-xs transition-all flex items-center justify-center space-x-2 ${
-                  watchlist.includes(selectedItem.id)
-                    ? 'bg-anime-primary border-anime-primary text-anime-bg'
-                    : 'bg-white/5 border-white/10 hover:border-anime-primary text-white'
-                }`}
-              >
-                {watchlist.includes(selectedItem.id) ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>In Your Watchlist</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4" />
-                    <span>Add to Watchlist</span>
-                  </>
-                )}
-              </button>
-
-              {/* Comments Section */}
-              <div className="space-y-4 pt-4 border-t border-white/10">
-                <h3 className="text-sm font-bold text-white flex items-center space-x-2">
-                  <MessageSquare className="w-4 h-4 text-anime-primary" />
-                  <span>Comments & Reviews ({activeComments.length})</span>
-                </h3>
-
-                {/* Comment list */}
-                <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                  {activeComments.map((com) => (
-                    <div key={com.id} className="p-3 bg-white/5 rounded-lg border border-white/5 text-xs space-y-1">
-                      <div className="flex justify-between items-center">
-                        <strong className="text-anime-primary">{com.username}</strong>
-                        <span className="text-[10px] text-anime-text/40">{com.timestamp}</span>
-                      </div>
-                      <p className="text-white/90 leading-relaxed">{com.text}</p>
-                    </div>
-                  ))}
-                  {activeComments.length === 0 && (
-                    <p className="text-xs text-anime-text/50 italic py-2">No comments yet. Be the first to share your thoughts!</p>
-                  )}
-                </div>
-
-                {/* Comment Form */}
-                <form onSubmit={handlePostComment} className="space-y-2">
-                  <div className="relative">
-                    <textarea
-                      placeholder="Add a comment..."
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      rows={2}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-3 pr-10 text-xs text-white focus:outline-none focus:border-anime-primary resize-none"
-                    />
-                    <button
-                      type="submit"
-                      className="absolute right-2.5 bottom-3.5 p-1.5 bg-anime-primary text-anime-bg rounded-lg hover:bg-white hover:text-anime-primary transition-all"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Home from './features/home/Home';
 const Characters = React.lazy(() => import('./features/characters/Characters'));
+const ContentDetail = React.lazy(() => import('./features/content/ContentDetail'));
 const News = React.lazy(() => import('./features/news/News'));
 const Schedule = React.lazy(() => import('./features/schedule/Schedule'));
 const AdminNews = React.lazy(() => import('./features/news/AdminNews'));
@@ -264,6 +265,7 @@ const App: React.FC = () => {
               <Route path="/news" element={<News />} />
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/content" element={<Content />} />
+              <Route path="/content/:type/:id" element={<ContentDetail />} />
               <Route path="/characters" element={<Characters />} />
               <Route path="/games/*" element={<Games />} />
               <Route path="/chatbot" element={<Chatbot />} />

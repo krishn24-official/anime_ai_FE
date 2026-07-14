@@ -270,7 +270,7 @@ export const contentService = {
       // Flatten or map tree comments to list for frontend
       const mapComment = (c: any): Comment => ({
         id: c.id,
-        username: c.user_id === 'guest' ? 'Guest User' : `User_${c.user_id.slice(-4)}`,
+        username: c.username || c.display_name || (c.user_id === 'guest' ? 'Guest User' : `User_${c.user_id.slice(-4)}`),
         text: c.text,
         timestamp: new Date(c.created_at).toISOString().replace('T', ' ').substring(0, 16),
       });
@@ -320,5 +320,14 @@ export const contentService = {
     if (!Array.isArray(results)) return [];
     
     return results.filter(item => item.event_type === 'release_start');
+  },
+
+  /**
+   * Fetch full content details including cast and crew
+   */
+  async fetchContentDetails(category: FrontendCategory | BackendContentType, id: string): Promise<any> {
+    // If it's already a backend type, use it directly, else map it
+    const backendType = CATEGORY_MAP[category as FrontendCategory] || category;
+    return apiClient.get<any>(`/content/${backendType}/${id}`);
   }
 };
