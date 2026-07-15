@@ -36,7 +36,7 @@ export const TrendingSection: React.FC = () => {
           {items.map((item) => (
             <div 
               key={`${item.content_type}-${item.content_id}`}
-              onClick={() => navigate('/content', { state: { contentId: item.content_id } })}
+              onClick={() => navigate('/content', { state: { contentId: item.content_id, category: item.content_type } })}
               className="group cursor-pointer relative rounded-2xl overflow-hidden border border-white/10 hover:border-anime-primary transition-all duration-300 hover:ring-2 hover:ring-anime-primary/20 hover:shadow-2xl hover:-translate-y-1 shrink-0 snap-start w-40 md:w-48 lg:w-56"
             >
               <div className="aspect-[2/3] w-full">
