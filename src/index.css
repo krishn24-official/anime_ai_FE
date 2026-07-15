@@ -45,6 +45,11 @@
     color: var(--text-primary);
     letter-spacing: 0.015em;
   }
+
+  select option {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+  }
 }
 
 /* Custom scrollbar styling */

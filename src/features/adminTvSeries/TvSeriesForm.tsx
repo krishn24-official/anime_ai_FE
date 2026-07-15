@@ -160,8 +160,8 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
   const inputClass = "w-full bg-anime-secondary border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-anime-primary transition-colors";
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-anime-card rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl mt-32 mb-16">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-anime-card rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl my-8">
         <div className="flex justify-between items-center p-6 border-b border-white/5 bg-white/[0.02]">
           <h2 className="text-xl font-bold text-white">
             {initialData ? 'Edit TV Series' : 'Create TV Series'}

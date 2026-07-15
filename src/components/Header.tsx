@@ -327,7 +327,7 @@ const Header: React.FC<HeaderProps> = ({
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-3 w-80 bg-anime-bg/95 backdrop-blur-md border border-white/20 ring-1 ring-white/5 rounded-2xl shadow-2xl overflow-hidden z-50">
+            <div className="absolute right-0 mt-3 w-80 bg-[#14161B] border border-white/10 ring-1 ring-black/50 rounded-2xl shadow-2xl overflow-hidden z-50">
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <span className="text-xs font-bold text-white uppercase tracking-wider">Notifications</span>
                 {notifications.length > 0 && (
@@ -393,7 +393,7 @@ const Header: React.FC<HeaderProps> = ({
           </button>
           
           {isProfileOpen && (
-            <div className="absolute right-0 top-full mt-3 w-56 bg-anime-bg/95 backdrop-blur-md border border-white/20 ring-1 ring-white/5 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 top-full mt-3 w-56 bg-[#14161B] border border-white/10 ring-1 ring-black/50 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="p-4 border-b border-white/5">
                 <p className="text-sm font-semibold text-white truncate">
                   {currentUser?.display_name || currentUser?.username || 'Guest User'}
