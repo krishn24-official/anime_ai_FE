@@ -69,7 +69,7 @@ export const InstallPrompt: React.FC = () => {
       </div>
       <button
         onClick={handleInstallClick}
-        className="w-full py-2.5 px-4 bg-anime-primary text-black hover:bg-opacity-80 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer"
+        className="w-full py-2.5 px-4 bg-[#62E7E0] text-[#0D0D0F] hover:bg-[#62E7E0]/90 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer"
       >
         <Download className="w-4 h-4" />
         <span>Install App</span>
