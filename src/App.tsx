@@ -28,6 +28,7 @@ const AdminLayout = () => {
 };
 const SharePosterModal = React.lazy(() => import('./components/SharePosterModal'));
 import InstallPrompt from './components/InstallPrompt';
+import PwaUpdater from './components/PwaUpdater';
 import AuthPage from './features/auth/AuthPage';
 import { addNewArticle } from './store/slices/newsSlice';
 import { X } from 'lucide-react';
@@ -332,7 +333,8 @@ const App: React.FC = () => {
         />
       </React.Suspense>
 
-      {/* PWA Install Banner */}
+      {/* PWA Components */}
+      <PwaUpdater />
       <InstallPrompt />
     </div>
   );

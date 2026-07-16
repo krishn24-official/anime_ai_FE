@@ -11,13 +11,15 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'favicon.svg', 'icons.svg'],
       manifest: {
-        name: 'Anime AI',
-        short_name: 'Anime AI',
-        description: 'AI-powered Anime, Manga, Movies & TV Series platform',
+        id: '/',
+        name: 'AniVerse',
+        short_name: 'AniVerse',
+        description: 'Everything Entertainment. One Place.',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'any',
+        categories: ['entertainment'],
         start_url: '/',
         scope: '/',
         icons: [
@@ -67,6 +69,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        navigateFallback: '/offline.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/ws/],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         runtimeCaching: [
           {

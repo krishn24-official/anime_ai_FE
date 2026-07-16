@@ -13,10 +13,6 @@ import '@fontsource/inter/700.css'
 import '@fontsource/jetbrains-mono/400.css'
 import './index.css'
 import App from './App.tsx'
-import { registerSW } from 'virtual:pwa-register'
-
-// Automatically register service worker and check for updates
-registerSW({ immediate: true })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -17,7 +17,7 @@ export interface MovieFormData {
   language: string[];
   country: string[];
   tagline: string;
-  trailer_url: string;
+  trailers: {url: string, label: string}[];
   poster: File | null;
   backdrop: File | null;
 }
@@ -42,7 +42,7 @@ export const movieAdminService = {
     formData.append('language', JSON.stringify(data.language));
     formData.append('country', JSON.stringify(data.country));
     if (data.tagline) formData.append('tagline', data.tagline);
-    if (data.trailer_url) formData.append('trailer_url', data.trailer_url);
+    if (data.trailers) formData.append('trailers', JSON.stringify(data.trailers));
     
     if (data.poster) formData.append('poster', data.poster);
     if (data.backdrop) formData.append('backdrop', data.backdrop);
@@ -69,7 +69,7 @@ export const movieAdminService = {
     if (data.language) formData.append('language', JSON.stringify(data.language));
     if (data.country) formData.append('country', JSON.stringify(data.country));
     if (data.tagline !== undefined) formData.append('tagline', data.tagline || '');
-    if (data.trailer_url !== undefined) formData.append('trailer_url', data.trailer_url || '');
+    if (data.trailers !== undefined) formData.append('trailers', JSON.stringify(data.trailers));
     
     if (data.poster) formData.append('poster', data.poster);
     if (data.backdrop) formData.append('backdrop', data.backdrop);

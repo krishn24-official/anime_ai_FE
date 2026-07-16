@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { Upload, X, Loader2 } from 'lucide-react';
+import { Upload, X, Plus, Loader2 } from 'lucide-react';
 import { movieAdminService } from '../../services/movieAdminService';
 
 interface MovieFormProps {
@@ -33,7 +33,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   
   const [plot, setPlot] = useState(initialData?.plot || '');
   const [tagline, setTagline] = useState(initialData?.tagline || '');
-  const [trailerUrl, setTrailerUrl] = useState(initialData?.trailer_url || '');
+  const [trailers, setTrailers] = useState<{url: string, label: string}[]>(initialData?.trailers || []);
   
   const [runtimeMinutes, setRuntimeMinutes] = useState<string>(initialData?.runtime_minutes?.toString() || '');
 
@@ -105,7 +105,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
         country,
         plot,
         tagline,
-        trailer_url: trailerUrl,
+        trailers,
         poster: posterFile,
         backdrop: backdropFile
       };
@@ -241,10 +241,22 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                   <input type="number" value={runtimeMinutes} onChange={e => setRuntimeMinutes(e.target.value)}
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Trailer URL (YouTube)</label>
-                  <input type="text" value={trailerUrl} onChange={e => setTrailerUrl(e.target.value)}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+                <div className="md:col-span-2 mt-4">
+                  <label className="block text-sm font-medium text-white/70 mb-2">Trailers</label>
+                  <div className="space-y-3">
+                    {trailers.map((trailer, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <input type="text" placeholder="Label (e.g. Official Trailer)" value={trailer.label} onChange={e => { const newT = [...trailers]; newT[idx].label = e.target.value; setTrailers(newT); }} className="w-1/3 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+                        <input type="text" placeholder="YouTube URL" value={trailer.url} onChange={e => { const newT = [...trailers]; newT[idx].url = e.target.value; setTrailers(newT); }} className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+                        <button type="button" onClick={() => { const newT = [...trailers]; newT.splice(idx, 1); setTrailers(newT); }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors">
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setTrailers([...trailers, { url: '', label: '' }])} className="text-sm bg-white/5 hover:bg-white/10 text-white py-2 px-4 rounded-lg transition-colors inline-flex items-center gap-2">
+                      <Plus className="w-4 h-4" /> Add Trailer
+                    </button>
+                  </div>
                 </div>
               </div>
               

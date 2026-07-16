@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, X, Sparkles, Share } from 'lucide-react';
 
 export const InstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isIosPromptVisible, setIsIosPromptVisible] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -18,8 +19,19 @@ export const InstallPrompt: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // Check if app is already installed/standalone mode
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    if (isStandalone) {
       setIsVisible(false);
+      setIsIosPromptVisible(false);
+    } else {
+      // Check for iOS Safari
+      const ua = window.navigator.userAgent.toLowerCase();
+      const isIos = /iphone|ipad|ipod/.test(ua);
+      const isSafari = /safari/.test(ua) && !/chrome|crios|fxios|opios|edgios/.test(ua);
+      
+      if (isIos && isSafari && !localStorage.getItem('iosInstallDismissed')) {
+        setIsIosPromptVisible(true);
+      }
     }
 
     return () => {
@@ -46,17 +58,54 @@ export const InstallPrompt: React.FC = () => {
     setIsVisible(false);
   };
 
-  if (!isVisible) return null;
+  const handleIosDismiss = () => {
+    setIsIosPromptVisible(false);
+    localStorage.setItem('iosInstallDismissed', 'true');
+  };
+
+  if (!isVisible && !isIosPromptVisible) return null;
+
+  if (isIosPromptVisible) {
+    return (
+      <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-[9999] bg-anime-bg/95 backdrop-blur-md border border-anime-border/45 p-5 rounded-2xl shadow-2xl flex flex-col space-y-3 animate-fade-in font-inter">
+        <div className="flex justify-between items-start">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">Install AniVerse</h4>
+              <p className="text-[11px] text-anime-text/80">Add to home screen for full experience.</p>
+            </div>
+          </div>
+          <button 
+            onClick={handleIosDismiss}
+            className="p-1 hover:bg-white/5 rounded-lg text-anime-text/40 hover:text-white transition-all cursor-pointer shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center space-y-2">
+          <p className="text-xs text-anime-text/90 font-medium">
+            Tap the <Share className="w-4 h-4 inline mx-1 mb-0.5" /> Share icon below
+          </p>
+          <p className="text-xs text-anime-text/90 font-medium">
+            Then select <strong className="text-white">"Add to Home Screen"</strong>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-[9999] bg-anime-bg/95 backdrop-blur-md border border-anime-border/45 p-5 rounded-2xl shadow-2xl flex flex-col space-y-3 animate-fade-in font-inter">
       <div className="flex justify-between items-start">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-anime-secondary to-anime-purple flex items-center justify-center text-white font-bold shrink-0">
-            AI
+          <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white">Install Anime AI</h4>
+            <h4 className="text-sm font-bold text-white">Install AniVerse</h4>
             <p className="text-[11px] text-anime-text/80">Add to home screen for offline access & app-like experience.</p>
           </div>
         </div>
