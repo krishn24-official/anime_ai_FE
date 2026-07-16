@@ -122,11 +122,11 @@ const App: React.FC = () => {
           const message = JSON.parse(event.data);
           if (message.type === 'NEW_ARTICLE') {
             const raw = message.data;
-            
-            const mappedCat = 
+
+            const mappedCat =
               raw.category === 'TV Series' || raw.category === 'TV-Series' ? 'TV-Series' as const :
-              raw.category === 'Games' || raw.category === 'Movies' || raw.category === 'Anime' ? raw.category :
-              'Anime' as const;
+                raw.category === 'Games' || raw.category === 'Movies' || raw.category === 'Anime' ? raw.category :
+                  'Anime' as const;
 
             const getCategoryFallbackImage = (category: string) => {
               const animeImages = ['https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80'];
@@ -209,7 +209,7 @@ const App: React.FC = () => {
     }
     switch (pathname) {
       case '/':
-        return "Welcome to Anime AI!";
+        return "Welcome to Aniverse!";
       case '/news':
         return "Otaku Tribune News";
       case '/schedule':
@@ -234,9 +234,9 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-anime-bg text-anime-text">
       {/* Sidebar fixed */}
-      <Sidebar 
-        isCollapsed={isSidebarCollapsed} 
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+      <Sidebar
+        isCollapsed={isSidebarCollapsed}
+        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         isMobileOpen={isMobileSidebarOpen}
         onMobileClose={() => setIsMobileSidebarOpen(false)}
       />
@@ -244,9 +244,9 @@ const App: React.FC = () => {
       {/* Main Layout Area */}
       <div className={`transition-all duration-300 pl-0 ${isSidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-[260px]'}`}>
         {/* Header fixed */}
-        <Header 
-          title={getHeaderTitle(location.pathname)} 
-          isSidebarCollapsed={isSidebarCollapsed} 
+        <Header
+          title={getHeaderTitle(location.pathname)}
+          isSidebarCollapsed={isSidebarCollapsed}
           notifications={notifications}
           onClearNotifications={() => setNotifications([])}
           onDismissNotification={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
@@ -270,7 +270,7 @@ const App: React.FC = () => {
               <Route path="/characters" element={<Characters />} />
               <Route path="/games/*" element={<Games />} />
               <Route path="/chatbot" element={<Chatbot />} />
-              
+
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Navigate to="/admin/trending" replace />} />
