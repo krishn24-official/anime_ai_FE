@@ -104,8 +104,10 @@ const App: React.FC = () => {
     let ws: WebSocket | null = null;
     let reconnectTimeout: any = null;
     let attempts = 0;
+    let isCleanedUp = false;
 
     const connect = () => {
+      if (isCleanedUp) return;
       const lastChecked = localStorage.getItem('last_news_checked_time') || '0';
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const wsUrlBase = apiUrl.replace(/^http/, 'ws');
@@ -181,6 +183,7 @@ const App: React.FC = () => {
       };
 
       ws.onclose = () => {
+        if (isCleanedUp) return;
         const delay = Math.min(1000 * Math.pow(2, attempts), 30000);
         attempts++;
         reconnectTimeout = setTimeout(connect, delay);
@@ -194,7 +197,12 @@ const App: React.FC = () => {
     connect();
 
     return () => {
-      if (ws) ws.close();
+      isCleanedUp = true;
+      if (ws) {
+        // Prevent onclose from firing after we intentionally close it during cleanup
+        ws.onclose = null;
+        ws.close();
+      }
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
     };
   }, [currentUser, dispatch]);

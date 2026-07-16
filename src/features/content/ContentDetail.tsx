@@ -14,7 +14,7 @@ const ContentDetail: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showTrailer, setShowTrailer] = useState(false);
+  const [activeTrailerUrl, setActiveTrailerUrl] = useState<string | null>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [commentText, setCommentText] = useState('');
 
@@ -97,14 +97,14 @@ const ContentDetail: React.FC = () => {
   // Mock background if none exists, using poster as fallback
   const bgImg = data.images?.banner || posterImg;
   
-  // Extract YouTube ID if it exists
   const getYouTubeId = (url: string) => {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
-  const trailerId = getYouTubeId(data.trailer_url);
+  const mainTrailerUrl = data.trailers?.[0]?.url || data.trailer_url;
+  const mainTrailerId = getYouTubeId(mainTrailerUrl);
 
   return (
     <div className="min-h-screen bg-black text-white animate-fade-in -mx-4 sm:-mx-8 -mt-24 pb-20">
@@ -131,11 +131,11 @@ const ContentDetail: React.FC = () => {
         </button>
 
         {/* Play Trailer Button (Center) */}
-        {trailerId && (
+        {mainTrailerId && (
           <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
             <button 
-              onClick={() => setShowTrailer(true)}
-              className="pointer-events-auto w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 hover:scale-110 transition-all cursor-pointer"
+              onClick={() => setActiveTrailerUrl(mainTrailerUrl)}
+              className="pointer-events-auto w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 hover:scale-110 transition-all cursor-pointer shadow-[0_0_40px_rgba(255,255,255,0.2)]"
             >
               <Play className="w-6 h-6 ml-1 fill-white" />
             </button>
@@ -222,6 +222,40 @@ const ContentDetail: React.FC = () => {
             ))}
           </div>
         </section>
+
+        {/* Trailers & Videos */}
+        {data.trailers && data.trailers.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold">Trailers & Videos</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+              {data.trailers.map((t: any, i: number) => {
+                const yId = getYouTubeId(t.url);
+                if (!yId) return null;
+                return (
+                  <div 
+                    key={i} 
+                    onClick={() => setActiveTrailerUrl(t.url)}
+                    className="shrink-0 w-72 group cursor-pointer space-y-3"
+                  >
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-[#62E7E0] transition-colors">
+                      <img 
+                        src={`https://img.youtube.com/vi/${yId}/mqdefault.jpg`} 
+                        alt={t.label} 
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                         <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Play className="w-5 h-5 ml-1 fill-white" />
+                         </div>
+                      </div>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-1">{t.label || `Video ${i+1}`}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Cast Section */}
         {data.cast?.length > 0 && (
@@ -340,17 +374,17 @@ const ContentDetail: React.FC = () => {
       </div>
 
       {/* Trailer Modal */}
-      {showTrailer && trailerId && (
+      {activeTrailerUrl && getYouTubeId(activeTrailerUrl) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
           <div className="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10">
             <button 
-              onClick={() => setShowTrailer(false)}
+              onClick={() => setActiveTrailerUrl(null)}
               className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-all cursor-pointer"
             >
               ✕
             </button>
             <iframe 
-              src={`https://www.youtube.com/embed/${trailerId}?autoplay=1`}
+              src={`https://www.youtube.com/embed/${getYouTubeId(activeTrailerUrl)}?autoplay=1`}
               title="YouTube video player"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
