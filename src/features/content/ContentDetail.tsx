@@ -310,14 +310,32 @@ const ContentDetail: React.FC = () => {
         )}
 
         {/* Production House */}
-        <section className="space-y-4">
-          <h2 className="text-2xl font-bold">Production House</h2>
-          <div className="flex gap-3">
-            <span className="px-5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold">
-              {data.production_house?.length > 0 ? data.production_house.join(', ') : 'Yash Raj Films'}
-            </span>
-          </div>
-        </section>
+        {data.production_house?.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold">Production House</h2>
+            <div className="flex flex-wrap gap-3">
+              {data.production_house.map((ph: string, idx: number) => (
+                <span key={idx} className="px-5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold">
+                  {ph}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Producers */}
+        {data.producers?.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold">Producers</h2>
+            <div className="flex flex-wrap gap-3">
+              {data.producers.map((producer: string, idx: number) => (
+                <span key={idx} className="px-5 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold">
+                  {producer}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Reviews Divider */}
         <div className="h-px w-full bg-white/10 my-8" />

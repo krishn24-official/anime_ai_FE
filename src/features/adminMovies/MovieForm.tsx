@@ -31,6 +31,12 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [country, setCountry] = useState<string[]>(initialData?.country || []);
   const [newCountry, setNewCountry] = useState('');
   
+  const [producers, setProducers] = useState<string[]>(initialData?.producers || []);
+  const [newProducer, setNewProducer] = useState('');
+  
+  const [productionHouse, setProductionHouse] = useState<string[]>(initialData?.production_house || []);
+  const [newProductionHouse, setNewProductionHouse] = useState('');
+  
   const [plot, setPlot] = useState(initialData?.plot || '');
   const [tagline, setTagline] = useState(initialData?.tagline || '');
   const [trailers, setTrailers] = useState<{url: string, label: string}[]>(initialData?.trailers || []);
@@ -103,6 +109,8 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
         writers,
         language,
         country,
+        producers,
+        production_house: productionHouse,
         plot,
         tagline,
         trailers,
@@ -245,12 +253,14 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                   <label className="block text-sm font-medium text-white/70 mb-2">Trailers</label>
                   <div className="space-y-3">
                     {trailers.map((trailer, idx) => (
-                      <div key={idx} className="flex gap-2">
-                        <input type="text" placeholder="Label (e.g. Official Trailer)" value={trailer.label} onChange={e => { const newT = [...trailers]; newT[idx].label = e.target.value; setTrailers(newT); }} className="w-1/3 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
-                        <input type="text" placeholder="YouTube URL" value={trailer.url} onChange={e => { const newT = [...trailers]; newT[idx].url = e.target.value; setTrailers(newT); }} className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
-                        <button type="button" onClick={() => { const newT = [...trailers]; newT.splice(idx, 1); setTrailers(newT); }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors">
-                          <X className="w-5 h-5" />
-                        </button>
+                      <div key={idx} className="flex flex-col md:flex-row gap-2">
+                        <input type="text" placeholder="Label (e.g. Official Trailer)" value={trailer.label} onChange={e => { const newT = [...trailers]; newT[idx] = { ...newT[idx], label: e.target.value }; setTrailers(newT); }} className="w-full md:w-1/3 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+                        <div className="flex w-full md:flex-1 gap-2">
+                          <input type="text" placeholder="YouTube URL" value={trailer.url} onChange={e => { const newT = [...trailers]; newT[idx] = { ...newT[idx], url: e.target.value }; setTrailers(newT); }} className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+                          <button type="button" onClick={() => { const newT = [...trailers]; newT.splice(idx, 1); setTrailers(newT); }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors shrink-0">
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                     <button type="button" onClick={() => setTrailers([...trailers, { url: '', label: '' }])} className="text-sm bg-white/5 hover:bg-white/10 text-white py-2 px-4 rounded-lg transition-colors inline-flex items-center gap-2">
@@ -318,6 +328,36 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                   </div>
                   <input type="text" value={newCountry} onChange={e => setNewCountry(e.target.value)}
                     onKeyDown={e => handleAddTag(e, country, setCountry, newCountry, setNewCountry)}
+                    placeholder="Type and press Enter"
+                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Producers</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {producers.map((tag, idx) => (
+                      <span key={idx} className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded text-xs flex items-center gap-1">
+                        {tag} <X className="w-3 h-3 cursor-pointer hover:text-white" onClick={() => removeTag(idx, producers, setProducers)} />
+                      </span>
+                    ))}
+                  </div>
+                  <input type="text" value={newProducer} onChange={e => setNewProducer(e.target.value)}
+                    onKeyDown={e => handleAddTag(e, producers, setProducers, newProducer, setNewProducer)}
+                    placeholder="Type and press Enter"
+                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Production House</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {productionHouse.map((tag, idx) => (
+                      <span key={idx} className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded text-xs flex items-center gap-1">
+                        {tag} <X className="w-3 h-3 cursor-pointer hover:text-white" onClick={() => removeTag(idx, productionHouse, setProductionHouse)} />
+                      </span>
+                    ))}
+                  </div>
+                  <input type="text" value={newProductionHouse} onChange={e => setNewProductionHouse(e.target.value)}
+                    onKeyDown={e => handleAddTag(e, productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)}
                     placeholder="Type and press Enter"
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
                 </div>
