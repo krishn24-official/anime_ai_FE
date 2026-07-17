@@ -89,6 +89,7 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
   const [imageUrl, setImageUrl] = useState('');
   const [subtext, setSubtext] = useState(''); // E.g., date, author
   const [age, setAge] = useState(''); // Editable age
+  const [articleLink, setArticleLink] = useState(''); // New field for platform/article link
   
   const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
@@ -110,15 +111,18 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
         setTitle(initialData.name || 'Naruto Uzumaki');
         setSubtitle(initialData.subtitle || 'Celebrate with us!');
         setSubtext('Today\'s Celebration');
+        setArticleLink('');
       } else if (initialType === 'event') {
         setTitle(initialData.title || 'Spring Anime Festival');
         setSubtitle(initialData.subtitle || 'Special Live Event');
         setSubtext(initialData.date || 'Today\'s Event');
+        setArticleLink('');
       } else {
         // news
         setTitle(initialData.title || 'Demon Slayer Movie Announced!');
         setSubtitle('');
         setSubtext(`By ${initialData.author || 'Moctale'} • ${initialData.date || 'Today'}`);
+        setArticleLink('');
       }
     }
   }, [isOpen, initialType, initialData]);
@@ -392,13 +396,35 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
         ctx.save();
         const imgW = loadedImage.width;
         const imgH = loadedImage.height;
-        const scale = Math.max(width / imgW, height / imgH);
-        const drawW = imgW * scale;
-        const drawH = imgH * scale;
-        const drawX = (width - drawW) / 2;
-        // Shift Y up if the image is portrait so that the top part (the head/face) is visible instead of cropped!
-        const drawY = (imgH * scale > height) ? 0 : (height - drawH) / 2;
-        ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
+        
+        if (posterType === 'news') {
+          // Draw blurred background cover
+          const bgScale = Math.max(width / imgW, height / imgH);
+          ctx.filter = 'blur(40px) brightness(0.5)';
+          ctx.drawImage(loadedImage, (width - imgW * bgScale) / 2, (height - imgH * bgScale) / 2, imgW * bgScale, imgH * bgScale);
+          ctx.filter = 'none';
+
+          // Draw full uncropped image centered in the top space
+          const availableHeight = 680;
+          const contentScale = Math.min((width - 80) / imgW, availableHeight / imgH); // 40px padding on sides
+          const drawW = imgW * contentScale;
+          const drawH = imgH * contentScale;
+          const drawX = (width - drawW) / 2;
+          const drawY = (availableHeight - drawH) / 2 + 40; 
+          
+          ctx.shadowColor = 'rgba(0,0,0,0.6)';
+          ctx.shadowBlur = 30;
+          ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
+          ctx.shadowBlur = 0;
+        } else {
+          // Standard cover fit for birthday/event
+          const scale = Math.max(width / imgW, height / imgH);
+          const drawW = imgW * scale;
+          const drawH = imgH * scale;
+          const drawX = (width - drawW) / 2;
+          const drawY = (imgH * scale > height) ? 0 : (height - drawH) / 2;
+          ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
+        }
         ctx.restore();
       }
 
@@ -494,15 +520,6 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
 
       } else {
         // News Poster: full-bleed news layout with headline
-        // News tag
-        ctx.fillStyle = selectedTemplate.primary;
-        ctx.beginPath();
-        ctx.roundRect(60, 140, 200, 50, 10);
-        ctx.fill();
-        ctx.fillStyle = '#000000';
-        ctx.font = '900 24px "Outfit", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('HOT NEWS', 160, 173);
 
         // Headline text wrap logic
         ctx.fillStyle = '#FFFFFF';
@@ -604,12 +621,19 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
         if (!blob) return;
         const file = new File([blob], 'poster.png', { type: 'image/png' });
         
+        const shareText = articleLink 
+          ? `Check out this awesome anime poster! Read more here: ${articleLink}`
+          : 'Check out this awesome anime poster!';
+
+        const shareData: any = {
+          files: [file],
+          title: 'Anime AI Poster',
+          text: shareText
+        };
+
+
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'Anime AI Poster',
-            text: 'Check out this awesome anime poster!'
-          });
+          await navigator.share(shareData);
         } else {
           // Fallback to copy link or download
           handleCopy();
@@ -639,9 +663,12 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
             <span>Poster Live Preview</span>
           </h3>
 
-          <div className="relative w-full aspect-square max-w-[380px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black/40 flex items-center justify-center">
+          <div 
+            className={`relative w-full aspect-square max-w-[380px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black/40 flex items-center justify-center ${articleLink ? 'cursor-pointer' : ''}`}
+            onClick={() => { if (articleLink) window.open(articleLink, '_blank', 'noopener,noreferrer'); }}
+          >
             {imageLoading && (
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10 pointer-events-none">
                 <div className="w-8 h-8 border-2 border-anime-primary border-t-transparent rounded-full animate-spin" />
               </div>
             )}
@@ -797,6 +824,20 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
                   value={subtext}
                   onChange={(e) => setSubtext(e.target.value)}
                   placeholder="Enter details..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary"
+                />
+              </div>
+
+              {/* Platform / Article Link */}
+              <div>
+                <label className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider block mb-1.5">
+                  Platform / Article Link
+                </label>
+                <input
+                  type="url"
+                  value={articleLink}
+                  onChange={(e) => setArticleLink(e.target.value)}
+                  placeholder="https://..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary"
                 />
               </div>

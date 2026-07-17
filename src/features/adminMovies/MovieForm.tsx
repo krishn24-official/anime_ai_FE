@@ -281,10 +281,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       </span>
                     ))}
                   </div>
-                  <input type="text" value={newGenre} onChange={e => setNewGenre(e.target.value)}
-                    onKeyDown={e => handleAddTag(e, genres, setGenres, newGenre, setNewGenre)}
-                    placeholder="Type and press Enter"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  <div className="flex gap-2">
+                    <input type="text" value={newGenre} onChange={e => setNewGenre(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, genres, setGenres, newGenre, setNewGenre)}
+                      placeholder="Type and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <button type="button" onClick={() => addTag(genres, setGenres, newGenre, setNewGenre)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
                 </div>
 
                 <div>
@@ -296,10 +299,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       </span>
                     ))}
                   </div>
-                  <input type="text" value={newDirector} onChange={e => setNewDirector(e.target.value)}
-                    onKeyDown={e => handleAddTag(e, director, setDirector, newDirector, setNewDirector)}
-                    placeholder="Type and press Enter"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  <div className="flex gap-2">
+                    <input type="text" value={newDirector} onChange={e => setNewDirector(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, director, setDirector, newDirector, setNewDirector)}
+                      placeholder="Type and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <button type="button" onClick={() => addTag(director, setDirector, newDirector, setNewDirector)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
                 </div>
                 
                 <div>
@@ -311,10 +317,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       </span>
                     ))}
                   </div>
-                  <input type="text" value={newWriter} onChange={e => setNewWriter(e.target.value)}
-                    onKeyDown={e => handleAddTag(e, writers, setWriters, newWriter, setNewWriter)}
-                    placeholder="Type and press Enter"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  <div className="flex gap-2">
+                    <input type="text" value={newWriter} onChange={e => setNewWriter(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, writers, setWriters, newWriter, setNewWriter)}
+                      placeholder="Type and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <button type="button" onClick={() => addTag(writers, setWriters, newWriter, setNewWriter)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
                 </div>
                 
                 <div>
@@ -326,10 +335,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       </span>
                     ))}
                   </div>
-                  <input type="text" value={newCountry} onChange={e => setNewCountry(e.target.value)}
-                    onKeyDown={e => handleAddTag(e, country, setCountry, newCountry, setNewCountry)}
-                    placeholder="Type and press Enter"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  <div className="flex gap-2">
+                    <input type="text" value={newCountry} onChange={e => setNewCountry(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, country, setCountry, newCountry, setNewCountry)}
+                      placeholder="Type and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <button type="button" onClick={() => addTag(country, setCountry, newCountry, setNewCountry)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
                 </div>
                 
                 <div>
@@ -341,10 +353,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       </span>
                     ))}
                   </div>
-                  <input type="text" value={newProducer} onChange={e => setNewProducer(e.target.value)}
-                    onKeyDown={e => handleAddTag(e, producers, setProducers, newProducer, setNewProducer)}
-                    placeholder="Type and press Enter"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  <div className="flex gap-2">
+                    <input type="text" value={newProducer} onChange={e => setNewProducer(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, producers, setProducers, newProducer, setNewProducer)}
+                      placeholder="Type and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <button type="button" onClick={() => addTag(producers, setProducers, newProducer, setNewProducer)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
                 </div>
                 
                 <div>
@@ -356,10 +371,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       </span>
                     ))}
                   </div>
-                  <input type="text" value={newProductionHouse} onChange={e => setNewProductionHouse(e.target.value)}
-                    onKeyDown={e => handleAddTag(e, productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)}
-                    placeholder="Type and press Enter"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  <div className="flex gap-2">
+                    <input type="text" value={newProductionHouse} onChange={e => setNewProductionHouse(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)}
+                      placeholder="Type and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <button type="button" onClick={() => addTag(productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
                 </div>
                 
                 <div className="md:col-span-2">
@@ -371,10 +389,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       </span>
                     ))}
                   </div>
-                  <input type="text" value={newLanguage} onChange={e => setNewLanguage(e.target.value)}
-                    onKeyDown={e => handleAddTag(e, language, setLanguage, newLanguage, setNewLanguage)}
-                    placeholder="Type and press Enter"
-                    className="w-full md:w-1/2 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  <div className="flex gap-2 md:w-1/2">
+                    <input type="text" value={newLanguage} onChange={e => setNewLanguage(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, language, setLanguage, newLanguage, setNewLanguage)}
+                      placeholder="Type and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <button type="button" onClick={() => addTag(language, setLanguage, newLanguage, setNewLanguage)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
                 </div>
               </div>
               

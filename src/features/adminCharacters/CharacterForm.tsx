@@ -82,13 +82,17 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
     }
   }, [mangaQuery]);
 
+  const addTag = (state: string[], setState: any, val: string, setVal: any) => {
+    if (val.trim() && !state.includes(val.trim())) {
+      setState([...state, val.trim()]);
+      setVal('');
+    }
+  };
+
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (val.trim() && !state.includes(val.trim())) {
-        setState([...state, val.trim()]);
-        setVal('');
-      }
+      addTag(state, setState, val, setVal);
     }
   };
 
@@ -389,14 +393,17 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Affiliations</label>
-            <input
-              type="text"
-              placeholder="Press Enter to add"
-              className="w-full bg-[#252525] border border-[#333] rounded px-3 py-2 text-white mb-2"
-              value={newAffiliation}
-              onChange={(e) => setNewAffiliation(e.target.value)}
-              onKeyDown={(e) => handleAddTag(e, affiliations, setAffiliations, newAffiliation, setNewAffiliation)}
-            />
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Press Enter to add"
+                className="flex-1 bg-[#252525] border border-[#333] rounded px-3 py-2 text-white"
+                value={newAffiliation}
+                onChange={(e) => setNewAffiliation(e.target.value)}
+                onKeyDown={(e) => handleAddTag(e, affiliations, setAffiliations, newAffiliation, setNewAffiliation)}
+              />
+              <button type="button" onClick={() => addTag(affiliations, setAffiliations, newAffiliation, setNewAffiliation)} className="px-4 py-2 bg-[#333] hover:bg-[#444] rounded text-white text-sm transition-colors shrink-0">Add</button>
+            </div>
             <div className="flex flex-wrap gap-2">
               {affiliations.map(a => (
                 <span key={a} className="px-2 py-1 bg-[#333] rounded text-sm flex items-center text-white">
@@ -409,14 +416,17 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
           
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Abilities</label>
-            <input
-              type="text"
-              placeholder="Press Enter to add"
-              className="w-full bg-[#252525] border border-[#333] rounded px-3 py-2 text-white mb-2"
-              value={newAbility}
-              onChange={(e) => setNewAbility(e.target.value)}
-              onKeyDown={(e) => handleAddTag(e, abilities, setAbilities, newAbility, setNewAbility)}
-            />
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Press Enter to add"
+                className="flex-1 bg-[#252525] border border-[#333] rounded px-3 py-2 text-white"
+                value={newAbility}
+                onChange={(e) => setNewAbility(e.target.value)}
+                onKeyDown={(e) => handleAddTag(e, abilities, setAbilities, newAbility, setNewAbility)}
+              />
+              <button type="button" onClick={() => addTag(abilities, setAbilities, newAbility, setNewAbility)} className="px-4 py-2 bg-[#333] hover:bg-[#444] rounded text-white text-sm transition-colors shrink-0">Add</button>
+            </div>
             <div className="flex flex-wrap gap-2">
               {abilities.map(a => (
                 <span key={a} className="px-2 py-1 bg-[#333] rounded text-sm flex items-center text-white">
@@ -429,14 +439,17 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
           
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Forms</label>
-            <input
-              type="text"
-              placeholder="Press Enter to add"
-              className="w-full bg-[#252525] border border-[#333] rounded px-3 py-2 text-white mb-2"
-              value={newForm}
-              onChange={(e) => setNewForm(e.target.value)}
-              onKeyDown={(e) => handleAddTag(e, forms, setForms, newForm, setNewForm)}
-            />
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Press Enter to add"
+                className="flex-1 bg-[#252525] border border-[#333] rounded px-3 py-2 text-white"
+                value={newForm}
+                onChange={(e) => setNewForm(e.target.value)}
+                onKeyDown={(e) => handleAddTag(e, forms, setForms, newForm, setNewForm)}
+              />
+              <button type="button" onClick={() => addTag(forms, setForms, newForm, setNewForm)} className="px-4 py-2 bg-[#333] hover:bg-[#444] rounded text-white text-sm transition-colors shrink-0">Add</button>
+            </div>
             <div className="flex flex-wrap gap-2">
               {forms.map(a => (
                 <span key={a} className="px-2 py-1 bg-[#333] rounded text-sm flex items-center text-white">
@@ -449,14 +462,17 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
           
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Tags</label>
-            <input
-              type="text"
-              placeholder="Press Enter to add"
-              className="w-full bg-[#252525] border border-[#333] rounded px-3 py-2 text-white mb-2"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => handleAddTag(e, tags, setTags, newTag, setNewTag)}
-            />
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="Press Enter to add"
+                className="flex-1 bg-[#252525] border border-[#333] rounded px-3 py-2 text-white"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => handleAddTag(e, tags, setTags, newTag, setNewTag)}
+              />
+              <button type="button" onClick={() => addTag(tags, setTags, newTag, setNewTag)} className="px-4 py-2 bg-[#333] hover:bg-[#444] rounded text-white text-sm transition-colors shrink-0">Add</button>
+            </div>
             <div className="flex flex-wrap gap-2">
               {tags.map(a => (
                 <span key={a} className="px-2 py-1 bg-[#333] rounded text-sm flex items-center text-white">

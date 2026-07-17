@@ -326,14 +326,17 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Genres</label>
-              <input 
-                type="text" 
-                className={inputClass} 
-                value={newGenre} 
-                onChange={e => setNewGenre(e.target.value)} 
-                onKeyDown={e => handleAddTag(e, genres, setGenres, newGenre, setNewGenre)} 
-                placeholder="Press Enter to add" 
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className={inputClass} 
+                  value={newGenre} 
+                  onChange={e => setNewGenre(e.target.value)} 
+                  onKeyDown={e => handleAddTag(e, genres, setGenres, newGenre, setNewGenre)} 
+                  placeholder="Press Enter to add" 
+                />
+                <button type="button" onClick={() => addTag(genres, setGenres, newGenre, setNewGenre)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {genres.map((g, i) => (
                   <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">
@@ -344,14 +347,17 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
             </div>
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Creators</label>
-              <input 
-                type="text" 
-                className={inputClass} 
-                value={newCreator} 
-                onChange={e => setNewCreator(e.target.value)} 
-                onKeyDown={e => handleAddTag(e, creators, setCreators, newCreator, setNewCreator)} 
-                placeholder="Press Enter to add" 
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className={inputClass} 
+                  value={newCreator} 
+                  onChange={e => setNewCreator(e.target.value)} 
+                  onKeyDown={e => handleAddTag(e, creators, setCreators, newCreator, setNewCreator)} 
+                  placeholder="Press Enter to add" 
+                />
+                <button type="button" onClick={() => addTag(creators, setCreators, newCreator, setNewCreator)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {creators.map((c, i) => (
                   <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">
@@ -365,14 +371,17 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Languages</label>
-              <input 
-                type="text" 
-                className={inputClass} 
-                value={newLanguage} 
-                onChange={e => setNewLanguage(e.target.value)} 
-                onKeyDown={e => handleAddTag(e, language, setLanguage, newLanguage, setNewLanguage)} 
-                placeholder="Press Enter to add" 
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className={inputClass} 
+                  value={newLanguage} 
+                  onChange={e => setNewLanguage(e.target.value)} 
+                  onKeyDown={e => handleAddTag(e, language, setLanguage, newLanguage, setNewLanguage)} 
+                  placeholder="Press Enter to add" 
+                />
+                <button type="button" onClick={() => addTag(language, setLanguage, newLanguage, setNewLanguage)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {language.map((l, i) => (
                   <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">
@@ -383,14 +392,17 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
             </div>
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Countries</label>
-              <input 
-                type="text" 
-                className={inputClass} 
-                value={newCountry} 
-                onChange={e => setNewCountry(e.target.value)} 
-                onKeyDown={e => handleAddTag(e, country, setCountry, newCountry, setNewCountry)} 
-                placeholder="Press Enter to add" 
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className={inputClass} 
+                  value={newCountry} 
+                  onChange={e => setNewCountry(e.target.value)} 
+                  onKeyDown={e => handleAddTag(e, country, setCountry, newCountry, setNewCountry)} 
+                  placeholder="Press Enter to add" 
+                />
+                <button type="button" onClick={() => addTag(country, setCountry, newCountry, setNewCountry)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {country.map((c, i) => (
                   <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">
@@ -404,14 +416,17 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Producers</label>
-              <input 
-                type="text" 
-                className={inputClass} 
-                value={newProducer} 
-                onChange={e => setNewProducer(e.target.value)} 
-                onKeyDown={e => handleAddTag(e, producers, setProducers, newProducer, setNewProducer)} 
-                placeholder="Press Enter to add" 
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className={inputClass} 
+                  value={newProducer} 
+                  onChange={e => setNewProducer(e.target.value)} 
+                  onKeyDown={e => handleAddTag(e, producers, setProducers, newProducer, setNewProducer)} 
+                  placeholder="Press Enter to add" 
+                />
+                <button type="button" onClick={() => addTag(producers, setProducers, newProducer, setNewProducer)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {producers.map((p, i) => (
                   <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">
@@ -422,14 +437,17 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
             </div>
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Production House</label>
-              <input 
-                type="text" 
-                className={inputClass} 
-                value={newProductionHouse} 
-                onChange={e => setNewProductionHouse(e.target.value)} 
-                onKeyDown={e => handleAddTag(e, productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)} 
-                placeholder="Press Enter to add" 
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className={inputClass} 
+                  value={newProductionHouse} 
+                  onChange={e => setNewProductionHouse(e.target.value)} 
+                  onKeyDown={e => handleAddTag(e, productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)} 
+                  placeholder="Press Enter to add" 
+                />
+                <button type="button" onClick={() => addTag(productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {productionHouse.map((p, i) => (
                   <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">

@@ -106,6 +106,18 @@ const ContentDetail: React.FC = () => {
   const mainTrailerUrl = data.trailers?.[0]?.url || data.trailer_url;
   const mainTrailerId = getYouTubeId(mainTrailerUrl);
 
+  const formatDuration = (mins?: number) => {
+    if (!mins) return 'Unknown Duration';
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  };
+  const durationText = formatDuration(data.runtime_minutes || data.duration_minutes || data.episode_runtime_minutes);
+  const directorText = data.director?.[0] || data.creators?.[0] || data.studios?.[0] || data.crew?.[0]?.name || 'Unknown';
+  const countryText = data.country?.[0] || 'Unknown';
+  const languageText = data.language?.[0] || 'Unknown';
+  const ageRatingText = data.age_rating || 'Unknown';
+
   return (
     <div className="min-h-screen bg-black text-white animate-fade-in -mx-4 sm:-mx-8 -mt-24 pb-20">
       {/* Hero Banner Section */}
@@ -156,30 +168,30 @@ const ContentDetail: React.FC = () => {
               <span>•</span>
               <span>{data.year || 'Unknown Year'}</span>
               <span>•</span>
-              <span>2h 21m</span> {/* Mock Duration */}
+              <span>{durationText}</span>
             </div>
 
             <h1 className="text-5xl md:text-7xl font-bold font-fraunces text-white leading-tight">
               {data.title}
             </h1>
 
-            {/* Mock Meta Info Grid */}
+            {/* Meta Info Grid */}
             <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm mt-4">
               <div>
                 <span className="block text-gray-400 text-xs mb-1">Directed By</span>
-                <span className="font-semibold">{data.crew?.[0]?.name || 'Unknown'}</span>
+                <span className="font-semibold">{directorText}</span>
               </div>
               <div>
                 <span className="block text-gray-400 text-xs mb-1">Country</span>
-                <span className="font-semibold">India</span> {/* Mock */}
+                <span className="font-semibold">{countryText}</span>
               </div>
               <div>
                 <span className="block text-gray-400 text-xs mb-1">Language</span>
-                <span className="font-semibold">Hindi</span> {/* Mock */}
+                <span className="font-semibold">{languageText}</span>
               </div>
               <div>
                 <span className="block text-gray-400 text-xs mb-1">Age Rating</span>
-                <span className="font-semibold">16+</span> {/* Mock */}
+                <span className="font-semibold">{ageRatingText}</span>
               </div>
             </div>
 
