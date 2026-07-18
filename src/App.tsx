@@ -22,6 +22,9 @@ import { AdminTvSeries } from './features/adminTvSeries/AdminTvSeries';
 import { AdminEpisodesChapters } from './features/adminEpisodes/AdminEpisodesChapters';
 import AdminRelationships from './features/adminRelationships/AdminRelationships';
 import { AdminCharacters } from './features/adminCharacters/AdminCharacters';
+import { AdminActors } from './features/adminActors/AdminActors';
+
+const ActorDetail = React.lazy(() => import('./features/actors/ActorDetail'));
 
 const AdminLayout = () => {
   return <div className="w-full"><Outlet /></div>;
@@ -276,6 +279,7 @@ const App: React.FC = () => {
               <Route path="/content" element={<Content />} />
               <Route path="/content/:type/:id" element={<ContentDetail />} />
               <Route path="/characters" element={<Characters />} />
+              <Route path="/actors/:id" element={<ActorDetail />} />
               <Route path="/games/*" element={<Games />} />
               <Route path="/chatbot" element={<Chatbot />} />
 
@@ -291,6 +295,7 @@ const App: React.FC = () => {
                 <Route path="relationships" element={<AdminRelationships />} />
                 <Route path="manga" element={<div className="p-6 text-white">Manga Admin (Coming Soon)</div>} />
                 <Route path="characters" element={<AdminCharacters />} />
+                <Route path="actors" element={<AdminActors />} />
               </Route>
             </Routes>
           </React.Suspense>

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Upload, X, Plus, Loader2 } from 'lucide-react';
 import { tvSeriesAdminService } from '../../services/tvSeriesAdminService';
+import { actorService, type ActorItem } from '../../services/actorService';
 
 interface TvSeriesFormProps {
   onSuccess: () => void;
@@ -40,6 +41,14 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
   const [plot, setPlot] = useState(initialData?.plot || '');
   const [tagline, setTagline] = useState(initialData?.tagline || '');
   const [trailers, setTrailers] = useState<{url: string, label: string}[]>(initialData?.trailers || []);
+
+  const [actors, setActors] = useState<string[]>(initialData?.actors || []);
+  const [newActor, setNewActor] = useState('');
+  const [availableActors, setAvailableActors] = useState<ActorItem[]>([]);
+  
+  React.useEffect(() => {
+    actorService.listActors(1, 1000).then(res => setAvailableActors(res.items)).catch(console.error);
+  }, []);
 
   const [released, setReleased] = useState<boolean>(
     initialData ? !['Planned', 'In Production', 'Pilot'].includes(initialData.status) : true
@@ -80,13 +89,24 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [backdropFile, setBackdropFile] = useState<File | null>(null);
   
-  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any) => {
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (val.trim() && !state.includes(val.trim())) {
-        setState([...state, val.trim()]);
-        setVal('');
+      addTag(state, setState, val, setVal, requireActor);
+    }
+  };
+
+  const addTag = (state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
+    if (val.trim() && !state.includes(val.trim())) {
+      if (requireActor) {
+        const exists = availableActors.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+        if (!exists) {
+          alert(`"${val.trim()}" not found in Actors collection. Please create it first in Manage Actors.`);
+          return;
+        }
       }
+      setState([...state, val.trim()]);
+      setVal('');
     }
   };
   
@@ -122,6 +142,7 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
       formData.append('country', JSON.stringify(country));
       formData.append('producers', JSON.stringify(producers));
       formData.append('production_house', JSON.stringify(productionHouse));
+      formData.append('actors', JSON.stringify(actors));
       if (plot) formData.append('plot', plot);
       if (tagline) formData.append('tagline', tagline);
       if (trailers.length > 0) formData.append('trailers', JSON.stringify(trailers));
@@ -353,10 +374,16 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
                   className={inputClass} 
                   value={newCreator} 
                   onChange={e => setNewCreator(e.target.value)} 
-                  onKeyDown={e => handleAddTag(e, creators, setCreators, newCreator, setNewCreator)} 
-                  placeholder="Press Enter to add" 
+                  onKeyDown={e => handleAddTag(e, creators, setCreators, newCreator, setNewCreator, true)} 
+                  list="creators-list"
+                  placeholder="Type creator name and press Enter" 
                 />
-                <button type="button" onClick={() => addTag(creators, setCreators, newCreator, setNewCreator)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                <datalist id="creators-list">
+                  {availableActors.map(actor => (
+                    <option key={actor._id} value={actor.name} />
+                  ))}
+                </datalist>
+                <button type="button" onClick={() => addTag(creators, setCreators, newCreator, setNewCreator, true)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {creators.map((c, i) => (
@@ -455,6 +482,34 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
                   </span>
                 ))}
               </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-1.5">Actors</label>
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                className={inputClass} 
+                value={newActor} 
+                onChange={e => setNewActor(e.target.value)} 
+                onKeyDown={e => handleAddTag(e, actors, setActors, newActor, setNewActor, true)} 
+                list="tv-actors-list"
+                placeholder="Type actor name and press Enter" 
+              />
+              <datalist id="tv-actors-list">
+                {availableActors.map(actor => (
+                  <option key={actor._id} value={actor.name} />
+                ))}
+              </datalist>
+              <button type="button" onClick={() => addTag(actors, setActors, newActor, setNewActor, true)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {actors.map((a, i) => (
+                <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">
+                  {a} <X className="w-3 h-3 cursor-pointer hover:text-white" onClick={() => removeTag(i, actors, setActors)} />
+                </span>
+              ))}
             </div>
           </div>
 

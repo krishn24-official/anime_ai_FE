@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Upload, X, Plus, Loader2 } from 'lucide-react';
 import { movieAdminService } from '../../services/movieAdminService';
+import { actorService, type ActorItem } from '../../services/actorService';
 
 interface MovieFormProps {
   onSuccess: () => void;
@@ -41,6 +42,14 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [tagline, setTagline] = useState(initialData?.tagline || '');
   const [trailers, setTrailers] = useState<{url: string, label: string}[]>(initialData?.trailers || []);
   
+  const [actors, setActors] = useState<string[]>(initialData?.actors || []);
+  const [newActor, setNewActor] = useState('');
+  const [availableActors, setAvailableActors] = useState<ActorItem[]>([]);
+  
+  React.useEffect(() => {
+    actorService.listActors(1, 1000).then(res => setAvailableActors(res.items)).catch(console.error);
+  }, []);
+  
   const [runtimeMinutes, setRuntimeMinutes] = useState<string>(initialData?.runtime_minutes?.toString() || '');
 
   const [released, setReleased] = useState<boolean>(
@@ -76,13 +85,24 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [backdropFile, setBackdropFile] = useState<File | null>(null);
   
-  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any) => {
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (val.trim() && !state.includes(val.trim())) {
-        setState([...state, val.trim()]);
-        setVal('');
+      addTag(state, setState, val, setVal, requireActor);
+    }
+  };
+
+  const addTag = (state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
+    if (val.trim() && !state.includes(val.trim())) {
+      if (requireActor) {
+        const exists = availableActors.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+        if (!exists) {
+          alert(`"${val.trim()}" not found in Actors collection. Please create it first in Manage Actors.`);
+          return;
+        }
       }
+      setState([...state, val.trim()]);
+      setVal('');
     }
   };
   
@@ -111,6 +131,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
         country,
         producers,
         production_house: productionHouse,
+        actors,
         plot,
         tagline,
         trailers,
@@ -301,10 +322,11 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                   </div>
                   <div className="flex gap-2">
                     <input type="text" value={newDirector} onChange={e => setNewDirector(e.target.value)}
-                      onKeyDown={e => handleAddTag(e, director, setDirector, newDirector, setNewDirector)}
-                      placeholder="Type and press Enter"
+                      onKeyDown={e => handleAddTag(e, director, setDirector, newDirector, setNewDirector, true)}
+                      list="actors-list"
+                      placeholder="Type director name and press Enter"
                       className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
-                    <button type="button" onClick={() => addTag(director, setDirector, newDirector, setNewDirector)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                    <button type="button" onClick={() => addTag(director, setDirector, newDirector, setNewDirector, true)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
                   </div>
                 </div>
                 
@@ -377,6 +399,30 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       placeholder="Type and press Enter"
                       className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
                     <button type="button" onClick={() => addTag(productionHouse, setProductionHouse, newProductionHouse, setNewProductionHouse)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-1">Actors</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {actors.map((tag, idx) => (
+                      <span key={idx} className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded text-xs flex items-center gap-1">
+                        {tag} <X className="w-3 h-3 cursor-pointer hover:text-white" onClick={() => removeTag(idx, actors, setActors)} />
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="text" value={newActor} onChange={e => setNewActor(e.target.value)}
+                      onKeyDown={e => handleAddTag(e, actors, setActors, newActor, setNewActor, true)}
+                      list="actors-list"
+                      placeholder="Type actor name and press Enter"
+                      className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
+                    <datalist id="actors-list">
+                      {availableActors.map(actor => (
+                        <option key={actor._id} value={actor.name} />
+                      ))}
+                    </datalist>
+                    <button type="button" onClick={() => addTag(actors, setActors, newActor, setNewActor, true)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
                   </div>
                 </div>
                 

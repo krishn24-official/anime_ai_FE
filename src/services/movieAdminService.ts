@@ -13,6 +13,9 @@ export interface MovieFormData {
   genres: string[];
   director: string[];
   writers: string[];
+  producers: string[];
+  production_house: string[];
+  actors: string[];
   plot: string;
   language: string[];
   country: string[];
@@ -38,6 +41,9 @@ export const movieAdminService = {
     formData.append('genres', JSON.stringify(data.genres));
     formData.append('director', JSON.stringify(data.director));
     formData.append('writers', JSON.stringify(data.writers));
+    formData.append('producers', JSON.stringify(data.producers));
+    formData.append('production_house', JSON.stringify(data.production_house));
+    formData.append('actors', JSON.stringify(data.actors));
     if (data.plot) formData.append('plot', data.plot);
     formData.append('language', JSON.stringify(data.language));
     formData.append('country', JSON.stringify(data.country));
@@ -65,6 +71,9 @@ export const movieAdminService = {
     if (data.genres) formData.append('genres', JSON.stringify(data.genres));
     if (data.director) formData.append('director', JSON.stringify(data.director));
     if (data.writers) formData.append('writers', JSON.stringify(data.writers));
+    if (data.producers) formData.append('producers', JSON.stringify(data.producers));
+    if (data.production_house) formData.append('production_house', JSON.stringify(data.production_house));
+    if (data.actors) formData.append('actors', JSON.stringify(data.actors));
     if (data.plot !== undefined) formData.append('plot', data.plot || '');
     if (data.language) formData.append('language', JSON.stringify(data.language));
     if (data.country) formData.append('country', JSON.stringify(data.country));

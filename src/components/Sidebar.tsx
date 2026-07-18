@@ -68,6 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         { name: 'Manage TV Series', path: '/admin/tv-series', icon: <Film className="w-5 h-5 shrink-0" /> },
         { name: 'Manage Ep & Ch', path: '/admin/episodes-chapters', icon: <Film className="w-5 h-5 shrink-0" /> },
         { name: 'Manage Characters', path: '/admin/characters', icon: <User className="w-5 h-5 shrink-0" /> },
+        { name: 'Manage Actors', path: '/admin/actors', icon: <User className="w-5 h-5 shrink-0" /> },
         { name: 'Manage Relationships', path: '/admin/relationships', icon: <User className="w-5 h-5 shrink-0" /> }
       ]
     });
