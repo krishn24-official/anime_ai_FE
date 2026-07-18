@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
 import { actorService, type ActorItem } from '../../services/actorService';
 import { actorAdminService } from '../../services/actorAdminService';
 import { ActorForm } from './ActorForm';
