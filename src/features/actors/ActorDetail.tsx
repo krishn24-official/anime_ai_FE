@@ -13,6 +13,15 @@ const ActorDetail: React.FC = () => {
     if (id) {
       setLoading(true);
       actorService.getActor(id)
+        .catch(err => {
+          // If fetch fails, try searching by name
+          return actorService.searchActors(id).then(res => {
+            if (res && res.length > 0) {
+              return actorService.getActor(res[0].id);
+            }
+            throw err;
+          });
+        })
         .then(data => {
           setActor(data);
           setError(null);
@@ -49,16 +58,16 @@ const ActorDetail: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-24">
         
         <div className="flex flex-col md:flex-row gap-10 items-start">
-          <div className="shrink-0 w-64 md:w-80 rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative">
+          <div className="shrink-0 w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white/10 relative">
             <img 
               src={actor.images?.profile || `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name)}&background=222&color=fff&size=512`} 
               alt={actor.name}
-              className="w-full aspect-[2/3] object-cover"
+              className="w-full h-full object-cover"
             />
           </div>
           
           <div className="flex-1 space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold font-fraunces leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
               {actor.name}
             </h1>
             

@@ -10,6 +10,7 @@ export interface FrontendCharacter {
   gender?: string;
   dob?: string; // MM-DD format
   type: 'character' | 'voice_actor';
+  anime_details?: any[];
 }
 
 const mapBackendCharacter = (item: any): FrontendCharacter => {
@@ -42,6 +43,7 @@ const mapBackendCharacter = (item: any): FrontendCharacter => {
     gender: item.gender || '',
     dob: dobStr || undefined,
     type: 'character',
+    anime_details: item.anime_details || []
   };
 };
 

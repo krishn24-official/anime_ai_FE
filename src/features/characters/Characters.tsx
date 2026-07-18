@@ -108,7 +108,6 @@ const Characters: React.FC = () => {
   const [filterGender, setFilterGender] = useState<'all' | 'male' | 'female'>('all');
   const [filterAnime, setFilterAnime] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
@@ -124,7 +123,7 @@ const Characters: React.FC = () => {
         (b) => b.name.toLowerCase() === targetName.toLowerCase()
       );
       if (match) {
-        setSelectedCharId(match.id);
+        navigate('/characters/' + match.id);
       } else {
         const partial = characters.find(
           (c) => c.name.toLowerCase().includes(targetName.toLowerCase())
@@ -132,12 +131,12 @@ const Characters: React.FC = () => {
           (b) => b.name.toLowerCase().includes(targetName.toLowerCase())
         );
         if (partial) {
-          setSelectedCharId(partial.id);
+          navigate('/characters/' + partial.id);
         }
       }
       window.history.replaceState({}, document.title);
     }
-  }, [location, characters, birthdays]);
+  }, [location, characters, birthdays, navigate]);
 
   const isFirstRender = useRef(true);
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -226,13 +225,6 @@ const Characters: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [isSearchActive, loading, characters.length, displayCount, filteredCharacters.length]);
-
-  const selectedChar = characters.find(c => c.id === selectedCharId) || 
-                       birthdays.find(b => b.id === selectedCharId);
-
-  const { metadata, biography } = selectedChar 
-    ? parseCharacterDescription(selectedChar.description, selectedChar.name) 
-    : { metadata: {} as Record<string, string>, biography: '' };
 
   const today = new Date();
 
@@ -351,7 +343,7 @@ const Characters: React.FC = () => {
                 {birthdays.map((item) => (
                   <div
                     key={`bday-${item.id}`}
-                    onClick={() => setSelectedCharId(item.id)}
+                    onClick={() => navigate('/characters/' + item.id)}
                     className="glass-panel rounded-2xl overflow-hidden border border-anime-border flex flex-col group relative hover:border-anime-pink/40 transition-all duration-300 shadow-lg cursor-pointer"
                   >
                     <div className="relative aspect-[3/4] overflow-hidden bg-black/40">
@@ -435,7 +427,7 @@ const Characters: React.FC = () => {
                 {visibleCharacters.map((char) => (
                   <div
                     key={char.id}
-                    onClick={() => setSelectedCharId(char.id)}
+                    onClick={() => navigate('/characters/' + char.id)}
                     className="glass-panel rounded-2xl overflow-hidden border border-anime-border flex flex-col group relative hover:border-anime-primary/30 transition-all duration-300 shadow-lg cursor-pointer"
                   >
                     <div className="relative aspect-[3/4] overflow-hidden bg-black/40">
@@ -523,121 +515,6 @@ const Characters: React.FC = () => {
         </>
       )}
 
-      {/* Detail Drawer Modal (Matches Content.tsx) */}
-      {selectedChar && (
-        <div 
-          onClick={() => setSelectedCharId(null)}
-          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-opacity"
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xl bg-anime-bg border border-anime-border rounded-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-8 relative flex flex-col justify-between"
-          >
-            
-            {/* Share Button */}
-            <button
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('open-share-poster', {
-                  detail: {
-                    type: 'birthday',
-                    data: {
-                      name: selectedChar.name,
-                      image: selectedChar.image,
-                      subtitle: `Celebrate with us! Happy Birthday ${selectedChar.name}`
-                    }
-                  }
-                }));
-              }}
-              className="absolute top-4 right-14 sm:top-6 sm:right-18 p-2 bg-white/5 hover:bg-anime-pink hover:text-white border border-white/10 rounded-xl text-white transition-all z-10 cursor-pointer"
-              title="Share Birthday Poster"
-            >
-              <Share2 className="w-5 h-5" />
-            </button>
-
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedCharId(null)}
-              className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all z-10"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-6">
-              {/* Profile banner */}
-              <div className="flex space-x-4 items-start pt-6">
-                <img 
-                  src={selectedChar.image} 
-                  alt={selectedChar.name} 
-                  className="w-24 rounded-xl border border-anime-border object-cover aspect-[3/4] bg-black/40 shrink-0" 
-                />
-                <div>
-                  <span className="text-xs text-anime-secondary font-semibold uppercase">
-                    {selectedChar.gender || 'Character'}
-                  </span>
-                  <h2 className="text-xl md:text-2xl font-bold font-fraunces text-white leading-tight mt-1">
-                    {selectedChar.name}
-                  </h2>
-                  {selectedChar.nativeName && (
-                    <p className="text-xs text-anime-text/40 font-semibold mt-1">Native: {selectedChar.nativeName}</p>
-                  )}
-                  {selectedChar.dob && (
-                    <div className="flex items-center space-x-1 mt-2 text-xs text-anime-text/60">
-                      <Calendar className="w-3.5 h-3.5 text-anime-primary" />
-                      <span>Birthday: {selectedChar.dob}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Character Metadata Fields */}
-              {Object.keys(metadata).length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {Object.entries(metadata).map(([key, value]) => (
-                    <div key={key} className="p-3 sm:p-4 bg-white/5 rounded-xl border border-white/5">
-                      <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider block">{key}</span>
-                      <p className="text-xs font-semibold text-white mt-1 leading-relaxed">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Origin Anime list */}
-              <div className="p-4 bg-white/5 rounded-xl border border-white/5 space-y-2">
-                <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider block">Appearance origins</span>
-                <div className="flex flex-wrap gap-2">
-                  {selectedChar.anime.split(',').map((animeName) => {
-                    const trimmedName = animeName.trim();
-                    if (!trimmedName) return null;
-                    return (
-                      <button
-                        key={trimmedName}
-                        onClick={() => {
-                          setSelectedCharId(null);
-                          navigate('/content', { state: { searchQuery: trimmedName } });
-                        }}
-                        className="px-3 py-1.5 bg-anime-primary/10 border border-anime-primary/20 hover:border-anime-primary hover:bg-anime-primary/25 rounded-lg text-xs font-semibold text-anime-primary transition-all cursor-pointer"
-                      >
-                        {trimmedName}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Description Detail */}
-              <div className="space-y-2">
-                <h3 className="text-xs text-anime-secondary font-bold uppercase tracking-wider flex items-center space-x-1.5">
-                  <User className="w-3.5 h-3.5" />
-                  <span>Biography & Description</span>
-                </h3>
-                <p className="text-xs text-anime-text leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5 whitespace-pre-wrap">
-                  {biography || 'No biography available.'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
