@@ -17,7 +17,7 @@ const ActorDetail: React.FC = () => {
           // If fetch fails, try searching by name
           return actorService.searchActors(id).then(res => {
             if (res && res.length > 0) {
-              return actorService.getActor(res[0].id);
+              return actorService.getActor(res[0]._id);
             }
             throw err;
           });
