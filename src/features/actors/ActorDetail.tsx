@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Play, ArrowLeft } from 'lucide-react';
 import { actorService, type ActorItem } from '../../services/actorService';
 
 const ActorDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [actor, setActor] = useState<ActorItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +58,14 @@ const ActorDetail: React.FC = () => {
     <div className="min-h-screen bg-[#0B0B0C] text-white">
       <div className="max-w-7xl mx-auto px-6 py-24">
         
+        <button 
+          onClick={() => navigate(-1)} 
+          className="mb-8 text-gray-400 hover:text-white transition-colors flex items-center gap-2 group w-fit"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span>Back</span>
+        </button>
+
         <div className="flex flex-col md:flex-row gap-10 items-start">
           <div className="shrink-0 w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white/10 relative">
             <img 

@@ -118,6 +118,9 @@ export default defineConfig({
     })
   ],
   server: {
+    watch: {
+      ignored: ['**/android/**'],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

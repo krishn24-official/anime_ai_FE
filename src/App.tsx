@@ -37,6 +37,7 @@ import AuthPage from './features/auth/AuthPage';
 import { addNewArticle } from './store/slices/newsSlice';
 import { X } from 'lucide-react';
 
+
 interface ToastNotification {
   id: string;
   title: string;
@@ -95,6 +96,8 @@ const App: React.FC = () => {
       window.removeEventListener('open-share-poster', handleOpenShare);
     };
   }, []);
+
+
 
   // Close mobile sidebar on route change
   useEffect(() => {

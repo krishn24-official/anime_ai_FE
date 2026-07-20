@@ -341,10 +341,11 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                   </div>
                   <div className="flex gap-2">
                     <input type="text" value={newWriter} onChange={e => setNewWriter(e.target.value)}
-                      onKeyDown={e => handleAddTag(e, writers, setWriters, newWriter, setNewWriter)}
-                      placeholder="Type and press Enter"
+                      onKeyDown={e => handleAddTag(e, writers, setWriters, newWriter, setNewWriter, true)}
+                      list="actors-list"
+                      placeholder="Type writer name and press Enter"
                       className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
-                    <button type="button" onClick={() => addTag(writers, setWriters, newWriter, setNewWriter)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                    <button type="button" onClick={() => addTag(writers, setWriters, newWriter, setNewWriter, true)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
                   </div>
                 </div>
                 

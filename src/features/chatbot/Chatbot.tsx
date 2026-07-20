@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom';
 import type { RootState } from '../../store';
 import { sendMessage, clearHistory } from '../../store/slices/chatSlice';
 import { Bot, Send, Trash2, Sparkles, User, Camera, Image, X } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 const Chatbot: React.FC = () => {
   const dispatch = useDispatch();
@@ -107,8 +109,46 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  // Image Picker (Gallery/Files)
+  const pickImage = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const image = await CapCamera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Photos
+        });
+        if (image.dataUrl) {
+          setSelectedImage(image.dataUrl);
+        }
+      } catch (err: any) {
+        console.error("Native Gallery Error:", err);
+      }
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
   // Open Camera Feed
   const openCamera = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const image = await CapCamera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Camera
+        });
+        if (image.dataUrl) {
+          setSelectedImage(image.dataUrl);
+        }
+      } catch (err: any) {
+        console.error("Native Camera Error:", err);
+      }
+      return;
+    }
+
     setIsCameraOpen(true);
     setCameraError(null);
     try {
@@ -341,7 +381,7 @@ const Chatbot: React.FC = () => {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={pickImage}
                 disabled={status === 'typing'}
                 className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-anime-text hover:text-white transition-all cursor-pointer flex items-center justify-center shrink-0"
                 title="Upload Image"

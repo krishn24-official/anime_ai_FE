@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import { store } from './store'
+import { Capacitor } from '@capacitor/core'
+import { StatusBar, Style } from '@capacitor/status-bar'
+import { SplashScreen } from '@capacitor/splash-screen'
 import '@fontsource/fraunces/600.css'
 import '@fontsource/fraunces/700.css'
 import '@fontsource/inter/300.css'
@@ -24,3 +27,9 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
+// Capacitor Native Shell Setup
+if (Capacitor.isNativePlatform()) {
+  StatusBar.setStyle({ style: Style.Dark }).catch(console.error);
+  // Hide splash screen when React finishes initial render
+  SplashScreen.hide().catch(console.error);
+}
