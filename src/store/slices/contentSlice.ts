@@ -12,6 +12,9 @@ interface ContentState {
   loading: boolean;
   error: string | null;
   lastFetchedAt: number | null;
+  searchQuery: string;
+  activeTab: 'All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series';
+  showWatchlistOnly: boolean;
 }
 
 const initialState: ContentState = {
@@ -22,6 +25,9 @@ const initialState: ContentState = {
   loading: false,
   error: null,
   lastFetchedAt: null,
+  searchQuery: '',
+  activeTab: 'All',
+  showWatchlistOnly: false,
 };
 
 const STALE_TIME_MS = 5 * 60 * 1000; // 5 minutes
@@ -121,7 +127,17 @@ export const addCommentThunk = createAsyncThunk(
 const contentSlice = createSlice({
   name: 'content',
   initialState,
-  reducers: {},
+  reducers: {
+    setSearchQuery: (state, action) => {
+      state.searchQuery = action.payload;
+    },
+    setActiveTab: (state, action) => {
+      state.activeTab = action.payload;
+    },
+    setShowWatchlistOnly: (state, action) => {
+      state.showWatchlistOnly = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // ── Initial Fetch ──────────────────────────────────────────────
@@ -174,5 +190,7 @@ const contentSlice = createSlice({
       });
   },
 });
+
+export const { setSearchQuery, setActiveTab, setShowWatchlistOnly } = contentSlice.actions;
 
 export default contentSlice.reducer;

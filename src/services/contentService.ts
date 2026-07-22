@@ -148,7 +148,7 @@ export const contentService = {
    * Fetches and normalizes movies list
    */
   async fetchMovies(): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>('/movies?limit=1000');
+    const data = await apiClient.get<any>('/movies?limit=3000');
     return getItems(data).map((item) => {
       const id = item.id || item._id;
       const year = item.release_date ? parseInt(item.release_date.split('-')[0]) : (item.year ? parseInt(item.year) : 2024);
@@ -171,7 +171,7 @@ export const contentService = {
    * Fetches and normalizes tv series list
    */
   async fetchTVSeries(): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>('/tv-series?limit=1000');
+    const data = await apiClient.get<any>('/tv-series?limit=3000');
     return getItems(data).map((item) => {
       const id = item.id || item._id;
       const year = item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : (item.year ? parseInt(item.year.split('–')[0]) : 2024);

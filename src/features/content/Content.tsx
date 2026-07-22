@@ -3,7 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import {
   fetchContentData,
-  toggleWatchlistThunk
+  toggleWatchlistThunk,
+  setSearchQuery,
+  setActiveTab,
+  setShowWatchlistOnly
 } from '../../store/slices/contentSlice';
 import { Plus, Check, MessageSquare, Eye, Loader2, Search, RefreshCw } from 'lucide-react';
 import type { FrontendCategory } from '../../services/contentService';
@@ -12,15 +15,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const Content: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { items, watchlist, loading, error } = useSelector((state: RootState) => state.content);
+  const { items, watchlist, loading, error, searchQuery, activeTab, showWatchlistOnly } = useSelector((state: RootState) => state.content);
 
   // Sentinel ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series'>('All');
-  const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [autoOpenTitle, setAutoOpenTitle] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(20);
 
@@ -35,9 +35,9 @@ const Content: React.FC = () => {
         navigate(`/content/${CATEGORY_MAP[state.category as FrontendCategory] || state.category || 'anime'}/${state.contentId}`);
         window.history.replaceState({}, document.title);
       } else if (state.searchQuery) {
-        setSearchQuery(state.searchQuery);
+        dispatch(setSearchQuery(state.searchQuery));
         setAutoOpenTitle(state.searchQuery);
-        setActiveTab('All');
+        dispatch(setActiveTab('All'));
         window.history.replaceState({}, document.title);
       }
     }
@@ -137,7 +137,7 @@ const Content: React.FC = () => {
 
         {/* Watchlist toggle */}
         <button
-          onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
+          onClick={() => dispatch(setShowWatchlistOnly(!showWatchlistOnly))}
           className={`flex items-center space-x-2 px-5 py-3 rounded-xl border font-bold text-xs transition-all ${
             showWatchlistOnly
               ? 'bg-anime-primary border-anime-primary text-anime-bg'
@@ -157,7 +157,7 @@ const Content: React.FC = () => {
           {tabs.map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => dispatch(setActiveTab(tab))}
               className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all w-fit shrink-0 ${
                 activeTab === tab
                   ? 'bg-anime-primary text-anime-bg shadow-lg shadow-anime-primary/20'
@@ -184,7 +184,7 @@ const Content: React.FC = () => {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => dispatch(setSearchQuery(e.target.value))}
             placeholder="Search content..."
             className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-anime-primary"
           />
