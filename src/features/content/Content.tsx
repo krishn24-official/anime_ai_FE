@@ -5,7 +5,7 @@ import {
   fetchContentData,
   toggleWatchlistThunk
 } from '../../store/slices/contentSlice';
-import { Plus, Check, MessageSquare, Eye, Loader2, Search } from 'lucide-react';
+import { Plus, Check, MessageSquare, Eye, Loader2, Search, RefreshCw } from 'lucide-react';
 import type { FrontendCategory } from '../../services/contentService';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -167,6 +167,16 @@ const Content: React.FC = () => {
               {tab}
             </button>
           ))}
+
+          {/* Force refresh */}
+          <button
+            onClick={() => dispatch(fetchContentData({ force: true }))}
+            disabled={loading}
+            title="Refresh content"
+            className="p-2.5 rounded-xl text-anime-text hover:text-white hover:bg-white/5 transition-all shrink-0 disabled:opacity-40"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
         {/* Search Bar */}

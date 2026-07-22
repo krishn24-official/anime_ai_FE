@@ -11,6 +11,7 @@ interface ContentState {
   comments: Record<string, Comment[]>; // ID -> Array of Comments
   loading: boolean;
   error: string | null;
+  lastFetchedAt: number | null;
 }
 
 const initialState: ContentState = {
@@ -20,11 +21,14 @@ const initialState: ContentState = {
   comments: {},
   loading: false,
   error: null,
+  lastFetchedAt: null,
 };
+
+const STALE_TIME_MS = 5 * 60 * 1000; // 5 minutes
 
 export const fetchContentData = createAsyncThunk(
   'content/fetchContentData',
-  async (_, { rejectWithValue }) => {
+  async (_args: { force?: boolean } | undefined, { rejectWithValue }) => {
     try {
       await apiClient.ensureGuestSession();
 
@@ -43,6 +47,18 @@ export const fetchContentData = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch content');
     }
+  },
+  {
+    condition: (args, { getState }) => {
+      const state = getState() as { content: ContentState };
+      const { items, lastFetchedAt, loading } = state.content;
+      if (loading) return false; // already in flight
+      if (args?.force) return true; // explicit refresh always proceeds
+      if (items.length > 0 && lastFetchedAt && Date.now() - lastFetchedAt < STALE_TIME_MS) {
+        return false; // data exists and is still fresh
+      }
+      return true;
+    },
   }
 );
 
@@ -117,6 +133,7 @@ const contentSlice = createSlice({
         state.loading = false;
         state.items = action.payload.items;
         state.watchlist = action.payload.watchlist;
+        state.lastFetchedAt = Date.now();
       })
       .addCase(fetchContentData.rejected, (state, action) => {
         state.loading = false;

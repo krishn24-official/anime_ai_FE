@@ -60,10 +60,10 @@ const ActorDetail: React.FC = () => {
         
         <button 
           onClick={() => navigate(-1)} 
-          className="mb-8 text-gray-400 hover:text-white transition-colors flex items-center gap-2 group w-fit"
+          aria-label="Go back"
+          className="mb-8 text-gray-400 hover:text-white transition-colors group w-fit p-2 -ml-2 rounded-lg hover:bg-white/5"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span>Back</span>
         </button>
 
         <div className="flex flex-col md:flex-row gap-10 items-start">

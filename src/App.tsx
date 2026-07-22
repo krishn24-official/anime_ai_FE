@@ -26,6 +26,7 @@ import { AdminCharacters } from './features/adminCharacters/AdminCharacters';
 import { AdminActors } from './features/adminActors/AdminActors';
 
 const ActorDetail = React.lazy(() => import('./features/actors/ActorDetail'));
+import ScrollToTop from './components/ScrollToTop';
 
 const AdminLayout = () => {
   return <div className="w-full"><Outlet /></div>;
@@ -257,6 +258,7 @@ const App: React.FC = () => {
       />
 
       {/* Main Layout Area */}
+      <ScrollToTop />
       <div className={`transition-all duration-300 pl-0 ${isSidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-[260px]'}`}>
         {/* Header fixed */}
         <Header
