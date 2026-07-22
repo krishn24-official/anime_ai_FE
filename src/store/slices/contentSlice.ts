@@ -15,6 +15,8 @@ interface ContentState {
   searchQuery: string;
   activeTab: 'All' | 'Anime' | 'Manga' | 'Movies' | 'TV-Series';
   showWatchlistOnly: boolean;
+  page: number;
+  hasMore: boolean;
 }
 
 const initialState: ContentState = {
@@ -28,28 +30,36 @@ const initialState: ContentState = {
   searchQuery: '',
   activeTab: 'All',
   showWatchlistOnly: false,
+  page: 1,
+  hasMore: true,
 };
 
 const STALE_TIME_MS = 5 * 60 * 1000; // 5 minutes
 
 export const fetchContentData = createAsyncThunk(
   'content/fetchContentData',
-  async (_args: { force?: boolean } | undefined, { rejectWithValue }) => {
+  async (args: { force?: boolean; page?: number } | undefined, { rejectWithValue }) => {
     try {
       await apiClient.ensureGuestSession();
+      
+      const pageToFetch = args?.page || 1;
+      const limit = 50;
 
       const [anime, manga, movies, tvSeries, watchlistItems] = await Promise.all([
-        contentService.fetchAnime(),
-        contentService.fetchManga(),
-        contentService.fetchMovies(),
-        contentService.fetchTVSeries(),
+        contentService.fetchAnime(pageToFetch, limit),
+        contentService.fetchManga(pageToFetch, limit),
+        contentService.fetchMovies(pageToFetch, limit),
+        contentService.fetchTVSeries(pageToFetch, limit),
         contentService.fetchUserWatchlist(),
       ]);
 
-      const items = [...anime, ...manga, ...movies, ...tvSeries];
+      const newItems = [...anime, ...manga, ...movies, ...tvSeries];
       const watchlistIds = watchlistItems.map((w) => w.content_id);
+      
+      // If we didn't get any items, we have no more to fetch
+      const hasMore = newItems.length > 0;
 
-      return { items, watchlist: watchlistIds };
+      return { items: newItems, watchlist: watchlistIds, page: pageToFetch, hasMore };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch content');
     }
@@ -57,10 +67,15 @@ export const fetchContentData = createAsyncThunk(
   {
     condition: (args, { getState }) => {
       const state = getState() as { content: ContentState };
-      const { items, lastFetchedAt, loading } = state.content;
+      const { items, lastFetchedAt, loading, hasMore } = state.content;
       if (loading) return false; // already in flight
+      
+      const requestedPage = args?.page || 1;
+      if (requestedPage > 1 && !hasMore) return false; // stop fetching if no more
+      
       if (args?.force) return true; // explicit refresh always proceeds
-      if (items.length > 0 && lastFetchedAt && Date.now() - lastFetchedAt < STALE_TIME_MS) {
+      
+      if (requestedPage === 1 && items.length > 0 && lastFetchedAt && Date.now() - lastFetchedAt < STALE_TIME_MS) {
         return false; // data exists and is still fresh
       }
       return true;
@@ -147,9 +162,23 @@ const contentSlice = createSlice({
       })
       .addCase(fetchContentData.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.items;
+        
+        if (action.payload.page === 1) {
+          state.items = action.payload.items;
+        } else {
+          // Append new items, taking care not to duplicate IDs
+          const existingIds = new Set(state.items.map(item => item.id));
+          const uniqueNewItems = action.payload.items.filter(item => !existingIds.has(item.id));
+          state.items = [...state.items, ...uniqueNewItems];
+        }
+        
+        // Always sort alphabetically by title
+        state.items.sort((a, b) => a.title.localeCompare(b.title));
+        
         state.watchlist = action.payload.watchlist;
         state.lastFetchedAt = Date.now();
+        state.page = action.payload.page;
+        state.hasMore = action.payload.hasMore;
       })
       .addCase(fetchContentData.rejected, (state, action) => {
         state.loading = false;

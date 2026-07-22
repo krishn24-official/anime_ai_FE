@@ -15,14 +15,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const Content: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { items, watchlist, loading, error, searchQuery, activeTab, showWatchlistOnly } = useSelector((state: RootState) => state.content);
+  const { items, watchlist, loading, error, searchQuery, activeTab, showWatchlistOnly, page, hasMore } = useSelector((state: RootState) => state.content);
 
   // Sentinel ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   
   const location = useLocation();
   const [autoOpenTitle, setAutoOpenTitle] = useState<string | null>(null);
-  const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
     dispatch(fetchContentData());
@@ -86,11 +85,11 @@ const Content: React.FC = () => {
   const handleIntersect = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
-      if (entry.isIntersecting && !loading) {
-        setDisplayCount(prev => prev + 20);
+      if (entry.isIntersecting && !loading && hasMore && !searchQuery.trim()) {
+        dispatch(fetchContentData({ page: page + 1 }));
       }
     },
-    [loading]
+    [loading, hasMore, page, searchQuery, dispatch]
   );
 
   useEffect(() => {
@@ -105,18 +104,8 @@ const Content: React.FC = () => {
     return () => observer.disconnect();
   }, [handleIntersect]);
 
-  // Progressive rendering slice
-  const visibleItems = searchQuery.trim() ? filteredItems : filteredItems.slice(0, displayCount);
-
-  // Auto-reveal background timer to fulfill "fetch even if user doesn't scroll"
-  useEffect(() => {
-    if (!searchQuery.trim() && !loading && items.length > 0 && displayCount < filteredItems.length) {
-      const timer = setTimeout(() => {
-        setDisplayCount(prev => Math.min(prev + 20, filteredItems.length));
-      }, 500); // Reveal 20 more every 500ms
-      return () => clearTimeout(timer);
-    }
-  }, [searchQuery, loading, items.length, displayCount, filteredItems.length]);
+  // We use filteredItems directly since pagination provides the chunking
+  const visibleItems = filteredItems;
 
   const handleToggleWatchlist = (id: string, category: string) => {
     dispatch(toggleWatchlistThunk({ category: category as FrontendCategory, id }));
@@ -289,13 +278,13 @@ const Content: React.FC = () => {
       {!loading && !error && (
         <>
           <div ref={sentinelRef} className="w-full h-10" />
-          {!searchQuery.trim() && displayCount < filteredItems.length && (
+          {!searchQuery.trim() && hasMore && (
             <div className="flex flex-col items-center justify-center py-8 space-y-2">
               <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
               <p className="text-xs text-anime-text/50">Loading more content...</p>
             </div>
           )}
-          {!searchQuery.trim() && items.length > 0 && displayCount >= filteredItems.length && (
+          {!searchQuery.trim() && items.length > 0 && !hasMore && (
             <p className="text-center text-xs text-anime-text/30 py-4">All content loaded</p>
           )}
         </>
