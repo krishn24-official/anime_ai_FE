@@ -61,7 +61,7 @@ export const fetchContentData = createAsyncThunk(
       // If we didn't get any items, we have no more to fetch
       const hasMore = newItems.length > 0;
 
-      return { items: newItems, watchlist: watchlistIds, page: pageToFetch, hasMore };
+      return { items: newItems, watchlist: watchlistIds, page: pageToFetch, hasMore, search };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch content');
     }
@@ -70,12 +70,15 @@ export const fetchContentData = createAsyncThunk(
     condition: (args, { getState }) => {
       const state = getState() as { content: ContentState };
       const { items, lastFetchedAt, loading, hasMore } = state.content;
-      if (loading) return false; // already in flight
       
       const requestedPage = args?.page || 1;
-      if (requestedPage > 1 && !hasMore) return false; // stop fetching if no more
       
-      if (args?.force) return true; // explicit refresh always proceeds
+      // Explicit refresh always proceeds, aborting the loading block
+      if (args?.force) return true; 
+      
+      if (loading) return false; // already in flight
+      
+      if (requestedPage > 1 && !hasMore) return false; // stop fetching if no more
       
       if (requestedPage === 1 && items.length > 0 && lastFetchedAt && Date.now() - lastFetchedAt < STALE_TIME_MS) {
         return false; // data exists and is still fresh
@@ -163,6 +166,17 @@ const contentSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchContentData.fulfilled, (state, action) => {
+        // Prevent race condition: if the search query used for this fetch doesn't match 
+        // the current search query in state, discard the results.
+        const fetchedSearch = action.payload.search || '';
+        if (fetchedSearch !== state.searchQuery.trim()) {
+           // We could set loading = false, but there's likely another fetch in flight
+           // Actually, if this is an old fetch returning, we might still be loading the new one.
+           // However, if we always set loading to false here, the UI might flicker. 
+           // It's safest to just drop the data and ensure loading state is handled properly by the latest fetch.
+           return;
+        }
+
         state.loading = false;
         
         if (action.payload.page === 1) {
