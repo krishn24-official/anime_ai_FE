@@ -38,18 +38,20 @@ const STALE_TIME_MS = 5 * 60 * 1000; // 5 minutes
 
 export const fetchContentData = createAsyncThunk(
   'content/fetchContentData',
-  async (args: { force?: boolean; page?: number } | undefined, { rejectWithValue }) => {
+  async (args: { force?: boolean; page?: number } | undefined, { rejectWithValue, getState }) => {
     try {
       await apiClient.ensureGuestSession();
       
       const pageToFetch = args?.page || 1;
       const limit = 50;
+      const state = getState() as { content: ContentState };
+      const search = state.content.searchQuery.trim() || undefined;
 
       const [anime, manga, movies, tvSeries, watchlistItems] = await Promise.all([
-        contentService.fetchAnime(pageToFetch, limit),
-        contentService.fetchManga(pageToFetch, limit),
-        contentService.fetchMovies(pageToFetch, limit),
-        contentService.fetchTVSeries(pageToFetch, limit),
+        contentService.fetchAnime(pageToFetch, limit, search),
+        contentService.fetchManga(pageToFetch, limit, search),
+        contentService.fetchMovies(pageToFetch, limit, search),
+        contentService.fetchTVSeries(pageToFetch, limit, search),
         contentService.fetchUserWatchlist(),
       ]);
 

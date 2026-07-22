@@ -110,8 +110,10 @@ export const contentService = {
   /**
    * Fetches and normalizes anime list
    */
-  async fetchAnime(page: number = 1, limit: number = 50): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>(`/anime?page=${page}&limit=${limit}`);
+  async fetchAnime(page: number = 1, limit: number = 50, search?: string): Promise<ContentItem[]> {
+    let url = `/anime?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => ({
       id: item._id,
       title: item.title?.english || item.title?.romaji || item.title?.japanese || 'Untitled Anime',
@@ -127,8 +129,10 @@ export const contentService = {
   /**
    * Fetches and normalizes manga list
    */
-  async fetchManga(page: number = 1, limit: number = 50): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>(`/manga?page=${page}&limit=${limit}`);
+  async fetchManga(page: number = 1, limit: number = 50, search?: string): Promise<ContentItem[]> {
+    let url = `/manga?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
       const year = item.start_date ? parseInt(item.start_date.split('-')[0]) : 2024;
       return {
@@ -147,8 +151,10 @@ export const contentService = {
   /**
    * Fetches and normalizes movies list
    */
-  async fetchMovies(page: number = 1, limit: number = 50): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>(`/movies?page=${page}&limit=${limit}`);
+  async fetchMovies(page: number = 1, limit: number = 50, search?: string): Promise<ContentItem[]> {
+    let url = `/movies?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
       const id = item.id || item._id;
       const year = item.release_date ? parseInt(item.release_date.split('-')[0]) : (item.year ? parseInt(item.year) : 2024);
@@ -170,8 +176,10 @@ export const contentService = {
   /**
    * Fetches and normalizes tv series list
    */
-  async fetchTVSeries(page: number = 1, limit: number = 50): Promise<ContentItem[]> {
-    const data = await apiClient.get<any>(`/tv-series?page=${page}&limit=${limit}`);
+  async fetchTVSeries(page: number = 1, limit: number = 50, search?: string): Promise<ContentItem[]> {
+    let url = `/tv-series?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
       const id = item.id || item._id;
       const year = item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : (item.year ? parseInt(item.year.split('–')[0]) : 2024);

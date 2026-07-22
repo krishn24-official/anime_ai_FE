@@ -27,6 +27,15 @@ const Content: React.FC = () => {
     dispatch(fetchContentData());
   }, [dispatch]);
 
+  // Debounced search trigger
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Fetch page 1 when search query changes
+      dispatch(fetchContentData({ page: 1, force: true }));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, dispatch]);
+
   useEffect(() => {
     if (location.state) {
       const state = location.state as any;
@@ -68,10 +77,7 @@ const Content: React.FC = () => {
   const filteredItems = items.filter((item) => {
     const matchesTab = activeTab === 'All' || item.category === activeTab;
     const matchesWatchlist = !showWatchlistOnly || watchlist.includes(item.id);
-    const matchesSearch = 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTab && matchesWatchlist && matchesSearch;
+    return matchesTab && matchesWatchlist;
   });
 
   const CATEGORY_MAP: Record<string, string> = {
@@ -85,11 +91,11 @@ const Content: React.FC = () => {
   const handleIntersect = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
-      if (entry.isIntersecting && !loading && hasMore && !searchQuery.trim()) {
+      if (entry.isIntersecting && !loading && hasMore) {
         dispatch(fetchContentData({ page: page + 1 }));
       }
     },
-    [loading, hasMore, page, searchQuery, dispatch]
+    [loading, hasMore, page, dispatch]
   );
 
   useEffect(() => {
@@ -182,7 +188,7 @@ const Content: React.FC = () => {
       </div>
 
       {/* Loading & Error States */}
-      {loading && (
+      {loading && items.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 space-y-4">
           <Loader2 className="w-10 h-10 text-anime-primary animate-spin" />
           <p className="text-sm text-anime-text/60 font-medium">Syncing database items...</p>
@@ -197,8 +203,8 @@ const Content: React.FC = () => {
       )}
 
       {/* Catalog Grid */}
-      {!loading && !error && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {(items.length > 0 || (!loading && !error)) && (
+        <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
           {visibleItems.map((item) => {
             const isAdded = watchlist.includes(item.id);
             return (
@@ -275,16 +281,22 @@ const Content: React.FC = () => {
       )}
 
       {/* Infinite scroll sentinel + bottom spinner */}
-      {!loading && !error && (
+      {!error && (
         <>
           <div ref={sentinelRef} className="w-full h-10" />
-          {!searchQuery.trim() && hasMore && (
+          {loading && items.length > 0 && (
             <div className="flex flex-col items-center justify-center py-8 space-y-2">
               <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
-              <p className="text-xs text-anime-text/50">Loading more content...</p>
+              <p className="text-xs text-anime-text/50">Fetching more content...</p>
             </div>
           )}
-          {!searchQuery.trim() && items.length > 0 && !hasMore && (
+          {hasMore && !loading && (
+            <div className="flex flex-col items-center justify-center py-8 space-y-2">
+              <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
+              <p className="text-xs text-anime-text/50">Scroll for more</p>
+            </div>
+          )}
+          {items.length > 0 && !hasMore && (
             <p className="text-center text-xs text-anime-text/30 py-4">All content loaded</p>
           )}
         </>
