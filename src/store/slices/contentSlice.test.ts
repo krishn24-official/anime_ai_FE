@@ -36,6 +36,8 @@ function createTestStore(overrides?: Partial<ContentState>) {
     searchQuery: '',
     activeTab: 'All',
     showWatchlistOnly: false,
+    page: 1,
+    hasMore: true,
   };
   return configureStore({
     reducer: { content: contentReducer },
