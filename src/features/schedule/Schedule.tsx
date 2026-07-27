@@ -163,7 +163,11 @@ const Schedule: React.FC = () => {
                       className="group cursor-pointer"
                       onClick={() => {
                         if (item.type === 'birthday') {
-                          navigate('/characters', { state: { searchQuery: item.name } });
+                          if (item.entityType === 'actor') {
+                            navigate('/actors', { state: { searchQuery: item.name } });
+                          } else {
+                            navigate('/characters', { state: { searchQuery: item.name } });
+                          }
                         } else if (item.type !== 'event') {
                           navigate('/content', { state: { searchQuery: item.name } });
                         }

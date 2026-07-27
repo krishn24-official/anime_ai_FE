@@ -31,6 +31,14 @@ export interface AdminTvSeriesResponse {
   pages: number;
 }
 
+export interface TvSeriesFormData {
+  tagline?: string;
+  trailers?: { url: string; label: string }[];
+  cast?: { actor_id: string; character_name: string }[];
+  poster?: File | null;
+  [key: string]: any;
+}
+
 export const tvSeriesAdminService = {
   listTvSeriesAdmin: async (
     includeDeleted: boolean = false, 

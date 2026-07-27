@@ -35,7 +35,7 @@ export const eventService = {
           description: item.description || `Happy birthday to ${item.name?.full || item.name}!`,
           anime: item.anime_ids ? item.anime_ids.map(formatAnimeId).join(', ') : '',
           dob: dobStr,
-          type: 'character',
+          type: item.entity_type || 'character',
         };
       });
 
@@ -55,9 +55,10 @@ export const eventService = {
    */
   async fetchScheduleRange(startDate: string, endDate: string) {
     try {
-      const [eventsRes, birthdaysRes, releasesRes, announcedRes] = await Promise.all([
+      const [eventsRes, birthdaysRes, actorBirthdaysRes, releasesRes, announcedRes] = await Promise.all([
         apiClient.get<any[]>('/events/range', { params: { start_date: startDate, end_date: endDate } }),
         apiClient.get<any[]>('/characters/birthdays/range', { params: { start_date: startDate, end_date: endDate } }),
+        apiClient.get<any[]>('/actors/birthdays/range', { params: { start_date: startDate, end_date: endDate } }),
         apiClient.get<any[]>('/content/releases-range', { params: { start_date: startDate, end_date: endDate } }),
         apiClient.get<any[]>('/content/announced-range', { params: { start_date: startDate, end_date: endDate } })
       ]);
@@ -89,7 +90,9 @@ export const eventService = {
       }
 
       const events = Array.isArray(eventsRes) ? eventsRes : [];
-      const birthdays = Array.isArray(birthdaysRes) ? birthdaysRes : [];
+      const charBirthdays = Array.isArray(birthdaysRes) ? birthdaysRes : [];
+      const actorBirthdays = Array.isArray(actorBirthdaysRes) ? actorBirthdaysRes : [];
+      const birthdays = [...charBirthdays, ...actorBirthdays];
 
       datesToProcess.forEach(({ dateStr, m, d }) => {
         const matchingEvents = events.filter(e => e.month === m && e.day === d);
@@ -111,6 +114,7 @@ export const eventService = {
             id: `bday_${b._id}_${dateStr}`,
             date: dateStr,
             type: 'birthday',
+            entityType: b.entity_type || 'character',
             name: b.name?.full || b.name || 'Unknown',
             anime: b.anime_ids ? b.anime_ids.map(formatAnimeId).join(', ') : '',
             image: b.images?.profile || 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=150&q=80',

@@ -327,7 +327,7 @@ const ContentDetail: React.FC = () => {
             <h2 className="text-2xl font-bold">Cast</h2>
             <div className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar">
               {data.cast.map((actor: any, idx: number) => (
-                <Link to={`/actors/${encodeURIComponent(actor.name || actor.english || actor)}`} key={idx} className="flex flex-col items-center shrink-0 w-24 group">
+                <Link to={`/actors/${encodeURIComponent(actor.id || actor.name || actor.english || actor)}`} key={idx} className="flex flex-col items-center shrink-0 w-24 group">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-anime-primary transition-all cursor-pointer">
                     <img 
                       src={actor.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name || actor.english || actor)}&background=222&color=fff`} 

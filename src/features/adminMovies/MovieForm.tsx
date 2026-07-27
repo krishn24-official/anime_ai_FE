@@ -44,6 +44,11 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   
   const [actors, setActors] = useState<string[]>(initialData?.actors || []);
   const [newActor, setNewActor] = useState('');
+  
+  const [cast, setCast] = useState<{actor_id: string, character_name: string}[]>(
+    initialData?.cast?.filter((c: any) => c.actor_id) || []
+  );
+
   const [availableActors, setAvailableActors] = useState<ActorItem[]>([]);
   
   React.useEffect(() => {
@@ -132,6 +137,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
         producers,
         production_house: productionHouse,
         actors,
+        cast,
         plot,
         tagline,
         trailers,
@@ -443,6 +449,71 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
                     <button type="button" onClick={() => addTag(language, setLanguage, newLanguage, setNewLanguage)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
                   </div>
+                </div>
+              </div>
+              
+              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-xl space-y-4">
+                <h3 className="text-sm font-bold text-white/50 uppercase tracking-wider mb-4">Cast (Real Actor Links)</h3>
+                <div className="space-y-3 mb-4">
+                  {cast.map((castItem, idx) => {
+                    const actorData = availableActors.find(a => a._id === castItem.actor_id);
+                    return (
+                      <div key={idx} className="flex gap-2">
+                        <div className="w-1/2 relative">
+                          <input 
+                            type="text" 
+                            className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                            value={actorData ? actorData.name : castItem.actor_id} 
+                            readOnly
+                          />
+                        </div>
+                        <input 
+                          type="text" 
+                          className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600"
+                          value={castItem.character_name}
+                          onChange={e => {
+                            const newCast = [...cast];
+                            newCast[idx] = { ...newCast[idx], character_name: e.target.value };
+                            setCast(newCast);
+                          }}
+                          placeholder="Character Name"
+                        />
+                        <button type="button" onClick={() => {
+                          const newCast = [...cast];
+                          newCast.splice(idx, 1);
+                          setCast(newCast);
+                        }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors shrink-0">
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <div className="flex gap-2">
+                  <select 
+                    className="w-1/2 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600"
+                    id="cast-actor-select"
+                  >
+                    <option value="">Select an Actor...</option>
+                    {availableActors.map(actor => (
+                      <option key={actor._id} value={actor._id}>{actor.name}</option>
+                    ))}
+                  </select>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const select = document.getElementById('cast-actor-select') as HTMLSelectElement;
+                      const actorId = select.value;
+                      if (actorId) {
+                        setCast([...cast, { actor_id: actorId, character_name: '' }]);
+                        select.value = '';
+                      }
+                    }} 
+                    className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" /> Add Cast Member
+                  </button>
                 </div>
               </div>
               

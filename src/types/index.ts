@@ -1,7 +1,7 @@
 export interface BirthdayEntity {
   id: string;
   name: string;
-  type: 'character' | 'voice_actor';
+  type: 'character' | 'voice_actor' | 'actor';
   anime: string;
   dob: string; // MM-DD format
   image: string;

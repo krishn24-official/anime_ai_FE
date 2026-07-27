@@ -46,7 +46,13 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ birthdays }) =
         {birthdays.map((item) => (
           <div 
             key={item.id}
-            onClick={() => navigate('/characters', { state: { autoOpenName: item.name } })}
+            onClick={() => {
+              if (item.type === 'actor' || item.type === 'voice_actor') {
+                navigate(`/actors/${item.id}`);
+              } else {
+                navigate('/characters', { state: { autoOpenName: item.name } });
+              }
+            }}
             className="group cursor-pointer relative rounded-2xl overflow-hidden border border-white/10 hover:border-anime-primary transition-all duration-300 hover:ring-2 hover:ring-anime-primary/20 hover:shadow-2xl hover:-translate-y-1 shrink-0 snap-start w-40 md:w-48 lg:w-56"
           >
             <div className="aspect-[2/3] w-full">
