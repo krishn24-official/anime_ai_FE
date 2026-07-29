@@ -54,6 +54,26 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   React.useEffect(() => {
     actorService.listActors(1, 1000).then(res => setAvailableActors(res.items)).catch(console.error);
   }, []);
+
+  React.useEffect(() => {
+    const activeQuery = newActor || newDirector || newWriter;
+    if (activeQuery && activeQuery.trim().length >= 2) {
+      const timer = setTimeout(() => {
+        actorService.searchActors(activeQuery.trim())
+          .then(res => {
+            if (Array.isArray(res)) {
+              setAvailableActors(prev => {
+                const prevMap = new Map(prev.map(a => [a._id, a]));
+                res.forEach(a => prevMap.set(a._id, a));
+                return Array.from(prevMap.values());
+              });
+            }
+          })
+          .catch(console.error);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [newActor, newDirector, newWriter]);
   
   const [runtimeMinutes, setRuntimeMinutes] = useState<string>(initialData?.runtime_minutes?.toString() || '');
 
@@ -90,17 +110,35 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [backdropFile, setBackdropFile] = useState<File | null>(null);
   
-  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
+  const handleAddTag = async (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addTag(state, setState, val, setVal, requireActor);
+      await addTag(state, setState, val, setVal, requireActor);
     }
   };
 
-  const addTag = (state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
+  const addTag = async (state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
     if (val.trim() && !state.includes(val.trim())) {
       if (requireActor) {
-        const exists = availableActors.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+        let exists = availableActors.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+        
+        if (!exists) {
+          try {
+            const results = await actorService.searchActors(val.trim());
+            exists = results.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+            if (exists) {
+              setAvailableActors(prev => {
+                if (!prev.find(a => a._id === exists!._id)) {
+                  return [...prev, exists!];
+                }
+                return prev;
+              });
+            }
+          } catch (err) {
+            console.error("Error searching actors:", err);
+          }
+        }
+
         if (!exists) {
           alert(`"${val.trim()}" not found in Actors collection. Please create it first in Manage Actors.`);
           return;
