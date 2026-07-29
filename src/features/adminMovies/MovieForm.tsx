@@ -52,8 +52,33 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [availableActors, setAvailableActors] = useState<ActorItem[]>([]);
   
   React.useEffect(() => {
-    actorService.listActors(1, 1000).then(res => setAvailableActors(res.items)).catch(console.error);
-  }, []);
+    actorService.listActors(1, 1000).then(res => {
+      let initialActors = res.items;
+      setAvailableActors(initialActors);
+      
+      // Fetch any cast actors that weren't in the first 1000
+      if (initialData?.cast?.length) {
+        const existingIds = new Set(initialActors.map((a: any) => a._id));
+        const missingIds = initialData.cast
+          .filter((c: any) => c.actor_id && !existingIds.has(c.actor_id))
+          .map((c: any) => c.actor_id);
+          
+        if (missingIds.length > 0) {
+          Promise.all(missingIds.map((id: string) => actorService.getActor(id).catch(() => null)))
+            .then(fetchedActors => {
+              const validActors = fetchedActors.filter(Boolean) as ActorItem[];
+              if (validActors.length > 0) {
+                setAvailableActors(prev => {
+                  const prevMap = new Map(prev.map(a => [a._id, a]));
+                  validActors.forEach(a => prevMap.set(a._id, a));
+                  return Array.from(prevMap.values());
+                });
+              }
+            });
+        }
+      }
+    }).catch(console.error);
+  }, [initialData]);
 
   React.useEffect(() => {
     const activeQuery = newActor || newDirector || newWriter;
