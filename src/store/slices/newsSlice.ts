@@ -13,9 +13,9 @@ interface NewsState {
 
 export const fetchNewsThunk = createAsyncThunk(
   'news/fetchNews',
-  async (category: 'All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series' | undefined, { rejectWithValue }) => {
+  async (category: 'All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series' | void, { rejectWithValue }) => {
     try {
-      return await newsService.fetchNews(category);
+      return await newsService.fetchNews(category || 'All');
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch news');
     }
