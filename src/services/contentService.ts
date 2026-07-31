@@ -29,7 +29,7 @@ const STARS_TO_RATING = (stars: number): 'Skip' | 'Timepass' | 'Go for it' | 'Pe
 };
 
 export interface BackendAnime {
-  _id: string;
+  id: string;
   title: {
     english?: string;
     romaji?: string;
@@ -47,7 +47,7 @@ export interface BackendAnime {
 }
 
 export interface BackendManga {
-  _id: string;
+  id: string;
   name: string;
   cover_image?: string;
   description?: string;
@@ -83,13 +83,27 @@ export interface BackendTVSeries {
   genres?: string;
 }
 
-export interface TodaysReleaseItem {
+export type TodaysReleaseItem = SeriesReleaseItem | EpisodeChapterReleaseItem;
+
+export interface SeriesReleaseItem {
   content_type: 'movie' | 'tv_series' | 'anime';
   content_id: string;
   title: string;
   poster_image?: string;
   date: string;
   event_type: 'release_start' | 'release_end';
+}
+
+export interface EpisodeChapterReleaseItem {
+  content_type: 'episode' | 'chapter';
+  content_id: string;
+  parent_id: string;
+  parent_title: string;
+  title: string;
+  poster_image?: string;
+  date: string;
+  event_type: 'episode_release' | 'chapter_release';
+  summary?: string;
 }
 
 const parseGenres = (genres: any): string[] => {
@@ -115,7 +129,7 @@ export const contentService = {
     if (search) url += `&search=${encodeURIComponent(search)}`;
     const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => ({
-      id: item._id,
+      id: item.id,
       title: item.title?.english || item.title?.romaji || item.title?.japanese || 'Untitled Anime',
       category: 'Anime',
       poster: item.images?.poster || item.poster || 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400',
@@ -136,7 +150,7 @@ export const contentService = {
     return getItems(data).map((item) => {
       const year = item.start_date ? parseInt(item.start_date.split('-')[0]) : 2024;
       return {
-        id: item._id,
+        id: item.id,
         title: item.name || 'Untitled Manga',
         category: 'Manga',
         poster: item.cover_image || item.poster || 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400',
@@ -156,7 +170,7 @@ export const contentService = {
     if (search) url += `&search=${encodeURIComponent(search)}`;
     const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
-      const id = item.id || item._id;
+      const id = item.id;
       const year = item.release_date ? parseInt(item.release_date.split('-')[0]) : (item.year ? parseInt(item.year) : 2024);
       const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.tmdb ? parseFloat(item.rating.tmdb) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5));
 
@@ -181,7 +195,7 @@ export const contentService = {
     if (search) url += `&search=${encodeURIComponent(search)}`;
     const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
-      const id = item.id || item._id;
+      const id = item.id;
       const year = item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : (item.year ? parseInt(item.year.split('–')[0]) : 2024);
       const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.tmdb ? parseFloat(item.rating.tmdb) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5));
 
@@ -323,11 +337,17 @@ export const contentService = {
     const d = today.getDate();
     const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     
+    // Note: The backend /content/releases-range endpoint already returns both
+    // series releases (release_start) AND episodes/chapters (episode_release, chapter_release).
     const results = await apiClient.get<TodaysReleaseItem[]>(`/content/releases-range?start_date=${todayStr}&end_date=${todayStr}`);
     
     if (!Array.isArray(results)) return [];
     
-    return results.filter(item => item.event_type === 'release_start');
+    return results.filter(item => 
+      item.event_type === 'release_start' ||
+      item.event_type === 'episode_release' ||
+      item.event_type === 'chapter_release'
+    );
   },
 
   /**

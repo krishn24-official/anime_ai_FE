@@ -113,7 +113,8 @@ const ContentDetail: React.FC = () => {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
   const durationText = formatDuration(data.runtime_minutes || data.duration_minutes || data.episode_runtime_minutes);
-  const directorText = data.director?.length ? data.director.join(', ') : (data.creators?.length ? data.creators.join(', ') : (data.studios?.length ? data.studios.join(', ') : (data.crew?.[0]?.name || 'Unknown')));
+  const extractNames = (arr: any[]) => arr.map((item: any) => typeof item === 'string' ? item : (item?.name || '')).filter(Boolean).join(', ');
+  const directorText = data.director?.length ? extractNames(data.director) : (data.creators?.length ? extractNames(data.creators) : (data.studios?.length ? data.studios.join(', ') : (data.crew?.[0]?.name || 'Unknown')));
   const countryText = data.country?.[0] || 'Unknown';
   const languageText = data.language?.[0] || 'Unknown';
   const ageRatingText = data.age_rating || 'Unknown';
@@ -314,6 +315,32 @@ const ContentDetail: React.FC = () => {
                   </span>
                   <span className="text-xs text-gray-400 mt-1 text-center line-clamp-1">
                     Actor
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Creators Section */}
+        {data.creators?.length > 0 && (
+          <section className="space-y-6">
+            <h2 className="text-2xl font-bold">Creators</h2>
+            <div className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar">
+              {data.creators.map((creator: any, idx: number) => (
+                <Link to={`/actors/${encodeURIComponent(creator.name || creator)}`} key={idx} className="flex flex-col items-center shrink-0 w-24 group">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-anime-primary transition-all cursor-pointer">
+                    <img 
+                      src={creator.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.name || creator)}&background=222&color=fff`} 
+                      alt={creator.name || creator} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="mt-3 text-sm font-semibold text-center leading-tight group-hover:text-anime-primary transition-colors">
+                    {creator.name || creator}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1 text-center line-clamp-1">
+                    Creator
                   </span>
                 </Link>
               ))}

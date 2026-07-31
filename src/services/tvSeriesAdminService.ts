@@ -34,6 +34,7 @@ export interface AdminTvSeriesResponse {
 export interface TvSeriesFormData {
   tagline?: string;
   trailers?: { url: string; label: string }[];
+  creators?: { actor_id: string }[];
   cast?: { actor_id: string; character_name: string }[];
   poster?: File | null;
   [key: string]: any;

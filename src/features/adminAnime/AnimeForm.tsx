@@ -12,8 +12,14 @@ interface AnimeFormProps {
 export const AnimeForm: React.FC<AnimeFormProps> = ({ onSuccess, onCancel, initialData }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [titleEnglish, setTitleEnglish] = useState(initialData?.title?.english || '');
+  const [existingAnime, setExistingAnime] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    animeAdminService.getAnimes(1, 1000, '').then(res => {
+      setExistingAnime(res.items || []);
+    }).catch(console.error);
+  }, []);
   const [titleRomaji, setTitleRomaji] = useState(initialData?.title?.romaji || '');
   const [titleJapanese, setTitleJapanese] = useState(initialData?.title?.japanese || '');
   
@@ -156,11 +162,16 @@ export const AnimeForm: React.FC<AnimeFormProps> = ({ onSuccess, onCancel, initi
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">English Title</label>
-              <input type="text" className={inputClass} value={titleEnglish} onChange={e => setTitleEnglish(e.target.value)} placeholder="e.g. Naruto" />
+              <input type="text" className={inputClass} value={titleEnglish} onChange={e => setTitleEnglish(e.target.value)} placeholder="e.g. Naruto" list="existing-anime" />
+              <datalist id="existing-anime">
+                {existingAnime.map(anime => (
+                  <option key={anime._id} value={anime.title?.english || anime.title?.romaji || anime.title?.japanese} />
+                ))}
+              </datalist>
             </div>
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Romaji Title</label>
-              <input type="text" className={inputClass} value={titleRomaji} onChange={e => setTitleRomaji(e.target.value)} />
+              <input type="text" className={inputClass} value={titleRomaji} onChange={e => setTitleRomaji(e.target.value)} list="existing-anime" />
             </div>
           </div>
 

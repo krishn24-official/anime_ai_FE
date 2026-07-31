@@ -11,7 +11,7 @@ export interface MovieFormData {
   precision: 'day' | 'month' | 'year';
   runtime_minutes: number | null;
   genres: string[];
-  director: string[];
+  director?: {actor_id: string}[];
   writers: string[];
   producers: string[];
   production_house: string[];

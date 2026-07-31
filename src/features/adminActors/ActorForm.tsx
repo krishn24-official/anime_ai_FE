@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { actorAdminService } from '../../services/actorAdminService';
+import { actorService } from '../../services/actorService';
 
 interface ActorFormProps {
   onSuccess: () => void;
@@ -11,11 +12,31 @@ interface ActorFormProps {
 export const ActorForm: React.FC<ActorFormProps> = ({ onSuccess, onCancel, initialData }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [existingActors, setExistingActors] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [name, setName] = useState(initialData?.name || '');
   const [birthdate, setBirthdate] = useState(initialData?.birthdate || '');
   const [biography, setBiography] = useState(initialData?.biography || '');
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  React.useEffect(() => {
+    if (name.trim().length >= 2) {
+      const timer = setTimeout(() => {
+        actorService.searchActors(name.trim()).then(res => {
+          if (Array.isArray(res)) {
+            setExistingActors(res);
+          }
+        }).catch(console.error);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (name.trim().length === 0 && existingActors.length === 0) {
+      // Load initial batch if empty
+      actorService.listActors(1, 1000).then(res => {
+        setExistingActors(res.items || []);
+      }).catch(console.error);
+    }
+  }, [name, existingActors.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +84,27 @@ export const ActorForm: React.FC<ActorFormProps> = ({ onSuccess, onCancel, initi
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1">Name (Required)</label>
-              <input type="text" required value={name} onChange={e => setName(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+              <div className="relative">
+                <input type="text" required value={name} onChange={e => {
+                  setName(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+                {showSuggestions && existingActors.length > 0 && name.trim().length >= 2 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#1A1B1E] border border-white/10 rounded-lg shadow-xl overflow-hidden z-[60] max-h-48 overflow-y-auto custom-scrollbar">
+                    {existingActors.map(actor => (
+                      <div key={actor._id} className="px-4 py-2.5 hover:bg-white/10 cursor-pointer text-white text-sm border-b border-white/5 last:border-0" onClick={() => {
+                        setName(actor.name);
+                        setShowSuggestions(false);
+                      }}>
+                        {actor.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>

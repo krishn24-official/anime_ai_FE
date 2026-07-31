@@ -59,15 +59,36 @@ export const TodaysReleasesSection: React.FC = () => {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col justify-end p-4">
-                      <span className="self-start px-2 py-1 text-[9px] font-bold uppercase rounded-md mb-2 shadow-lg bg-anime-primary/20 text-anime-primary border border-anime-primary/30 backdrop-blur-md">
-                        {item.content_type === 'movie' ? 'Movie' : 
-                         item.content_type === 'tv_series' ? 'TV Series' : 
-                         (item.content_type as string) === 'episode' ? 'Episode' :
-                         (item.content_type as string) === 'chapter' ? 'Chapter' : 'Anime'}
-                      </span>
+                      {(() => {
+                        let bgClass = 'bg-black/60 text-white border-white/20';
+                        let label = item.content_type === 'movie' ? 'Movie' : 
+                                    item.content_type === 'tv_series' ? 'TV Series' : 'Anime';
+                                    
+                        if (item.event_type === 'release_start') {
+                          bgClass = 'bg-emerald-500/80 text-white border-white/20';
+                          label = 'Premiere';
+                        } else if (item.event_type === 'episode_release') {
+                          bgClass = 'bg-black/60 text-white border-white/20';
+                          label = 'New Episode';
+                        } else if (item.event_type === 'chapter_release') {
+                          bgClass = 'bg-black/60 text-white border-white/20';
+                          label = 'New Chapter';
+                        }
+
+                        return (
+                          <span className={`self-start px-2 py-1 text-[9px] font-bold uppercase rounded-md mb-2 shadow-lg border backdrop-blur-md ${bgClass}`}>
+                            {label}
+                          </span>
+                        );
+                      })()}
                       <h3 className="text-white font-bold text-sm line-clamp-2 leading-tight">
-                        {item.title}
+                        {('parent_title' in item) ? item.parent_title : item.title}
                       </h3>
+                      {('parent_title' in item) && (
+                        <p className="text-anime-text text-xs mt-1 line-clamp-1">
+                          {item.title}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

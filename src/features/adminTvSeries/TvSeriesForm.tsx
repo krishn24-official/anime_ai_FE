@@ -23,7 +23,9 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
   const [genres, setGenres] = useState<string[]>(initialData?.genres || []);
   const [newGenre, setNewGenre] = useState('');
   
-  const [creators, setCreators] = useState<string[]>(initialData?.creators || []);
+  const [creators, setCreators] = useState<{actor_id: string}[]>(
+    initialData?.creators?.filter((c: any) => c.actor_id) || []
+  );
   const [newCreator, setNewCreator] = useState('');
   
   const [language, setLanguage] = useState<string[]>(initialData?.language || []);
@@ -45,11 +47,10 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
   const [actors, setActors] = useState<string[]>(initialData?.actors || []);
   const [newActor, setNewActor] = useState('');
   
-  const [cast, setCast] = useState<{actor_id: string, character_name: string}[]>(
-    initialData?.cast?.filter((c: any) => c.actor_id) || []
-  );
+
 
   const [availableActors, setAvailableActors] = useState<ActorItem[]>([]);
+  const [existingSeries, setExistingSeries] = useState<any[]>([]);
   
   React.useEffect(() => {
     actorService.listActors(1, 1000).then(res => {
@@ -78,10 +79,14 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
         }
       }
     }).catch(console.error);
+    // Fetch TV Series for autocomplete
+    tvSeriesAdminService.getTvSeries(1, 1000, '').then(res => {
+      setExistingSeries(res.items || []);
+    }).catch(console.error);
   }, [initialData]);
 
   React.useEffect(() => {
-    const activeQuery = newActor || newCreator || '';
+    const activeQuery = newActor || newCreator;
     if (activeQuery && activeQuery.trim().length >= 2) {
       const timer = setTimeout(() => {
         actorService.searchActors(activeQuery.trim())
@@ -98,7 +103,7 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [newActor, newCreator]);
+  }, [newActor]);
 
   const [released, setReleased] = useState<boolean>(
     initialData ? !['Planned', 'In Production', 'Pilot'].includes(initialData.status) : true
@@ -146,6 +151,13 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
     }
   };
 
+  const handleAddActorLink = async (e: React.KeyboardEvent<HTMLInputElement>, state: {actor_id: string}[], setState: any, val: string, setVal: any) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      await addActorLink(state, setState, val, setVal);
+    }
+  };
+
   const addTag = async (state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
     if (val.trim() && !state.includes(val.trim())) {
       if (requireActor) {
@@ -176,6 +188,39 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
       setState([...state, val.trim()]);
       setVal('');
     }
+  };
+
+  const addActorLink = async (state: {actor_id: string}[], setState: any, val: string, setVal: any) => {
+    if (!val.trim()) return;
+    
+    let exists = availableActors.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+    
+    if (!exists) {
+      try {
+        const results = await actorService.searchActors(val.trim());
+        exists = results.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+        if (exists) {
+          setAvailableActors(prev => {
+            if (!prev.find(a => a._id === exists!._id)) {
+              return [...prev, exists!];
+            }
+            return prev;
+          });
+        }
+      } catch (err) {
+        console.error("Error searching actors:", err);
+      }
+    }
+
+    if (!exists) {
+      alert(`"${val.trim()}" not found in Actors collection. Please create it first in Manage Actors.`);
+      return;
+    }
+    
+    if (!state.find(item => item.actor_id === exists!._id)) {
+      setState([...state, { actor_id: exists!._id }]);
+    }
+    setVal('');
   };
   
   const removeTag = (index: number, state: string[], setState: any) => {
@@ -279,11 +324,16 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Title</label>
-              <input type="text" className={inputClass} value={title} onChange={e => setTitle(e.target.value)} required />
+              <input type="text" className={inputClass} value={title} onChange={e => setTitle(e.target.value)} required list="existing-series" />
+              <datalist id="existing-series">
+                {existingSeries.map(series => (
+                  <option key={series._id} value={series.title} />
+                ))}
+              </datalist>
             </div>
             <div>
               <label className="block text-sm font-medium text-white/70 mb-1.5">Original Title</label>
-              <input type="text" className={inputClass} value={originalTitle} onChange={e => setOriginalTitle(e.target.value)} />
+              <input type="text" className={inputClass} value={originalTitle} onChange={e => setOriginalTitle(e.target.value)} list="existing-series" />
             </div>
           </div>
 
@@ -436,30 +486,44 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-1.5">Creators</label>
+              <label className="block text-sm font-medium text-white/70 mb-1">Creators (Real Actor Links)</label>
+              <div className="space-y-3 mb-4">
+                {creators.map((creatorItem, idx) => {
+                  const actorData = availableActors.find(a => a._id === creatorItem.actor_id);
+                  return (
+                    <div key={idx} className="flex gap-2">
+                      <div className="w-full relative">
+                        <input 
+                          type="text" 
+                          className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                          value={actorData ? actorData.name : creatorItem.actor_id} 
+                          readOnly
+                        />
+                      </div>
+                      <button type="button" onClick={() => {
+                        const newCreators = [...creators];
+                        newCreators.splice(idx, 1);
+                        setCreators(newCreators);
+                      }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors shrink-0">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              
               <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  className={inputClass} 
-                  value={newCreator} 
-                  onChange={e => setNewCreator(e.target.value)} 
-                  onKeyDown={e => handleAddTag(e, creators, setCreators, newCreator, setNewCreator, true)} 
+                <input type="text" value={newCreator} onChange={e => setNewCreator(e.target.value)}
+                  onKeyDown={e => handleAddActorLink(e, creators, setCreators, newCreator, setNewCreator)}
                   list="creators-list"
-                  placeholder="Type creator name and press Enter" 
-                />
+                  placeholder="Type creator name and press Enter"
+                  className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
                 <datalist id="creators-list">
                   {availableActors.map(actor => (
                     <option key={actor._id} value={actor.name} />
                   ))}
                 </datalist>
-                <button type="button" onClick={() => addTag(creators, setCreators, newCreator, setNewCreator, true)} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {creators.map((c, i) => (
-                  <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70 flex items-center gap-1">
-                    {c} <X className="w-3 h-3 cursor-pointer hover:text-white" onClick={() => removeTag(i, creators, setCreators)} />
-                  </span>
-                ))}
+                <button type="button" onClick={() => addActorLink(creators, setCreators, newCreator, setNewCreator)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
               </div>
             </div>
           </div>
@@ -582,70 +646,6 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
             </div>
           </div>
 
-          <div className="border border-white/10 rounded-xl p-4 bg-white/[0.01]">
-            <h3 className="text-white font-medium mb-4">Cast (Real Actor Links)</h3>
-            <div className="space-y-3 mb-4">
-              {cast.map((castItem, idx) => {
-                const actorData = availableActors.find(a => a._id === castItem.actor_id);
-                return (
-                  <div key={idx} className="flex gap-2">
-                    <div className="w-1/2 relative">
-                      <input 
-                        type="text" 
-                        className={inputClass} 
-                        value={actorData ? actorData.name : castItem.actor_id} 
-                        readOnly
-                      />
-                    </div>
-                    <input 
-                      type="text" 
-                      className={`${inputClass} flex-1`}
-                      value={castItem.character_name}
-                      onChange={e => {
-                        const newCast = [...cast];
-                        newCast[idx] = { ...newCast[idx], character_name: e.target.value };
-                        setCast(newCast);
-                      }}
-                      placeholder="Character Name"
-                    />
-                    <button type="button" onClick={() => {
-                      const newCast = [...cast];
-                      newCast.splice(idx, 1);
-                      setCast(newCast);
-                    }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors shrink-0">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="flex gap-2">
-              <select 
-                className={`${inputClass} w-1/2`}
-                id="cast-actor-select"
-              >
-                <option value="">Select an Actor...</option>
-                {availableActors.map(actor => (
-                  <option key={actor._id} value={actor._id}>{actor.name}</option>
-                ))}
-              </select>
-              <button 
-                type="button" 
-                onClick={() => {
-                  const select = document.getElementById('cast-actor-select') as HTMLSelectElement;
-                  const actorId = select.value;
-                  if (actorId) {
-                    setCast([...cast, { actor_id: actorId, character_name: '' }]);
-                    select.value = '';
-                  }
-                }} 
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" /> Add Cast Member
-              </button>
-            </div>
-          </div>
 
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1.5">Plot</label>

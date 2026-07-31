@@ -20,7 +20,9 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [genres, setGenres] = useState<string[]>(initialData?.genres || []);
   const [newGenre, setNewGenre] = useState('');
   
-  const [director, setDirector] = useState<string[]>(initialData?.director || []);
+  const [director, setDirector] = useState<{actor_id: string}[]>(
+    initialData?.director?.filter((d: any) => d.actor_id) || []
+  );
   const [newDirector, setNewDirector] = useState('');
   
   const [writers, setWriters] = useState<string[]>(initialData?.writers || []);
@@ -45,13 +47,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [actors, setActors] = useState<string[]>(initialData?.actors || []);
   const [newActor, setNewActor] = useState('');
   
-  const [cast, setCast] = useState<{actor_id: string, character_name: string}[]>(
-    initialData?.cast?.filter((c: any) => c.actor_id) || []
-  );
+
 
   const [availableActors, setAvailableActors] = useState<ActorItem[]>([]);
+  const [existingMovies, setExistingMovies] = useState<any[]>([]);
   
   React.useEffect(() => {
+    // Fetch actors
     actorService.listActors(1, 1000).then(res => {
       let initialActors = res.items;
       setAvailableActors(initialActors);
@@ -78,10 +80,15 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
         }
       }
     }).catch(console.error);
+
+    // Fetch movies for autocomplete
+    movieAdminService.getMovies(1, 1000, '').then(res => {
+      setExistingMovies(res.items || []);
+    }).catch(console.error);
   }, [initialData]);
 
   React.useEffect(() => {
-    const activeQuery = newActor || newDirector || newWriter;
+    const activeQuery = newActor || newWriter || newDirector;
     if (activeQuery && activeQuery.trim().length >= 2) {
       const timer = setTimeout(() => {
         actorService.searchActors(activeQuery.trim())
@@ -98,7 +105,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [newActor, newDirector, newWriter]);
+  }, [newActor, newWriter]);
   
   const [runtimeMinutes, setRuntimeMinutes] = useState<string>(initialData?.runtime_minutes?.toString() || '');
 
@@ -142,6 +149,13 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
     }
   };
 
+  const handleAddActorLink = async (e: React.KeyboardEvent<HTMLInputElement>, state: {actor_id: string}[], setState: any, val: string, setVal: any) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      await addActorLink(state, setState, val, setVal);
+    }
+  };
+
   const addTag = async (state: string[], setState: any, val: string, setVal: any, requireActor = false) => {
     if (val.trim() && !state.includes(val.trim())) {
       if (requireActor) {
@@ -173,6 +187,39 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
       setVal('');
     }
   };
+
+  const addActorLink = async (state: {actor_id: string}[], setState: any, val: string, setVal: any) => {
+    if (!val.trim()) return;
+    
+    let exists = availableActors.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+    
+    if (!exists) {
+      try {
+        const results = await actorService.searchActors(val.trim());
+        exists = results.find(a => a.name.toLowerCase() === val.trim().toLowerCase());
+        if (exists) {
+          setAvailableActors(prev => {
+            if (!prev.find(a => a._id === exists!._id)) {
+              return [...prev, exists!];
+            }
+            return prev;
+          });
+        }
+      } catch (err) {
+        console.error("Error searching actors:", err);
+      }
+    }
+
+    if (!exists) {
+      alert(`"${val.trim()}" not found in Actors collection. Please create it first in Manage Actors.`);
+      return;
+    }
+    
+    if (!state.find(item => item.actor_id === exists!._id)) {
+      setState([...state, { actor_id: exists!._id }]);
+    }
+    setVal('');
+  };
   
   const removeTag = (index: number, state: string[], setState: any) => {
     const newTags = [...state];
@@ -200,7 +247,6 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
         producers,
         production_house: productionHouse,
         actors,
-        cast,
         plot,
         tagline,
         trailers,
@@ -253,11 +299,18 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                 <div>
                   <label className="block text-sm font-medium text-white/70 mb-1">Title (Required)</label>
                   <input type="text" required value={title} onChange={e => setTitle(e.target.value)}
+                    list="existing-movies"
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
+                  <datalist id="existing-movies">
+                    {existingMovies.map(movie => (
+                      <option key={movie._id} value={movie.title} />
+                    ))}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-white/70 mb-1">Original Title</label>
                   <input type="text" value={originalTitle} onChange={e => setOriginalTitle(e.target.value)}
+                    list="existing-movies"
                     className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600" />
                 </div>
               </div>
@@ -381,21 +434,44 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">Directors</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {director.map((tag, idx) => (
-                      <span key={idx} className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded text-xs flex items-center gap-1">
-                        {tag} <X className="w-3 h-3 cursor-pointer hover:text-white" onClick={() => removeTag(idx, director, setDirector)} />
-                      </span>
-                    ))}
+                  <label className="block text-sm font-medium text-white/70 mb-1">Directors (Real Actor Links)</label>
+                  <div className="space-y-3 mb-4">
+                    {director.map((dirItem, idx) => {
+                      const actorData = availableActors.find(a => a._id === dirItem.actor_id);
+                      return (
+                        <div key={idx} className="flex gap-2">
+                          <div className="w-full relative">
+                            <input 
+                              type="text" 
+                              className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white"
+                              value={actorData ? actorData.name : dirItem.actor_id} 
+                              readOnly
+                            />
+                          </div>
+                          <button type="button" onClick={() => {
+                            const newDirs = [...director];
+                            newDirs.splice(idx, 1);
+                            setDirector(newDirs);
+                          }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors shrink-0">
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
+                  
                   <div className="flex gap-2">
                     <input type="text" value={newDirector} onChange={e => setNewDirector(e.target.value)}
-                      onKeyDown={e => handleAddTag(e, director, setDirector, newDirector, setNewDirector, true)}
-                      list="actors-list"
+                      onKeyDown={e => handleAddActorLink(e, director, setDirector, newDirector, setNewDirector)}
+                      list="directors-list"
                       placeholder="Type director name and press Enter"
                       className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
-                    <button type="button" onClick={() => addTag(director, setDirector, newDirector, setNewDirector, true)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
+                    <datalist id="directors-list">
+                      {availableActors.map(actor => (
+                        <option key={actor._id} value={actor.name} />
+                      ))}
+                    </datalist>
+                    <button type="button" onClick={() => addActorLink(director, setDirector, newDirector, setNewDirector)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
                   </div>
                 </div>
                 
@@ -512,71 +588,6 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
                       className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm" />
                     <button type="button" onClick={() => addTag(language, setLanguage, newLanguage, setNewLanguage)} className="px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors shrink-0">Add</button>
                   </div>
-                </div>
-              </div>
-              
-              <div className="bg-white/[0.02] border border-white/5 p-6 rounded-xl space-y-4">
-                <h3 className="text-sm font-bold text-white/50 uppercase tracking-wider mb-4">Cast (Real Actor Links)</h3>
-                <div className="space-y-3 mb-4">
-                  {cast.map((castItem, idx) => {
-                    const actorData = availableActors.find(a => a._id === castItem.actor_id);
-                    return (
-                      <div key={idx} className="flex gap-2">
-                        <div className="w-1/2 relative">
-                          <input 
-                            type="text" 
-                            className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white"
-                            value={actorData ? actorData.name : castItem.actor_id} 
-                            readOnly
-                          />
-                        </div>
-                        <input 
-                          type="text" 
-                          className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600"
-                          value={castItem.character_name}
-                          onChange={e => {
-                            const newCast = [...cast];
-                            newCast[idx] = { ...newCast[idx], character_name: e.target.value };
-                            setCast(newCast);
-                          }}
-                          placeholder="Character Name"
-                        />
-                        <button type="button" onClick={() => {
-                          const newCast = [...cast];
-                          newCast.splice(idx, 1);
-                          setCast(newCast);
-                        }} className="px-3 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition-colors shrink-0">
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                <div className="flex gap-2">
-                  <select 
-                    className="w-1/2 bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-600"
-                    id="cast-actor-select"
-                  >
-                    <option value="">Select an Actor...</option>
-                    {availableActors.map(actor => (
-                      <option key={actor._id} value={actor._id}>{actor.name}</option>
-                    ))}
-                  </select>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      const select = document.getElementById('cast-actor-select') as HTMLSelectElement;
-                      const actorId = select.value;
-                      if (actorId) {
-                        setCast([...cast, { actor_id: actorId, character_name: '' }]);
-                        select.value = '';
-                      }
-                    }} 
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium text-sm transition-colors flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" /> Add Cast Member
-                  </button>
                 </div>
               </div>
               
