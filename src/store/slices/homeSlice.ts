@@ -12,6 +12,12 @@ interface HomeState {
     ctaText: string;
   }[];
   birthdays: BirthdayEntity[];
+  animeAnniversaries: any[];
+  mangaAnniversaries: any[];
+  episodeAnniversaries: any[];
+  chapterAnniversaries: any[];
+  movieAnniversaries: any[];
+  tvSeriesAnniversaries: any[];
   loading: boolean;
   error: string | null;
 }
@@ -84,8 +90,7 @@ export const fetchHomeDataThunk = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await eventService.fetchTodayEvents();
-      // map properties if they diverge slightly or cast
-      return data.birthdays as BirthdayEntity[];
+      return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch home data');
     }
@@ -128,6 +133,12 @@ const initialState: HomeState = {
     }
   ],
   birthdays: getDynamicBirthdays(),
+  animeAnniversaries: [],
+  mangaAnniversaries: [],
+  episodeAnniversaries: [],
+  chapterAnniversaries: [],
+  movieAnniversaries: [],
+  tvSeriesAnniversaries: [],
   loading: false,
   error: null
 };
@@ -144,7 +155,13 @@ const homeSlice = createSlice({
       })
       .addCase(fetchHomeDataThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.birthdays = action.payload;
+        state.birthdays = action.payload.birthdays as BirthdayEntity[];
+        state.animeAnniversaries = action.payload.animeAnniversaries;
+        state.mangaAnniversaries = action.payload.mangaAnniversaries;
+        state.episodeAnniversaries = action.payload.episodeAnniversaries;
+        state.chapterAnniversaries = action.payload.chapterAnniversaries;
+        state.movieAnniversaries = action.payload.movieAnniversaries;
+        state.tvSeriesAnniversaries = action.payload.tvSeriesAnniversaries;
       })
       .addCase(fetchHomeDataThunk.rejected, (state, action) => {
         state.loading = false;

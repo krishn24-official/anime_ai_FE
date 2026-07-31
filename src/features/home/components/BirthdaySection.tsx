@@ -15,8 +15,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ birthdays }) =
     return (
       <section>
         <SectionHeader 
-          title="Today's Celebrations" 
-          subtitle="Special events and character birthdays."
+          title="Today's Birthdays" 
+          subtitle="Character birthdays happening today."
           actionRoute="/characters"
           actionText="View Calendar"
         />
@@ -36,8 +36,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ birthdays }) =
   return (
     <section>
       <SectionHeader 
-        title="Today's Celebrations" 
-        subtitle="Special events and character birthdays."
+        title="Today's Birthdays" 
+        subtitle="Character birthdays happening today."
         actionRoute="/characters"
         actionText="View Calendar"
       />

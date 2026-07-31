@@ -1,15 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from './SectionHeader';
 import type { AppDispatch, RootState } from '../../../store';
 import { fetchTodaysReleasesThunk } from '../../../store/slices/todaysReleasesSlice';
 import { Loader2 } from 'lucide-react';
+import { EpisodeChapterSummaryModal } from '../../content/EpisodeChapterSummaryModal';
 
 export const TodaysReleasesSection: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { items, loading, error } = useSelector((state: RootState) => state.todaysReleases);
+
+  // Modal state for episode/chapter click-through
+  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [summaryModalType, setSummaryModalType] = useState<'episode' | 'chapter'>('episode');
+  const [summaryModalId, setSummaryModalId] = useState('');
 
   useEffect(() => {
     dispatch(fetchTodaysReleasesThunk());
@@ -20,6 +26,21 @@ export const TodaysReleasesSection: React.FC = () => {
   if (isEmpty) {
     return null;
   }
+
+  const handleCardClick = (item: any) => {
+    if (item.event_type === 'episode_release') {
+      setSummaryModalType('episode');
+      setSummaryModalId(item.content_id);
+      setSummaryModalOpen(true);
+    } else if (item.event_type === 'chapter_release') {
+      setSummaryModalType('chapter');
+      setSummaryModalId(item.content_id);
+      setSummaryModalOpen(true);
+    } else {
+      // Premiere / release_start — keep existing behavior
+      navigate('/content', { state: { searchQuery: (item as any).parent_title || item.title } });
+    }
+  };
 
   return (
     <section>
@@ -49,7 +70,7 @@ export const TodaysReleasesSection: React.FC = () => {
               {items.map((item) => (
                 <div 
                   key={`${item.content_type}-${item.content_id}`}
-                  onClick={() => navigate('/content', { state: { searchQuery: (item as any).parent_title || item.title } })}
+                  onClick={() => handleCardClick(item)}
                   className="flex-none w-[140px] md:w-[160px] lg:w-[180px] group cursor-pointer snap-start"
                 >
                   <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden mb-3 border border-white/5">
@@ -97,6 +118,14 @@ export const TodaysReleasesSection: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Episode/Chapter Summary Modal */}
+      <EpisodeChapterSummaryModal
+        isOpen={summaryModalOpen}
+        onClose={() => setSummaryModalOpen(false)}
+        type={summaryModalType}
+        contentId={summaryModalId}
+      />
     </section>
   );
 };

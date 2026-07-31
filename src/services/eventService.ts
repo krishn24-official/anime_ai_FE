@@ -5,6 +5,10 @@ export interface TodayEvents {
   birthdays: FrontendCharacter[];
   animeAnniversaries: any[];
   mangaAnniversaries: any[];
+  episodeAnniversaries: any[];
+  chapterAnniversaries: any[];
+  movieAnniversaries: any[];
+  tvSeriesAnniversaries: any[];
 }
 
 export const eventService = {
@@ -43,10 +47,14 @@ export const eventService = {
         birthdays: mappedBirthdays,
         animeAnniversaries: data.anime_anniversaries || [],
         mangaAnniversaries: data.manga_anniversaries || [],
+        episodeAnniversaries: data.episode_anniversaries || [],
+        chapterAnniversaries: data.chapter_anniversaries || [],
+        movieAnniversaries: data.movie_anniversaries || [],
+        tvSeriesAnniversaries: data.tv_series_anniversaries || [],
       };
     } catch (error) {
       console.error('Failed to fetch today events:', error);
-      return { birthdays: [], animeAnniversaries: [], mangaAnniversaries: [] };
+      return { birthdays: [], animeAnniversaries: [], mangaAnniversaries: [], episodeAnniversaries: [], chapterAnniversaries: [], movieAnniversaries: [], tvSeriesAnniversaries: [] };
     }
   },
 

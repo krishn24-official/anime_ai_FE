@@ -357,5 +357,43 @@ export const contentService = {
     // If it's already a backend type, use it directly, else map it
     const backendType = CATEGORY_MAP[category as FrontendCategory] || category;
     return apiClient.get<any>(`/content/${backendType}/${id}`);
+  },
+
+  /**
+   * Fetch public episode detail (with parent enrichment)
+   */
+  async fetchEpisodeDetail(episodeId: string): Promise<EpisodeDetail> {
+    return apiClient.get<EpisodeDetail>(`/episodes/${episodeId}`);
+  },
+
+  /**
+   * Fetch public chapter detail (with parent enrichment)
+   */
+  async fetchChapterDetail(chapterId: string): Promise<ChapterDetail> {
+    return apiClient.get<ChapterDetail>(`/chapters/${chapterId}`);
   }
 };
+
+export interface EpisodeDetail {
+  episode_number: number;
+  title?: string;
+  release_date?: string;
+  director?: string;
+  arc?: string;
+  is_filler?: boolean;
+  canon_type?: string;
+  summary?: string;
+  parent_type: string;
+  parent_id: string;
+  parent_title?: string;
+  parent_poster?: string;
+}
+
+export interface ChapterDetail {
+  chapter_number: number;
+  release_date?: string;
+  summary?: string;
+  parent_id: string;
+  parent_title?: string;
+  parent_poster?: string;
+}

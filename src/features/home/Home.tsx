@@ -8,12 +8,13 @@ import { TrendingSection } from './components/TrendingSection';
 import { BirthdaySection } from './components/BirthdaySection';
 import { AISection } from './components/AISection';
 import { TodaysReleasesSection } from './components/TodaysReleasesSection';
+import { TodaysEventsSection } from './components/TodaysEventsSection';
 import { CollectionsSection } from './components/CollectionsSection';
 
 const Home: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   
-  const { slides, birthdays } = useSelector((state: RootState) => state.home);
+  const { slides, birthdays, animeAnniversaries, mangaAnniversaries, episodeAnniversaries, chapterAnniversaries, movieAnniversaries, tvSeriesAnniversaries } = useSelector((state: RootState) => state.home);
 
   // Fetch home data on mount
   useEffect(() => {
@@ -37,16 +38,26 @@ const Home: React.FC = () => {
       {/* 2. Trending Now */}
       <TrendingSection />
 
-      {/* 3. Today's Celebrations Spotlight */}
+      {/* 3. Today's Birthdays */}
       <BirthdaySection birthdays={todayBirthdays} />
 
-      {/* 4. AI Companion Dashboard */}
-      <AISection />
+      {/* 4. Today's Events */}
+      <TodaysEventsSection 
+        animeAnniversaries={animeAnniversaries}
+        mangaAnniversaries={mangaAnniversaries}
+        episodeAnniversaries={episodeAnniversaries}
+        chapterAnniversaries={chapterAnniversaries}
+        movieAnniversaries={movieAnniversaries}
+        tvSeriesAnniversaries={tvSeriesAnniversaries}
+      />
 
       {/* 5. Today's Releases */}
       <TodaysReleasesSection />
 
-      {/* 6. Featured Collections */}
+      {/* 6. AI Companion Dashboard */}
+      <AISection />
+
+      {/* 7. Featured Collections */}
       <CollectionsSection />
     </div>
   );

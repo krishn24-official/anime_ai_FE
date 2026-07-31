@@ -20,9 +20,10 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [genres, setGenres] = useState<string[]>(initialData?.genres || []);
   const [newGenre, setNewGenre] = useState('');
   
-  const [director, setDirector] = useState<{actor_id: string}[]>(
-    initialData?.director?.filter((d: any) => d.actor_id) || []
-  );
+  const [director, setDirector] = useState<{actor_id: string}[]>(() => {
+    if (!initialData?.director || !Array.isArray(initialData.director)) return [];
+    return initialData.director.filter((d: any) => d && typeof d === 'object' && d.actor_id);
+  });
   const [newDirector, setNewDirector] = useState('');
   
   const [writers, setWriters] = useState<string[]>(initialData?.writers || []);
@@ -59,10 +60,10 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
       setAvailableActors(initialActors);
       
       // Fetch any cast actors that weren't in the first 1000
-      if (initialData?.cast?.length) {
+      if (initialData?.cast && Array.isArray(initialData.cast)) {
         const existingIds = new Set(initialActors.map((a: any) => a._id));
         const missingIds = initialData.cast
-          .filter((c: any) => c.actor_id && !existingIds.has(c.actor_id))
+          .filter((c: any) => c && typeof c === 'object' && c.actor_id && !existingIds.has(c.actor_id))
           .map((c: any) => c.actor_id);
           
         if (missingIds.length > 0) {
@@ -82,7 +83,7 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
     }).catch(console.error);
 
     // Fetch movies for autocomplete
-    movieAdminService.getMovies(1, 1000, '').then(res => {
+    movieAdminService.listMovies({ limit: 1000, skip: 0, search: '' }).then(res => {
       setExistingMovies(res.items || []);
     }).catch(console.error);
   }, [initialData]);
