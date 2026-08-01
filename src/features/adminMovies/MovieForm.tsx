@@ -54,32 +54,56 @@ export const MovieForm: React.FC<MovieFormProps> = ({ onSuccess, onCancel, initi
   const [existingMovies, setExistingMovies] = useState<any[]>([]);
   
   React.useEffect(() => {
+    // Helper: given a full actors list, populate the actors field from cast data
+    const populateActorsFromCast = (allActors: ActorItem[]) => {
+      if (
+        !initialData?.cast ||
+        !Array.isArray(initialData.cast) ||
+        initialData.cast.length === 0
+      ) return;
+
+      // Only auto-populate if actors array is empty/undefined in initial data
+      const existingActors = initialData?.actors;
+      if (existingActors && Array.isArray(existingActors) && existingActors.length > 0) return;
+
+      const castActorNames = initialData.cast
+        .map((c: any) => {
+          const actor = allActors.find(a => a._id === c.actor_id);
+          return actor ? actor.name : null;
+        })
+        .filter(Boolean) as string[];
+
+      if (castActorNames.length > 0) {
+        setActors(castActorNames);
+      }
+    };
+
     // Fetch actors
-    actorService.listActors(1, 1000).then(res => {
-      let initialActors = res.items;
-      setAvailableActors(initialActors);
+    actorService.listActors(1, 1000).then(async res => {
+      let allActors = [...res.items];
       
       // Fetch any cast actors that weren't in the first 1000
       if (initialData?.cast && Array.isArray(initialData.cast)) {
-        const existingIds = new Set(initialActors.map((a: any) => a._id));
+        const existingIds = new Set(allActors.map((a: any) => a._id));
         const missingIds = initialData.cast
           .filter((c: any) => c && typeof c === 'object' && c.actor_id && !existingIds.has(c.actor_id))
           .map((c: any) => c.actor_id);
           
         if (missingIds.length > 0) {
-          Promise.all(missingIds.map((id: string) => actorService.getActor(id).catch(() => null)))
-            .then(fetchedActors => {
-              const validActors = fetchedActors.filter(Boolean) as ActorItem[];
-              if (validActors.length > 0) {
-                setAvailableActors(prev => {
-                  const prevMap = new Map(prev.map(a => [a._id, a]));
-                  validActors.forEach(a => prevMap.set(a._id, a));
-                  return Array.from(prevMap.values());
-                });
-              }
-            });
+          const fetchedActors = await Promise.all(
+            missingIds.map((id: string) => actorService.getActor(id).catch(() => null))
+          );
+          const validActors = fetchedActors.filter(Boolean) as ActorItem[];
+          if (validActors.length > 0) {
+            const prevMap = new Map(allActors.map(a => [a._id, a]));
+            validActors.forEach(a => prevMap.set(a._id, a));
+            allActors = Array.from(prevMap.values());
+          }
         }
       }
+      
+      setAvailableActors(allActors);
+      populateActorsFromCast(allActors);
     }).catch(console.error);
 
     // Fetch movies for autocomplete
