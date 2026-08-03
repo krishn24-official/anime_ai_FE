@@ -371,6 +371,13 @@ export const contentService = {
    */
   async fetchChapterDetail(chapterId: string): Promise<ChapterDetail> {
     return apiClient.get<ChapterDetail>(`/chapters/${chapterId}`);
+  },
+
+  /**
+   * Fetch weekly suggestions (This Week's Picks)
+   */
+  async fetchWeeklySuggestions(picksPerType = 2): Promise<any[]> {
+    return apiClient.get<any[]>(`/content/weekly-suggestions?picks_per_type=${picksPerType}`);
   }
 };
 

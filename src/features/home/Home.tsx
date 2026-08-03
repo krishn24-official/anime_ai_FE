@@ -9,7 +9,7 @@ import { BirthdaySection } from './components/BirthdaySection';
 import { AISection } from './components/AISection';
 import { TodaysReleasesSection } from './components/TodaysReleasesSection';
 import { TodaysEventsSection } from './components/TodaysEventsSection';
-import { CollectionsSection } from './components/CollectionsSection';
+import { WeeklySuggestionsSection } from './components/WeeklySuggestionsSection';
 
 const Home: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -57,8 +57,8 @@ const Home: React.FC = () => {
       {/* 6. AI Companion Dashboard */}
       <AISection />
 
-      {/* 7. Featured Collections */}
-      <CollectionsSection />
+      {/* 7. This Week's Picks */}
+      <WeeklySuggestionsSection />
     </div>
   );
 };

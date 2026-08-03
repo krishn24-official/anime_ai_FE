@@ -57,11 +57,9 @@ export const TrendingSection: React.FC = () => {
                 </h3>
                 
                 {item.note && (
-                  <div className="overflow-hidden transition-all duration-300 max-h-0 opacity-0 group-hover:max-h-24 group-hover:opacity-100 group-hover:mt-3">
-                    <p className="text-[10px] text-anime-text/90 italic line-clamp-3 bg-black/40 p-2 rounded-lg border border-white/5">
-                      "{item.note}"
-                    </p>
-                  </div>
+                  <p className="text-anime-primary font-medium text-[10px] mt-1 line-clamp-1 uppercase tracking-wider">
+                    {item.note}
+                  </p>
                 )}
               </div>
             </div>

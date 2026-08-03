@@ -282,7 +282,9 @@ const AdminTrending: React.FC = () => {
             <button
               type="submit"
               disabled={formLoading || !selectedItem}
-              className="btn-glow-primary w-full py-3 bg-anime-primary text-black font-bold rounded-xl disabled:opacity-50 flex justify-center items-center space-x-2"
+              className={`w-full py-3 font-bold rounded-xl flex justify-center items-center space-x-2 transition-all ${
+                (!selectedItem || formLoading) ? 'bg-white/10 text-white/50' : 'bg-anime-primary text-black btn-glow-primary'
+              }`}
             >
               {formLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Pin Item</span>}
             </button>

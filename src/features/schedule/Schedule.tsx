@@ -70,7 +70,7 @@ const Schedule: React.FC = () => {
             <button
               onClick={() => setDateMode('single')}
               className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                dateMode === 'single' ? 'bg-anime-primary text-black' : 'text-anime-text hover:text-white'
+                dateMode === 'single' ? 'bg-anime-primary text-black' : 'text-white/50 hover:text-white hover:bg-white/5'
               }`}
             >
               Single Date
@@ -78,7 +78,7 @@ const Schedule: React.FC = () => {
             <button
               onClick={() => setDateMode('range')}
               className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                dateMode === 'range' ? 'bg-anime-primary text-black' : 'text-anime-text hover:text-white'
+                dateMode === 'range' ? 'bg-anime-primary text-black' : 'text-white/50 hover:text-white hover:bg-white/5'
               }`}
             >
               Date Range
