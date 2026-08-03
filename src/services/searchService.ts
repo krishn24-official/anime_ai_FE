@@ -50,12 +50,21 @@ export interface SearchTVSeriesItem {
   total_seasons?: number;
 }
 
+export interface SearchActorItem {
+  _id: string;
+  name: string;
+  images?: {
+    profile?: string;
+  };
+}
+
 export interface GlobalSearchResults {
   characters: SearchCharacterItem[];
   anime: SearchAnimeItem[];
   manga: SearchMangaItem[];
   movies: SearchMovieItem[];
   tv_series: SearchTVSeriesItem[];
+  actors: SearchActorItem[];
 }
 
 export const searchService = {

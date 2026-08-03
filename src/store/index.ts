@@ -23,6 +23,11 @@ export const store = configureStore({
     trending: trendingReducer,
     todaysReleases: todaysReleasesReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+      immutableCheck: false,
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

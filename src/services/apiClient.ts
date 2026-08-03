@@ -164,7 +164,7 @@ class ApiClient {
         await this.post('/auth/register', {
           email: guestEmail,
           password: guestPassword,
-          username: 'Guest User',
+          username: 'Guest_User',
         });
         
         // Login after successful registration

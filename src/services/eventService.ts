@@ -120,6 +120,7 @@ export const eventService = {
         matchingBirthdays.forEach(b => {
           items.push({
             id: `bday_${b._id}_${dateStr}`,
+            entityId: b._id,
             date: dateStr,
             type: 'birthday',
             entityType: b.entity_type || 'character',

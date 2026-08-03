@@ -95,7 +95,8 @@ const Header: React.FC<HeaderProps> = ({
     searchResults.anime.length > 0 ||
     searchResults.manga.length > 0 ||
     searchResults.movies.length > 0 ||
-    searchResults.tv_series.length > 0
+    searchResults.tv_series.length > 0 ||
+    (searchResults.actors && searchResults.actors.length > 0)
   );
 
   return (
@@ -171,6 +172,36 @@ const Header: React.FC<HeaderProps> = ({
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-white truncate">{char.name}</p>
                               <p className="text-[10px] text-anime-text/60">{char.role || 'Character'}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actors */}
+                  {searchResults.actors && searchResults.actors.length > 0 && (
+                    <div className="pt-3 first:pt-0">
+                      <span className="text-[10px] font-bold text-anime-primary uppercase tracking-wider block mb-2 px-1">Actors</span>
+                      <div className="space-y-1">
+                        {searchResults.actors.map(actor => (
+                          <div
+                            key={actor._id}
+                            onClick={() => {
+                              navigate(`/actors/${actor._id}`);
+                              setSearchQuery('');
+                              setIsSearchOpen(false);
+                            }}
+                            className="flex items-center space-x-3 p-1.5 hover:bg-white/5 rounded-xl cursor-pointer transition-all"
+                          >
+                            <img
+                              src={actor.images?.profile || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                              alt={actor.name}
+                              className="w-8 h-10 rounded-lg object-cover bg-white/5"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-white truncate">{actor.name}</p>
+                              <p className="text-[10px] text-anime-text/60">Actor</p>
                             </div>
                           </div>
                         ))}

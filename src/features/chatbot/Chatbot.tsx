@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import type { RootState } from '../../store';
 import { sendMessage, clearHistory } from '../../store/slices/chatSlice';
 import { Bot, Send, Trash2, Sparkles, User, Camera, Image, X } from 'lucide-react';
@@ -198,7 +198,7 @@ const Chatbot: React.FC = () => {
       let currentText = line;
       let key = 0;
 
-      const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
+      const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|<POSTER:.*?\|.*?>)/g;
       const parts = currentText.split(regex);
 
       parts.forEach((part) => {
@@ -208,6 +208,14 @@ const Chatbot: React.FC = () => {
           elements.push(<em key={key++} className="italic text-anime-primary">{part.slice(1, -1)}</em>);
         } else if (part.startsWith('`') && part.endsWith('`')) {
           elements.push(<code key={key++} className="bg-black/40 px-1.5 py-0.5 rounded text-anime-purple font-mono text-[10px]">{part.slice(1, -1)}</code>);
+        } else if (part.startsWith('<POSTER:') && part.endsWith('>')) {
+          const content = part.slice(8, -1);
+          const [imgUrl, linkUrl] = content.split('|');
+          elements.push(
+            <Link key={key++} to={linkUrl} className="block my-3 group">
+              <img src={imgUrl} alt="Movie Poster" className="w-32 h-auto rounded-lg shadow-md group-hover:scale-105 transition-transform" />
+            </Link>
+          );
         } else {
           elements.push(part);
         }
@@ -287,13 +295,7 @@ const Chatbot: React.FC = () => {
                       <button
                         key={charName}
                         onClick={() => {
-                          const original = msg.originalQuery ?? '';
-                          const fragment = msg.nameQuery ?? '';
-                          // Replace the ambiguous fragment with the chosen full name (case-insensitive)
-                          const escapedFragment = fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                          const resolved = fragment && original
-                            ? original.replace(new RegExp(escapedFragment, 'gi'), charName)
-                            : `Tell me about ${charName}`;
+                          const resolved = `Tell me about ${charName}`;
                           dispatch(sendMessage({ text: resolved }) as any);
                         }}
                         className="px-3 py-1.5 bg-anime-primary/10 hover:bg-anime-primary/20 border border-anime-primary/30 hover:border-anime-primary/60 text-anime-primary hover:text-white text-[10px] font-semibold rounded-xl transition-all duration-200 flex items-center gap-1.5"

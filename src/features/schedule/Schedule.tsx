@@ -164,9 +164,9 @@ const Schedule: React.FC = () => {
                       onClick={() => {
                         if (item.type === 'birthday') {
                           if (item.entityType === 'actor') {
-                            navigate('/actors', { state: { searchQuery: item.name } });
+                            navigate(`/actors/${item.entityId}`);
                           } else {
-                            navigate('/characters', { state: { searchQuery: item.name } });
+                            navigate(`/characters/${item.entityId}`);
                           }
                         } else if (item.type !== 'event') {
                           navigate('/content', { state: { searchQuery: item.name } });

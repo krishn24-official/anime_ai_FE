@@ -180,16 +180,16 @@ const AdminTrending: React.FC = () => {
                   {searchResults && (
                     <div className="absolute top-full left-0 mt-2 w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto p-2 space-y-2 z-50">
                       {Object.entries(searchResults).map(([type, items]) => {
-                        if (!items || !Array.isArray(items) || items.length === 0 || type === 'characters') return null;
+                        if (!items || !Array.isArray(items) || items.length === 0 || type === 'characters' || type === 'actors') return null;
                         return (
                           <div key={type}>
                             <div className="text-[10px] font-bold text-anime-primary uppercase px-2 py-1">{type}</div>
-                            {items.map((item: any) => {
+                            {items.map((item: any, index: number) => {
                               const title = item.title?.english || item.title?.romaji || item.title || item.name;
                               const mappedType = type === 'tv_series' ? 'tv_series' : type === 'movies' ? 'movie' : type;
                               return (
                                 <div 
-                                  key={item._id} 
+                                  key={item._id || item.id || index} 
                                   onClick={() => handleSelectItem(item, mappedType, title)}
                                   className="p-2 hover:bg-white/5 rounded-lg cursor-pointer text-xs text-white"
                                 >
