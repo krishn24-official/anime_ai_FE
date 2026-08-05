@@ -100,29 +100,78 @@ const ActorDetail: React.FC = () => {
           </div>
         </div>
         
-        {actor.filmography && actor.filmography.length > 0 && (
-          <div className="mt-16 space-y-6">
-            <h2 className="text-2xl font-bold border-b border-white/10 pb-4">Known For</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-              {actor.filmography.map((item, idx) => (
-                <Link to={`/content/${item.content_type}/${item.id}`} key={idx} className="group flex flex-col space-y-3 cursor-pointer">
-                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg bg-white/5 border border-white/10">
-                    <img 
-                      src={item.poster || 'https://via.placeholder.com/300x450'} 
-                      alt={item.title} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Play className="w-10 h-10 text-white fill-white shadow-xl" />
+        {actor.filmography && (Array.isArray(actor.filmography) ? actor.filmography.length > 0 : Object.keys(actor.filmography).length > 0) && (
+          <div className="mt-16 space-y-12">
+            
+            {/* Render legacy array or grouped object */}
+            {(() => {
+              if (Array.isArray(actor.filmography)) {
+                // Fallback for old flat array
+                return (
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-bold border-b border-white/10 pb-4">Known For</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                      {actor.filmography.map((item, idx) => (
+                        <Link to={`/content/${item.content_type}/${item.id}`} key={idx} className="group flex flex-col space-y-3 cursor-pointer">
+                          <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg bg-white/5 border border-white/10">
+                            <img 
+                              src={item.poster || 'https://via.placeholder.com/300x450'} 
+                              alt={item.title} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Play className="w-10 h-10 text-white fill-white shadow-xl" />
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-anime-primary transition-colors">{item.title}</h3>
+                            {item.year && <p className="text-xs text-gray-400 mt-0.5">{item.year}</p>}
+                          </div>
+                        </Link>
+                      ))}
                     </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-anime-primary transition-colors">{item.title}</h3>
-                    {item.year && <p className="text-xs text-gray-400 mt-0.5">{item.year}</p>}
+                );
+              }
+              
+              // New grouped behavior
+              const groups = [
+                { key: 'as_actor', label: 'As Actor' },
+                { key: 'as_director', label: 'As Director' },
+                { key: 'as_writer', label: 'As Writer' }
+              ];
+
+              return groups.map(({ key, label }) => {
+                const groupItems = actor.filmography[key] || [];
+                if (groupItems.length === 0) return null;
+                
+                return (
+                  <div key={key} className="space-y-6">
+                    <h2 className="text-2xl font-bold border-b border-white/10 pb-4">{label}</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                      {groupItems.map((item: any, idx: number) => (
+                        <Link to={`/content/${item.content_type}/${item.id}`} key={idx} className="group flex flex-col space-y-3 cursor-pointer">
+                          <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg bg-white/5 border border-white/10">
+                            <img 
+                              src={item.poster || 'https://via.placeholder.com/300x450'} 
+                              alt={item.title} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Play className="w-10 h-10 text-white fill-white shadow-xl" />
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-anime-primary transition-colors">{item.title}</h3>
+                            {item.year && <p className="text-xs text-gray-400 mt-0.5">{item.year}</p>}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </Link>
-              ))}
-            </div>
+                );
+              });
+            })()}
           </div>
         )}
         

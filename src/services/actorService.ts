@@ -8,7 +8,7 @@ export interface ActorItem {
   images?: {
     profile?: string;
   };
-  filmography?: any[];
+  filmography?: any;
 }
 
 export const actorService = {

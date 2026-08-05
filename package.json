@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "cap:sync": "npm run build && npx cap sync",
     "cap:android": "npx cap open android",
-    "cap:ios": "npx cap open ios"
+    "cap:ios": "npx cap open ios",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
@@ -24,6 +27,7 @@
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@reduxjs/toolkit": "^2.12.0",
     "@tailwindcss/postcss": "^4.3.1",
+    "@tauri-apps/api": "^2.11.1",
     "autoprefixer": "^10.5.0",
     "lucide-react": "^1.18.0",
     "postcss": "^8.5.15",
@@ -38,6 +42,7 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.2",
     "@eslint/js": "^10.0.1",
+    "@tauri-apps/cli": "^2.11.4",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
