@@ -322,6 +322,32 @@ const ContentDetail: React.FC = () => {
           </section>
         )}
 
+        {/* Voice Actors Section */}
+        {data.voice_actors?.length > 0 && (
+          <section className="space-y-6">
+            <h2 className="text-2xl font-bold">Voice Actors</h2>
+            <div className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar">
+              {data.voice_actors.map((actor: any, idx: number) => (
+                <Link to={`/voice-actors/${actor.id || encodeURIComponent(actor.name)}`} key={idx} className="flex flex-col items-center shrink-0 w-24 group">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-anime-primary transition-all cursor-pointer bg-white/5">
+                    <img 
+                      src={actor.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name || actor)}&background=222&color=fff`} 
+                      alt={actor.name || actor} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="mt-3 text-sm font-semibold text-center leading-tight group-hover:text-anime-primary transition-colors">
+                    {actor.name || actor}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1 text-center line-clamp-2 px-1">
+                    {actor.role || 'Voice Actor'}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Creators Section */}
         {data.creators?.length > 0 && (
           <section className="space-y-6">
@@ -366,7 +392,7 @@ const ContentDetail: React.FC = () => {
                     {actor.name || actor.english || actor}
                   </span>
                   <span className="text-xs text-gray-400 mt-1 text-center line-clamp-1">
-                    {actor.role || 'Actor'}
+                    {actor.character || actor.role || 'Actor'}
                   </span>
                 </Link>
               ))}

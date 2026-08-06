@@ -23,9 +23,10 @@ import { AdminTvSeries } from './features/adminTvSeries/AdminTvSeries';
 import { AdminEpisodesChapters } from './features/adminEpisodes/AdminEpisodesChapters';
 import AdminRelationships from './features/adminRelationships/AdminRelationships';
 import { AdminCharacters } from './features/adminCharacters/AdminCharacters';
-import { AdminActors } from './features/adminActors/AdminActors';
+const AdminActors = React.lazy(() => import('./features/adminActors/AdminActors'));
 
 const ActorDetail = React.lazy(() => import('./features/actors/ActorDetail'));
+const VoiceActorDetail = React.lazy(() => import('./features/voiceActors/VoiceActorDetail'));
 import ScrollToTop from './components/ScrollToTop';
 
 const AdminLayout = () => {
@@ -287,6 +288,7 @@ const App: React.FC = () => {
               <Route path="/characters" element={<Characters />} />
               <Route path="/characters/:id" element={<CharacterDetail />} />
               <Route path="/actors/:id" element={<ActorDetail />} />
+              <Route path="/voice-actors/:id" element={<VoiceActorDetail />} />
               <Route path="/games/*" element={<Games />} />
               <Route path="/chatbot" element={<Chatbot />} />
 
