@@ -23,7 +23,7 @@ import { AdminTvSeries } from './features/adminTvSeries/AdminTvSeries';
 import { AdminEpisodesChapters } from './features/adminEpisodes/AdminEpisodesChapters';
 import AdminRelationships from './features/adminRelationships/AdminRelationships';
 import { AdminCharacters } from './features/adminCharacters/AdminCharacters';
-const AdminActors = React.lazy(() => import('./features/adminActors/AdminActors'));
+import { AdminActors } from './features/adminActors/AdminActors';
 
 const ActorDetail = React.lazy(() => import('./features/actors/ActorDetail'));
 const VoiceActorDetail = React.lazy(() => import('./features/voiceActors/VoiceActorDetail'));

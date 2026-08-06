@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { apiClient } from './apiClient';
 
 export interface VoiceActorItem {
   _id: string;
@@ -18,7 +16,6 @@ export interface VoiceActorItem {
 
 export const voiceActorService = {
   getVoiceActor: async (id: string): Promise<VoiceActorItem> => {
-    const response = await axios.get(`${API_URL}/api/v1/voice-actors/${id}`);
-    return response.data;
+    return await apiClient.get<VoiceActorItem>(`/voice-actors/${id}`);
   }
 };
