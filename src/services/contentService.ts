@@ -120,6 +120,27 @@ const getItems = (data: any): any[] => {
   return [];
 };
 
+/**
+ * Safely extract a 4-digit year from either:
+ *  - a plain string "YYYY-MM-DD"
+ *  - the backend release_date object { year, month, day, precision }
+ *  - a raw number
+ * Returns undefined when the value is absent or unparseable.
+ */
+const extractYear = (value: any): number | undefined => {
+  if (!value) return undefined;
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const n = parseInt(value.split('-')[0]);
+    return isNaN(n) ? undefined : n;
+  }
+  if (typeof value === 'object' && value.year) {
+    const n = parseInt(value.year);
+    return isNaN(n) ? undefined : n;
+  }
+  return undefined;
+};
+
 export const contentService = {
   /**
    * Fetches and normalizes anime list
@@ -148,7 +169,7 @@ export const contentService = {
     if (search) url += `&search=${encodeURIComponent(search)}`;
     const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
-      const year = item.start_date ? parseInt(item.start_date.split('-')[0]) : 2024;
+      const year = extractYear(item.start_date) ?? 2024;
       return {
         id: item.id,
         title: item.name || 'Untitled Manga',
@@ -171,7 +192,7 @@ export const contentService = {
     const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
       const id = item.id;
-      const year = item.release_date ? parseInt(item.release_date.split('-')[0]) : (item.year ? parseInt(item.year) : 2024);
+      const year = extractYear(item.release_date) ?? (item.year ? parseInt(item.year) : 2024);
       const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.tmdb ? parseFloat(item.rating.tmdb) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5));
 
       return {
@@ -196,7 +217,7 @@ export const contentService = {
     const data = await apiClient.get<any>(url);
     return getItems(data).map((item) => {
       const id = item.id;
-      const year = item.first_air_date ? parseInt(item.first_air_date.split('-')[0]) : (item.year ? parseInt(item.year.split('–')[0]) : 2024);
+      const year = extractYear(item.first_air_date) ?? (item.year ? parseInt(String(item.year).split('–')[0]) : 2024);
       const ratingVal = item.tmdb_rating ? parseFloat(item.tmdb_rating.toFixed(1)) : (item.rating?.tmdb ? parseFloat(item.rating.tmdb) : (item.rating?.imdb ? parseFloat(item.rating.imdb) : 7.5));
 
       return {
