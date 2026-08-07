@@ -49,14 +49,16 @@ const mapBackendCharacter = (item: any): FrontendCharacter => {
 
 export const characterService = {
   /**
-   * Fetch all characters and sort them A-Z by default
+   * Fetch one page of characters.
+   * Backend returns { items, skip, limit, has_more }
    */
-  async fetchCharacters(): Promise<FrontendCharacter[]> {
-    const data = await apiClient.get<any>('/characters');
-    const items = Array.isArray(data) ? data : (data?.items || []);
-    const mapped = items.map(mapBackendCharacter);
-    // Sort alphabetically A-Z by default as requested by user
-    return mapped.sort((a: FrontendCharacter, b: FrontendCharacter) => a.name.localeCompare(b.name));
+  async fetchCharacters(skip = 0, limit = 50): Promise<{ characters: FrontendCharacter[]; hasMore: boolean }> {
+    const data = await apiClient.get<{ items: any[]; has_more: boolean }>(
+      '/characters',
+      { params: { skip, limit } }
+    );
+    const characters = (data.items || []).map(mapBackendCharacter);
+    return { characters, hasMore: data.has_more };
   },
 
   /**

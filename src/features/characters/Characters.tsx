@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
-import { fetchCharactersData, searchCharactersThunk } from '../../store/slices/characterSlice';
+import { fetchCharactersData, fetchMoreCharactersThunk, searchCharactersThunk } from '../../store/slices/characterSlice';
 import { Calendar, Search, Gift, Loader2, Sparkles, MessageCircle, Share2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -9,7 +9,7 @@ const Characters: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { characters, birthdays, loading, error } = useSelector((state: RootState) => state.characters);
+  const { characters, birthdays, loading, loadingMore, hasMore, currentSkip, error } = useSelector((state: RootState) => state.characters);
 
   // Sentinel ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -18,7 +18,6 @@ const Characters: React.FC = () => {
   const [filterGender, setFilterGender] = useState<'all' | 'male' | 'female'>('all');
   const [filterAnime, setFilterAnime] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
     dispatch(fetchCharactersData());
@@ -73,15 +72,15 @@ const Characters: React.FC = () => {
     dispatch(searchCharactersThunk(debouncedSearch));
   }, [debouncedSearch, dispatch]);
 
-  // IntersectionObserver for progressive rendering (infinite scroll)
+  // IntersectionObserver — load next server page when sentinel enters viewport
   const handleIntersect = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
-      if (entry.isIntersecting && !loading && !isSearchActive) {
-        setDisplayCount(prev => prev + 20);
+      if (entry.isIntersecting && !loading && !loadingMore && hasMore && !isSearchActive) {
+        dispatch(fetchMoreCharactersThunk(currentSkip));
       }
     },
-    [loading, isSearchActive]
+    [loading, loadingMore, hasMore, isSearchActive, currentSkip, dispatch]
   );
 
   useEffect(() => {
@@ -123,18 +122,8 @@ const Characters: React.FC = () => {
       }
     });
 
-  // Progressive rendering slice
-  const visibleCharacters = isSearchActive ? filteredCharacters : filteredCharacters.slice(0, displayCount);
-
-  // Auto-reveal background timer to fulfill "fetch even if user doesn't scroll"
-  useEffect(() => {
-    if (!isSearchActive && !loading && characters.length > 0 && displayCount < filteredCharacters.length) {
-      const timer = setTimeout(() => {
-        setDisplayCount(prev => Math.min(prev + 20, filteredCharacters.length));
-      }, 500); // Reveal 20 more every 500ms in background
-      return () => clearTimeout(timer);
-    }
-  }, [isSearchActive, loading, characters.length, displayCount, filteredCharacters.length]);
+  // Show all filtered characters (server already paginates; local filter is on the loaded set)
+  const visibleCharacters = filteredCharacters;
 
   const today = new Date();
 
@@ -412,13 +401,13 @@ const Characters: React.FC = () => {
 
             {/* Infinite scroll sentinel + bottom spinner */}
             <div ref={sentinelRef} className="w-full h-10" />
-            {!isSearchActive && displayCount < filteredCharacters.length && (
+            {loadingMore && (
               <div className="flex flex-col items-center justify-center py-8 space-y-2">
                 <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
                 <p className="text-xs text-anime-text/50">Loading more characters...</p>
               </div>
             )}
-            {!isSearchActive && characters.length > 0 && displayCount >= filteredCharacters.length && (
+            {!isSearchActive && !hasMore && characters.length > 0 && (
               <p className="text-center text-xs text-anime-text/30 py-4">All characters loaded</p>
             )}
           </div>
