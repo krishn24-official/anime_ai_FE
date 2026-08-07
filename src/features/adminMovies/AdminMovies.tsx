@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Loader2, RefreshCw, AlertCircle, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, RefreshCw, X } from 'lucide-react';
 import { movieAdminService } from '../../services/movieAdminService';
 import { MovieForm } from './MovieForm';
 

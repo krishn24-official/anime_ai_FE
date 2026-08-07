@@ -11,6 +11,7 @@ export interface AdminAnimeItem {
   is_deleted?: boolean;
   needs_release_review?: boolean;
   end_date?: any;
+  possible_duplicate_of?: { content_type: string; content_id: string };
 }
 
 export interface ListAnimeOptions {

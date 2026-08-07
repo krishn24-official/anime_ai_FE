@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Loader2, RefreshCw, AlertCircle, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, RefreshCw, X } from 'lucide-react';
 import { animeAdminService } from '../../services/animeAdminService';
 import type { AdminAnimeItem } from '../../services/animeAdminService';
 import { AnimeForm } from './AnimeForm';
