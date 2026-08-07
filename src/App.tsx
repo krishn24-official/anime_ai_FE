@@ -114,9 +114,15 @@ const App: React.FC = () => {
     let reconnectTimeout: any = null;
     let attempts = 0;
     let isCleanedUp = false;
+    const MAX_ATTEMPTS = 5;
 
     const connect = () => {
       if (isCleanedUp) return;
+      if (attempts >= MAX_ATTEMPTS) {
+        console.warn('[ws] Max reconnect attempts reached. Live news alerts paused.');
+        return;
+      }
+
       const lastChecked = localStorage.getItem('last_news_checked_time') || '0';
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const wsUrlBase = apiUrl.replace(/^http/, 'ws');
@@ -193,7 +199,8 @@ const App: React.FC = () => {
 
       ws.onclose = () => {
         if (isCleanedUp) return;
-        const delay = Math.min(1000 * Math.pow(2, attempts), 30000);
+        // Start at 5 s, double each attempt, cap at 60 s
+        const delay = Math.min(5000 * Math.pow(2, attempts), 60000);
         attempts++;
         reconnectTimeout = setTimeout(connect, delay);
       };
@@ -215,6 +222,7 @@ const App: React.FC = () => {
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
     };
   }, [currentUser, dispatch]);
+
 
   // Determine header title from path
   const getHeaderTitle = (pathname: string) => {

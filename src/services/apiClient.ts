@@ -1,5 +1,10 @@
 const BASE_URL = import.meta.env.VITE_API_URL || '';
 
+// Circuit-breaker for guest auth: after a failure, back off 60 s before retrying.
+// Prevents a flood of /auth/login requests when Render is sleeping or returning 502.
+let _guestAuthFailedAt: number | null = null;
+const GUEST_AUTH_BACKOFF_MS = 60_000;
+
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number>;
 }
@@ -147,6 +152,11 @@ class ApiClient {
   async ensureGuestSession(): Promise<string> {
     if (this.token) return this.token;
 
+    // Circuit breaker: don't retry within 60 s of a recent failure.
+    if (_guestAuthFailedAt && Date.now() - _guestAuthFailedAt < GUEST_AUTH_BACKOFF_MS) {
+      throw new Error('Guest auth temporarily suspended (backend unavailable). Retry later.');
+    }
+
     const guestEmail = 'guest@anime.ai';
     const guestPassword = 'Password123';
 
@@ -156,6 +166,7 @@ class ApiClient {
         identifier: guestEmail,
         password: guestPassword,
       });
+      _guestAuthFailedAt = null; // reset on success
       this.setToken(loginRes.access_token);
       return loginRes.access_token;
     } catch {
@@ -166,15 +177,17 @@ class ApiClient {
           password: guestPassword,
           username: 'Guest_User',
         });
-        
+
         // Login after successful registration
         const loginRes = await this.post<{ access_token: string }>('/auth/login', {
           identifier: guestEmail,
           password: guestPassword,
         });
+        _guestAuthFailedAt = null; // reset on success
         this.setToken(loginRes.access_token);
         return loginRes.access_token;
       } catch (regError) {
+        _guestAuthFailedAt = Date.now(); // arm the circuit breaker
         console.error('Failed to establish guest session:', regError);
         throw regError;
       }
