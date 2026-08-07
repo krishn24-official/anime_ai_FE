@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Play, Eye, Bookmark, Clock, ArrowLeft } from 'lucide-react';
+import { Play, Eye, Bookmark, Clock, ArrowLeft, Heart } from 'lucide-react';
 import { contentService } from '../../services/contentService';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
@@ -17,6 +17,8 @@ const ContentDetail: React.FC = () => {
   const [activeTrailerUrl, setActiveTrailerUrl] = useState<string | null>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [commentText, setCommentText] = useState('');
+  const [isSpoiler, setIsSpoiler] = useState(false);
+  const [revealedSpoilers, setRevealedSpoilers] = useState<Set<string>>(new Set());
 
   // Watchlist state from Redux
   const watchlist = useSelector((state: RootState) => state.content.watchlist);
@@ -67,14 +69,69 @@ const ContentDetail: React.FC = () => {
       if (type === 'tv_series') category = 'TV-Series';
       if (type === 'manga') category = 'Manga';
       
-      await contentService.addComment(category, data.id, commentText);
+      await contentService.addComment(category, data.id, commentText, isSpoiler);
       setCommentText('');
+      setIsSpoiler(false);
       // Refetch comments
       const commentsRes = await contentService.fetchComments(category, data.id);
       setComments(commentsRes);
     } catch (err) {
       alert('Failed to post comment. Make sure you are logged in.');
     }
+  };
+
+  const handleToggleLike = async (commentId: string) => {
+    if (!data || !type) return;
+    
+    // Optimistic update
+    setComments(prev => prev.map(c => {
+      if (c.id === commentId) {
+        return {
+          ...c,
+          is_liked: !c.is_liked,
+          like_count: (c.like_count || 0) + (c.is_liked ? -1 : 1)
+        };
+      }
+      return c;
+    }));
+
+    try {
+      let category: FrontendCategory = 'Anime';
+      if (type === 'movie') category = 'Movies';
+      if (type === 'tv_series') category = 'TV-Series';
+      if (type === 'manga') category = 'Manga';
+      
+      const res = await contentService.toggleLikeComment(category, data.id, commentId);
+      
+      // Reconcile
+      setComments(prev => prev.map(c => {
+        if (c.id === commentId) {
+          return {
+            ...c,
+            is_liked: res.is_liked,
+            like_count: res.like_count
+          };
+        }
+        return c;
+      }));
+    } catch (err) {
+      // Revert if failed
+      let category: FrontendCategory = 'Anime';
+      if (type === 'movie') category = 'Movies';
+      if (type === 'tv_series') category = 'TV-Series';
+      if (type === 'manga') category = 'Manga';
+      const commentsRes = await contentService.fetchComments(category, data.id);
+      setComments(commentsRes);
+    }
+  };
+
+  const toggleSpoiler = (id: string) => {
+    setRevealedSpoilers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
   };
 
   if (loading) {
@@ -472,7 +529,13 @@ const ContentDetail: React.FC = () => {
               onChange={(e) => setCommentText(e.target.value)}
             />
             <div className="flex justify-between items-center mt-2 border-t border-white/5 pt-3">
-              <span className="text-xs text-gray-500 ml-2">{commentText.length}/1000</span>
+              <div className="flex items-center gap-4 ml-2">
+                <span className="text-xs text-gray-500">{commentText.length}/1000</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={isSpoiler} onChange={(e) => setIsSpoiler(e.target.checked)} className="rounded border-gray-600 bg-gray-800 text-anime-primary focus:ring-anime-primary cursor-pointer"/>
+                  <span className="text-sm text-gray-400">Mark as spoiler</span>
+                </label>
+              </div>
               <button 
                 onClick={handlePostComment}
                 disabled={!commentText.trim()}
@@ -493,10 +556,35 @@ const ContentDetail: React.FC = () => {
                 />
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-gray-200">{comment.username}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-sm text-gray-200">{comment.username}</span>
+                      {comment.is_spoiler && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                          SPOILER
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs text-gray-500">{comment.timestamp}</span>
                   </div>
-                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{comment.text}</p>
+                  {comment.is_spoiler && !revealedSpoilers.has(comment.id) ? (
+                    <div 
+                      onClick={() => toggleSpoiler(comment.id)}
+                      className="text-sm text-gray-400 bg-white/5 p-3 rounded-lg border border-white/5 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors mt-2"
+                    >
+                      This comment contains a spoiler — click to reveal
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap mt-2">{comment.text}</p>
+                  )}
+                  <div className="flex items-center gap-2 pt-2 mt-2">
+                    <button 
+                      onClick={() => handleToggleLike(comment.id)}
+                      className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${comment.is_liked ? 'bg-anime-primary/20 text-anime-primary border-anime-primary/50' : 'bg-transparent text-gray-400 border-white/10 hover:bg-white/5'}`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${comment.is_liked ? 'fill-current' : ''}`} />
+                      {comment.like_count > 0 ? comment.like_count : 'Like'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

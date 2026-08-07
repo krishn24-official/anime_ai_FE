@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { tvSeriesAdminService } from '../../services/tvSeriesAdminService';
 import type { AdminTvSeriesItem } from '../../services/tvSeriesAdminService';
-import { Trash2, Edit2, Loader2, Plus, Search, Filter, AlertCircle, RefreshCw } from 'lucide-react';
+import { Trash2, Edit2, Loader2, Plus, Search, Filter, AlertCircle, RefreshCw, X } from 'lucide-react';
 import { TvSeriesForm } from './TvSeriesForm';
 
 const renderDate = (dateObj: any) => {
@@ -21,6 +21,7 @@ export const AdminTvSeries: React.FC = () => {
   
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
+  const [flaggedDuplicates, setFlaggedDuplicates] = useState(false);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
@@ -36,7 +37,8 @@ export const AdminTvSeries: React.FC = () => {
         search, 
         limit, 
         (page - 1) * limit,
-        needsReview
+        needsReview,
+        flaggedDuplicates
       );
       setItems(data.items);
       setTotalPages(data.pages);
@@ -49,7 +51,7 @@ export const AdminTvSeries: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [includeDeleted, needsReview, search, page]);
+  }, [includeDeleted, needsReview, flaggedDuplicates, search, page]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,13 +64,25 @@ export const AdminTvSeries: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (contentId: string) => {
-    if (!window.confirm('Are you sure you want to soft-delete this TV series?')) return;
-    try {
-      await tvSeriesAdminService.deleteTvSeries(contentId);
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete');
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this TV series?")) {
+      try {
+        await tvSeriesAdminService.deleteTvSeries(id);
+        loadData();
+      } catch (err) {
+        alert("Failed to delete TV series");
+      }
+    }
+  };
+
+  const handleDismissDuplicate = async (id: string) => {
+    if (window.confirm("Are you sure you want to dismiss this duplicate warning?")) {
+      try {
+        await tvSeriesAdminService.dismissDuplicate(id);
+        loadData();
+      } catch (err) {
+        alert("Failed to dismiss duplicate");
+      }
     }
   };
 
@@ -98,19 +112,26 @@ export const AdminTvSeries: React.FC = () => {
       </div>
 
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button 
-            onClick={() => { setNeedsReview(false); setPage(1); }}
-            className={!needsReview ? activeTabClass : inactiveTabClass}
+            onClick={() => { setNeedsReview(false); setFlaggedDuplicates(false); setPage(1); }}
+            className={!needsReview && !flaggedDuplicates ? activeTabClass : inactiveTabClass}
           >
             All TV Series
           </button>
           <button 
-            onClick={() => { setNeedsReview(true); setPage(1); }}
-            className={`flex items-center gap-2 ${needsReview ? activeTabClass : inactiveTabClass}`}
+            onClick={() => { setNeedsReview(true); setFlaggedDuplicates(false); setPage(1); }}
+            className={`flex items-center gap-2 ${needsReview && !flaggedDuplicates ? activeTabClass : inactiveTabClass}`}
           >
             <AlertCircle className="w-4 h-4" />
             Needs Release Review
+          </button>
+          <button 
+            onClick={() => { setFlaggedDuplicates(true); setNeedsReview(false); setPage(1); }}
+            className={`flex items-center gap-2 ${flaggedDuplicates && !needsReview ? activeTabClass : inactiveTabClass}`}
+          >
+            <AlertCircle className="w-4 h-4" />
+            Flagged Duplicates
           </button>
         </div>
         
@@ -175,6 +196,18 @@ export const AdminTvSeries: React.FC = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-bold text-white text-sm">{item.title}</p>
+                          {item.possible_duplicate_of && (
+                            <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20">
+                              Duplicate: {item.possible_duplicate_of.content_type} / {item.possible_duplicate_of.content_id}
+                              <button 
+                                onClick={() => handleDismissDuplicate(item._id)}
+                                className="ml-1 hover:text-yellow-200 transition-colors"
+                                title="Dismiss duplicate warning"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          )}
                           {item.needs_release_review && (
                             <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
                               <AlertCircle className="w-3 h-3" />

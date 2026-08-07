@@ -93,13 +93,18 @@ export const movieAdminService = {
     return await apiClient.delete<{ status: string }>(`/admin/movies/${contentId}`);
   },
 
-  listMovies: async (params: { include_deleted?: boolean, search?: string, limit?: number, skip?: number, needs_review?: boolean }) => {
+  async dismissDuplicate(contentId: string) {
+    return apiClient.post(`/admin/movies/${contentId}/dismiss-duplicate`);
+  },
+
+  listMovies: async (params: { include_deleted?: boolean, search?: string, limit?: number, skip?: number, needs_review?: boolean, flagged_duplicates_only?: boolean }) => {
     const query = new URLSearchParams();
     if (params.include_deleted) query.append('include_deleted', 'true');
     if (params.search) query.append('search', params.search);
     if (params.limit) query.append('limit', params.limit.toString());
     if (params.skip) query.append('skip', params.skip.toString());
     if (params.needs_review) query.append('needs_review', 'true');
+    if (params.flagged_duplicates_only) query.append('flagged_duplicates_only', 'true');
     
     return await apiClient.get<{ items: any[]; total: number }>(`/admin/movies?${query.toString()}`);
   }

@@ -36,6 +36,9 @@ export interface Comment {
   username: string;
   text: string;
   timestamp: string;
+  is_spoiler?: boolean;
+  like_count?: number;
+  is_liked?: boolean;
 }
 
 export interface ChatMessage {

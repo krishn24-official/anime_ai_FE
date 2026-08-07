@@ -295,6 +295,9 @@ export const contentService = {
         username: c.username || c.display_name || (c.user_id === 'guest' ? 'Guest User' : `User_${c.user_id.slice(-4)}`),
         text: c.text,
         timestamp: new Date(c.created_at).toISOString().replace('T', ' ').substring(0, 16),
+        is_spoiler: c.is_spoiler,
+        like_count: c.like_count || 0,
+        is_liked: c.is_liked || false,
       });
 
       // Simple implementation: return all comments flattened, or root level.
@@ -316,15 +319,23 @@ export const contentService = {
   /**
    * Add comment
    */
-  async addComment(category: FrontendCategory, id: string, text: string): Promise<Comment> {
+  async addComment(category: FrontendCategory, id: string, text: string, is_spoiler: boolean = false): Promise<Comment> {
     const backendType = CATEGORY_MAP[category];
-    const newCom = await apiClient.post<any>(`/content/${backendType}/${id}/comments`, { text });
+    const newCom = await apiClient.post<any>(`/content/${backendType}/${id}/comments`, { text, is_spoiler });
     return {
       id: newCom.id,
       username: 'Guest User',
       text: newCom.text,
       timestamp: new Date(newCom.created_at).toISOString().replace('T', ' ').substring(0, 16),
+      is_spoiler: newCom.is_spoiler,
+      like_count: 0,
+      is_liked: false,
     };
+  },
+
+  async toggleLikeComment(category: FrontendCategory, contentId: string, commentId: string): Promise<{like_count: number, is_liked: boolean}> {
+    const backendType = CATEGORY_MAP[category];
+    return apiClient.post<{like_count: number, is_liked: boolean}>(`/content/${backendType}/${contentId}/comments/${commentId}/like`);
   },
 
   /**

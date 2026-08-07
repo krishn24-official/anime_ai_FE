@@ -46,11 +46,13 @@ export const tvSeriesAdminService = {
     search: string = '', 
     limit: number = 50, 
     skip: number = 0,
-    needsReview: boolean = false
+    needsReview: boolean = false,
+    flaggedDuplicatesOnly: boolean = false
   ): Promise<AdminTvSeriesResponse> => {
     const params = new URLSearchParams();
     if (includeDeleted) params.append('include_deleted', 'true');
     if (needsReview) params.append('needs_review', 'true');
+    if (flaggedDuplicatesOnly) params.append('flagged_duplicates_only', 'true');
     if (search) params.append('search', search);
     params.append('limit', limit.toString());
     params.append('skip', skip.toString());
@@ -71,6 +73,11 @@ export const tvSeriesAdminService = {
 
   deleteTvSeries: async (contentId: string): Promise<{status: string}> => {
     const response = await apiClient.delete<{status: string}>(`/admin/tv-series/${contentId}`);
+    return response;
+  },
+
+  dismissDuplicate: async (contentId: string): Promise<{status: string}> => {
+    const response = await apiClient.post<{status: string}>(`/admin/tv-series/${contentId}/dismiss-duplicate`);
     return response;
   }
 };

@@ -16,7 +16,7 @@ export const AnimeForm: React.FC<AnimeFormProps> = ({ onSuccess, onCancel, initi
   const [existingAnime, setExistingAnime] = useState<any[]>([]);
 
   React.useEffect(() => {
-    animeAdminService.getAnimes(1, 1000, '').then(res => {
+    animeAdminService.listAnimeAdmin({ limit: 1000 }).then(res => {
       setExistingAnime(res.items || []);
     }).catch(console.error);
   }, []);

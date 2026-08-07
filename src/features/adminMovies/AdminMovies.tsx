@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, RefreshCw, AlertCircle, X } from 'lucide-react';
 import { movieAdminService } from '../../services/movieAdminService';
 import { MovieForm } from './MovieForm';
 
@@ -9,6 +9,7 @@ export const AdminMovies: React.FC = () => {
   const [search, setSearch] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
+  const [flaggedDuplicates, setFlaggedDuplicates] = useState(false);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   
@@ -22,6 +23,7 @@ export const AdminMovies: React.FC = () => {
         search: search || undefined,
         include_deleted: includeDeleted,
         needs_review: needsReview,
+        flagged_duplicates_only: flaggedDuplicates,
         limit: 20,
         skip: page * 20
       });
@@ -36,7 +38,7 @@ export const AdminMovies: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [search, includeDeleted, needsReview, page]);
+  }, [search, includeDeleted, needsReview, flaggedDuplicates, page]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this movie?")) {
@@ -45,6 +47,17 @@ export const AdminMovies: React.FC = () => {
         fetchItems();
       } catch (err) {
         alert("Failed to delete movie");
+      }
+    }
+  };
+
+  const handleDismissDuplicate = async (id: string) => {
+    if (window.confirm("Are you sure you want to dismiss this duplicate warning?")) {
+      try {
+        await movieAdminService.dismissDuplicate(id);
+        fetchItems();
+      } catch (err) {
+        alert("Failed to dismiss duplicate");
       }
     }
   };
@@ -84,7 +97,11 @@ export const AdminMovies: React.FC = () => {
             onChange={e => { setSearch(e.target.value); setPage(0); }}
             className="bg-anime-secondary border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-blue-600 w-full sm:w-64"
           />
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+              <input type="checkbox" checked={flaggedDuplicates} onChange={e => { setFlaggedDuplicates(e.target.checked); setPage(0); }} />
+              Flagged Duplicates
+            </label>
             <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
               <input type="checkbox" checked={needsReview} onChange={e => { setNeedsReview(e.target.checked); setPage(0); }} />
               Needs Review
@@ -134,6 +151,20 @@ export const AdminMovies: React.FC = () => {
                         />
                         <div>
                           <p className="text-sm font-bold text-white">{item.title}</p>
+                          {item.possible_duplicate_of && (
+                            <div className="mt-1 mb-1">
+                              <span className="inline-flex items-center gap-2 px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                Duplicate: {item.possible_duplicate_of.content_type} / {item.possible_duplicate_of.content_id}
+                                <button 
+                                  onClick={() => handleDismissDuplicate(item._id)}
+                                  className="ml-1 hover:text-yellow-200 transition-colors"
+                                  title="Dismiss duplicate warning"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            </div>
+                          )}
                           {item.needs_release_review && (
                             <span className="inline-flex mt-1 mb-1 px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-red-500/20 text-red-400 border border-red-500/30">
                               Review: Est. Date Passed
