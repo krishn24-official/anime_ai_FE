@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Share2 } from 'lucide-react';
 import { SectionHeader } from './SectionHeader';
 import { getOptimizedImageUrl } from '../../../services/imageHelper';
 import { EpisodeChapterSummaryModal } from '../../content/EpisodeChapterSummaryModal';
+const EventCardShareModal = React.lazy(() => import('../../../components/EventCardShareModal'));
 
 interface TodaysEventsSectionProps {
   animeAnniversaries: any[];
@@ -27,6 +29,16 @@ export const TodaysEventsSection: React.FC<TodaysEventsSectionProps> = ({
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [summaryModalType, setSummaryModalType] = useState<'episode' | 'chapter'>('episode');
   const [summaryModalId, setSummaryModalId] = useState('');
+
+  // Share poster modal state
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareEventData, setShareEventData] = useState<{
+    poster: string;
+    title: string;
+    subtitle: string;
+    yearsAgo: string;
+    typeLabel: string;
+  } | null>(null);
 
   // Normalize all event types into a unified card list
   const events: {
@@ -160,6 +172,30 @@ export const TodaysEventsSection: React.FC<TodaysEventsSectionProps> = ({
     return `${years} Years Ago`;
   };
 
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'anime': return 'Anime';
+      case 'manga': return 'Manga';
+      case 'movie': return 'Movie';
+      case 'tv_series': return 'TV Series';
+      case 'episode': return 'Episode';
+      case 'chapter': return 'Chapter';
+      default: return type;
+    }
+  };
+
+  const handleShare = (e: React.MouseEvent, event: typeof events[0]) => {
+    e.stopPropagation(); // don't trigger card navigation
+    setShareEventData({
+      poster: event.poster || '',
+      title: event.title,
+      subtitle: event.subtitle,
+      yearsAgo: getYearsAgoLabel(event.yearsAgo),
+      typeLabel: getTypeLabel(event.type),
+    });
+    setShareModalOpen(true);
+  };
+
   return (
     <section>
       <SectionHeader
@@ -200,6 +236,15 @@ export const TodaysEventsSection: React.FC<TodaysEventsSectionProps> = ({
                   {event.subtitle}
                 </p>
               </div>
+
+              {/* Share button — appears on hover */}
+              <button
+                onClick={(e) => handleShare(e, event)}
+                title="Share this card"
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white/20 hover:scale-110 cursor-pointer z-10"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         ))}
@@ -212,6 +257,17 @@ export const TodaysEventsSection: React.FC<TodaysEventsSectionProps> = ({
         type={summaryModalType}
         contentId={summaryModalId}
       />
+
+      {/* Share Card Modal — captures the exact card DOM via html2canvas */}
+      {shareModalOpen && shareEventData && (
+        <Suspense fallback={null}>
+          <EventCardShareModal
+            isOpen={shareModalOpen}
+            onClose={() => { setShareModalOpen(false); setShareEventData(null); }}
+            event={shareEventData}
+          />
+        </Suspense>
+      )}
     </section>
   );
 };

@@ -4,7 +4,7 @@ import { X, Download, Copy, Share2, Upload, Sparkles, Check } from 'lucide-react
 interface SharePosterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialType?: 'birthday' | 'event' | 'news';
+  initialType?: 'birthday' | 'event' | 'news' | 'card';
   initialData?: {
     name?: string;
     title?: string;
@@ -12,6 +12,8 @@ interface SharePosterModalProps {
     subtitle?: string;
     date?: string;
     author?: string;
+    yearsAgo?: string;   // e.g. "1 Year Ago" — shown on the amber badge
+    typeLabel?: string;  // e.g. "Movie" — shown on the dark badge
   };
 }
 
@@ -79,7 +81,7 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
   initialType = 'birthday',
   initialData = {}
 }) => {
-  const [posterType, setPosterType] = useState<'birthday' | 'event' | 'news'>(initialType);
+  const [posterType, setPosterType] = useState<'birthday' | 'event' | 'news' | 'card'>(initialType);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateTheme>(TEMPLATES[0]);
   const [layoutStyle, setLayoutStyle] = useState<'neon' | 'greeting' | 'minimal'>('neon');
   
@@ -90,6 +92,7 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
   const [subtext, setSubtext] = useState(''); // E.g., date, author
   const [age, setAge] = useState(''); // Editable age
   const [articleLink, setArticleLink] = useState(''); // New field for platform/article link
+  const [typeLabel, setTypeLabel] = useState(''); // e.g. 'Movie' — shown on the dark badge in card mode
   
   const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
@@ -107,7 +110,13 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
       setImageUrl(defaultImg);
       setAge('');
 
-      if (initialType === 'birthday') {
+      if (initialType === 'card') {
+        setTitle(initialData.title || '');
+        setSubtitle(initialData.subtitle || '');
+        setSubtext(initialData.yearsAgo || '');
+        setTypeLabel(initialData.typeLabel || '');
+        setArticleLink('');
+      } else if (initialType === 'birthday') {
         setTitle(initialData.name || 'Naruto Uzumaki');
         setSubtitle(initialData.subtitle || 'Celebrate with us!');
         setSubtext('Today\'s Celebration');
@@ -160,6 +169,140 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
     const height = 1080;
     canvas.width = width;
     canvas.height = height;
+
+    // ─────────────────────────────────────────────────────────
+    // CARD POSTER — faithful replica of the event card UI
+    // ─────────────────────────────────────────────────────────
+    if (posterType === 'card') {
+      // 1. Fill dark base
+      ctx.fillStyle = '#0d0d0d';
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. Draw the full image (cover fill, same as object-cover)
+      if (loadedImage) {
+        const imgW = loadedImage.width;
+        const imgH = loadedImage.height;
+        const scale = Math.max(width / imgW, height / imgH);
+        const drawW = imgW * scale;
+        const drawH = imgH * scale;
+        const drawX = (width - drawW) / 2;
+        const drawY = (height - drawH) / 2;
+        ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
+      }
+
+      // 3. Gradient overlay — dark at bottom (matches the card's `from-black/95 via-black/50 to-transparent`)
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(0.35, 'rgba(0,0,0,0.1)');
+      grad.addColorStop(0.65, 'rgba(0,0,0,0.55)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.97)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 4. Subtle rounded border
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 6;
+      const bR = 48;
+      ctx.beginPath();
+      ctx.roundRect(6, 6, width - 12, height - 12, bR);
+      ctx.stroke();
+
+      // ── Helper: pill badge ──────────────────────────────────
+      const drawBadge = (
+        text: string,
+        x: number,
+        y: number,
+        bgColor: string,
+        textColor: string,
+      ) => {
+        ctx.font = 'bold 32px "Inter", sans-serif';
+        const tw = ctx.measureText(text).width;
+        const padH = 28;
+        const padV = 14;
+        const bw = tw + padH * 2;
+        const bh = 32 + padV * 2;
+        const r = 14;
+
+        // Background
+        ctx.fillStyle = bgColor;
+        ctx.beginPath();
+        ctx.roundRect(x, y, bw, bh, r);
+        ctx.fill();
+
+        // Text
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x + padH, y + bh / 2);
+        ctx.textBaseline = 'alphabetic';
+
+        return bw; // badge width so next badge can be placed after it
+      };
+
+      // 5. Badges — top-left (matching the card UI)
+      const badgeY = 72;
+      const badgeX = 72;
+      const yearsAgoText = (subtext || '').toUpperCase();
+      const typeLabelText = (typeLabel || '').toUpperCase();
+
+      // Amber badge
+      if (yearsAgoText) {
+        drawBadge(yearsAgoText, badgeX, badgeY, 'rgba(245,158,11,0.92)', '#ffffff');
+      }
+
+      // Dark type badge below
+      if (typeLabelText) {
+        drawBadge(typeLabelText, badgeX, badgeY + 84, 'rgba(0,0,0,0.70)', '#ffffff');
+      }
+
+      // 6. Title (large, bold, white — bottom of card)
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '900 84px "Outfit", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.shadowBlur = 16;
+
+      // Word-wrap the title
+      const titleWords = (title || '').split(' ');
+      const titleMaxWidth = width - 144;
+      let titleLine = '';
+      const titleLines: string[] = [];
+      for (const word of titleWords) {
+        const test = titleLine + (titleLine ? ' ' : '') + word;
+        if (ctx.measureText(test).width > titleMaxWidth && titleLine) {
+          titleLines.push(titleLine);
+          titleLine = word;
+        } else {
+          titleLine = test;
+        }
+      }
+      if (titleLine) titleLines.push(titleLine);
+
+      const lineHeight = 100;
+      const titleBlockHeight = titleLines.length * lineHeight;
+      const titleStartY = height - 220 - titleBlockHeight + lineHeight;
+
+      for (let i = 0; i < titleLines.length; i++) {
+        ctx.fillText(titleLines[i], 72, titleStartY + i * lineHeight);
+      }
+      ctx.shadowBlur = 0;
+
+      // 7. Subtitle (smaller, muted)
+      if (subtitle) {
+        ctx.fillStyle = 'rgba(200,200,200,0.85)';
+        ctx.font = '500 48px "Inter", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(subtitle, 72, height - 108);
+      }
+
+      // 8. Watermark branding
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.font = 'bold 28px "Inter", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('moctale.com', width - 60, height - 52);
+
+      return; // done drawing card poster
+    }
 
     if (layoutStyle === 'greeting') {
       // ----------------------------------------------------
@@ -558,7 +701,7 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
       }
     }
 
-  }, [posterType, selectedTemplate, layoutStyle, title, subtitle, subtext, age, loadedImage]);
+  }, [posterType, selectedTemplate, layoutStyle, title, subtitle, subtext, age, loadedImage, typeLabel]);
 
   if (!isOpen) return null;
 
@@ -710,7 +853,8 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
               <p className="text-xs text-anime-text/70 mt-1">Design and download custom anime announcements.</p>
             </div>
 
-            {/* Poster Type Tab selector */}
+            {/* Poster Type Tab selector — hidden in 'card' mode (poster type is locked) */}
+            {posterType !== 'card' && (
             <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
               {(['birthday', 'event', 'news'] as const).map((type) => (
                 <button
@@ -741,8 +885,19 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
                 </button>
               ))}
             </div>
+            )}
 
-            {/* Layout Style Tab Selector */}
+            {/* Card mode locked badge */}
+            {posterType === 'card' && (
+              <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Event Card Share</span>
+                <span className="text-[10px] text-anime-text/50 ml-auto">Poster locked to this card</span>
+              </div>
+            )}
+
+            {/* Layout Style Tab Selector — hidden in card mode */}
+            {posterType !== 'card' && (
             <div className="space-y-1.5">
               <span className="text-[10px] text-anime-secondary font-bold uppercase tracking-wider block">Card Style Layout</span>
               <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 gap-1">
@@ -765,6 +920,7 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
                 ))}
               </div>
             </div>
+            )}
 
             {/* Form Fields */}
             <div className="space-y-4">
