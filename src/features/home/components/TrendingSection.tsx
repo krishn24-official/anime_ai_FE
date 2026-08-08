@@ -29,8 +29,8 @@ export const TrendingSection: React.FC = () => {
       poster: item.poster_image || '',
       title: item.title || 'Trending',
       subtitle: item.note || '', // E.g., 'Trailer Released', 'New Movie'
-      yearsAgo: 'TRENDING',
-      typeLabel: item.reason || 'Update', 
+      yearsAgo: '',
+      typeLabel: '', 
     });
     setShareModalOpen(true);
   };

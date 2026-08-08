@@ -149,18 +149,20 @@ const EventCardShareModal: React.FC<EventCardShareModalProps> = ({ isOpen, onClo
             }}
           >
             {/* Years Ago badge */}
-            <span
-              className="self-start px-2 py-1 text-[9px] font-bold uppercase rounded-md mb-1.5"
-              style={{ 
-                background: 'rgba(245,158,11,0.88)', 
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {event.yearsAgo}
-            </span>
+            {event.yearsAgo && (
+              <span
+                className="self-start px-2 py-1 text-[9px] font-bold uppercase rounded-md mb-1.5"
+                style={{ 
+                  background: 'rgba(245,158,11,0.88)', 
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#ffffff',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {event.yearsAgo}
+              </span>
+            )}
 
             {/* Type badge */}
             {event.typeLabel && (
