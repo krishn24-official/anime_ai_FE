@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Share2 } from 'lucide-react';
 import { getOptimizedImageUrl } from '../../../services/imageHelper';
 import { SectionHeader } from './SectionHeader';
 import type { BirthdayEntity } from '../../../types';
+const EventCardShareModal = React.lazy(() => import('../../../components/EventCardShareModal'));
 
 interface BirthdaySectionProps {
   birthdays: BirthdayEntity[];
@@ -10,6 +12,31 @@ interface BirthdaySectionProps {
 
 export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ birthdays }) => {
   const navigate = useNavigate();
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareEventData, setShareEventData] = useState<{
+    poster: string;
+    title: string;
+    subtitle: string;
+    yearsAgo: string;
+    typeLabel: string;
+  } | null>(null);
+
+  const handleShare = (e: React.MouseEvent, item: BirthdayEntity) => {
+    e.stopPropagation();
+    
+    // Format date like "8 Aug"
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    
+    setShareEventData({
+      poster: item.image || '',
+      title: `Happy Birthday ${item.name}`,
+      subtitle: '',
+      yearsAgo: formattedDate,
+      typeLabel: '',
+    });
+    setShareModalOpen(true);
+  };
 
   if (!birthdays || birthdays.length === 0) {
     return (
@@ -68,9 +95,29 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ birthdays }) =
               </h3>
               <p className="text-[10px] text-white/70 font-mono mt-1 line-clamp-1">{item.anime}</p>
             </div>
+            
+            {/* Share button — appears on hover */}
+            <button
+              onClick={(e) => handleShare(e, item)}
+              title="Share this card"
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white/20 hover:scale-110 cursor-pointer z-10"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         ))}
       </div>
+
+      {/* Share Card Modal */}
+      {shareModalOpen && shareEventData && (
+        <Suspense fallback={null}>
+          <EventCardShareModal
+            isOpen={shareModalOpen}
+            onClose={() => { setShareModalOpen(false); setShareEventData(null); }}
+            event={shareEventData}
+          />
+        </Suspense>
+      )}
     </section>
   );
 };

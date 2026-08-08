@@ -1,16 +1,39 @@
 // @ts-nocheck
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { SectionHeader } from './SectionHeader';
 import { type RootState, type AppDispatch } from '../../../store';
 import { fetchTrendingThunk } from '../../../store/slices/trendingSlice';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Share2 } from 'lucide-react';
+
+const EventCardShareModal = React.lazy(() => import('../../../components/EventCardShareModal'));
 
 export const TrendingSection: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { items, loading } = useSelector((state: RootState) => state.trending);
+
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareEventData, setShareEventData] = useState<{
+    poster: string;
+    title: string;
+    subtitle: string;
+    yearsAgo: string;
+    typeLabel: string;
+  } | null>(null);
+
+  const handleShare = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    setShareEventData({
+      poster: item.poster_image || '',
+      title: item.title || 'Trending',
+      subtitle: item.note || '', // E.g., 'Trailer Released', 'New Movie'
+      yearsAgo: 'TRENDING',
+      typeLabel: item.reason || 'Update', 
+    });
+    setShareModalOpen(true);
+  };
 
   useEffect(() => {
     dispatch(fetchTrendingThunk(5));
@@ -62,9 +85,29 @@ export const TrendingSection: React.FC = () => {
                   </p>
                 )}
               </div>
+              
+              {/* Share button — appears on hover */}
+              <button
+                onClick={(e) => handleShare(e, item)}
+                title="Share this card"
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white/20 hover:scale-110 cursor-pointer z-10"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+              </button>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Share Card Modal */}
+      {shareModalOpen && shareEventData && (
+        <Suspense fallback={null}>
+          <EventCardShareModal
+            isOpen={shareModalOpen}
+            onClose={() => { setShareModalOpen(false); setShareEventData(null); }}
+            event={shareEventData}
+          />
+        </Suspense>
       )}
     </section>
   );

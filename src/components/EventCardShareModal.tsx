@@ -155,24 +155,28 @@ const EventCardShareModal: React.FC<EventCardShareModalProps> = ({ isOpen, onClo
                 background: 'rgba(245,158,11,0.88)', 
                 backdropFilter: 'blur(8px)',
                 border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff'
+                color: '#ffffff',
+                whiteSpace: 'nowrap'
               }}
             >
               {event.yearsAgo}
             </span>
 
             {/* Type badge */}
-            <span
-              className="self-start px-2 py-1 text-[9px] font-bold uppercase rounded-md mb-2"
-              style={{ 
-                background: typeBadgeBg, 
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff'
-              }}
-            >
-              {event.typeLabel}
-            </span>
+            {event.typeLabel && (
+              <span
+                className="self-start px-2 py-1 text-[9px] font-bold uppercase rounded-md mb-2"
+                style={{ 
+                  background: typeBadgeBg, 
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#ffffff',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {event.typeLabel}
+              </span>
+            )}
 
             {/* Title */}
             <h3 
@@ -183,12 +187,14 @@ const EventCardShareModal: React.FC<EventCardShareModalProps> = ({ isOpen, onClo
             </h3>
 
             {/* Subtitle */}
-            <p 
-              className="text-[10px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" 
-              style={{ color: 'rgba(255,255,255,0.6)' }}
-            >
-              {event.subtitle}
-            </p>
+            {event.subtitle && (
+              <p 
+                className="text-[10px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" 
+                style={{ color: 'rgba(255,255,255,0.6)' }}
+              >
+                {event.subtitle}
+              </p>
+            )}
           </div>
         </div>
 
