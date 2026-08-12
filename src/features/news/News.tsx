@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchNewsThunk, setCategoryFilter, setSearchQuery, setSourceFilter, setDateRange } from '../../store/slices/newsSlice';
-import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink, Share2, Search, RefreshCw, Filter } from 'lucide-react';
+import { User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink, Share2, Search, RefreshCw } from 'lucide-react';
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
