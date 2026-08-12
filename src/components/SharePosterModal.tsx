@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Download, Copy, Share2, Upload, Sparkles, Check } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 interface SharePosterModalProps {
   isOpen: boolean;
@@ -1045,40 +1048,74 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
 
           {/* Action Row */}
           <div className="space-y-3 pt-6 border-t border-white/10">
-            <button
-              onClick={handleDownload}
-              className="w-full py-3.5 bg-gradient-to-r from-anime-primary to-anime-secondary hover:from-anime-purple hover:to-anime-pink text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center space-x-2 shadow-lg cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download High-Res PNG</span>
-            </button>
-
-            <div className="flex gap-2">
+            {Capacitor.isNativePlatform() ? (
               <button
-                onClick={handleCopy}
-                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                onClick={async () => {
+                  const canvas = canvasRef.current;
+                  if (!canvas) return;
+                  const dataUrl = canvas.toDataURL('image/png');
+                  const base64Data = dataUrl.split(',')[1];
+                  const fileName = `poster-${Date.now()}.png`;
+                  
+                  try {
+                    const result = await Filesystem.writeFile({
+                      path: fileName,
+                      data: base64Data,
+                      directory: Directory.Cache,
+                    });
+                    
+                    await Share.share({
+                      title: 'AniVerse Poster',
+                      url: result.uri,
+                      dialogTitle: 'Save or share your poster',
+                    });
+                  } catch (err) {
+                    console.error("Error saving/sharing native poster:", err);
+                  }
+                }}
+                className="w-full py-3.5 bg-gradient-to-r from-anime-primary to-anime-secondary hover:from-anime-purple hover:to-anime-pink text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center space-x-2 shadow-lg cursor-pointer"
               >
-                {isCopied ? (
-                  <>
-                    <Check className="w-4 h-4 text-green-400 animate-bounce" />
-                    <span className="text-green-400">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 text-anime-primary" />
-                    <span>Copy Image</span>
-                  </>
-                )}
+                <Share2 className="w-5 h-5" />
+                <span>Save / Share</span>
               </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleDownload}
+                  className="w-full py-3.5 bg-gradient-to-r from-anime-primary to-anime-secondary hover:from-anime-purple hover:to-anime-pink text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center space-x-2 shadow-lg cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download High-Res PNG</span>
+                </button>
 
-              <button
-                onClick={handleShare}
-                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
-              >
-                <Share2 className="w-4 h-4 text-anime-primary" />
-                <span>Share Poster</span>
-              </button>
-            </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopy}
+                    className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check className="w-4 h-4 text-green-400 animate-bounce" />
+                        <span className="text-green-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 text-anime-primary" />
+                        <span>Copy Image</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleShare}
+                    className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4 text-anime-primary" />
+                    <span>Share Poster</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
         </div>

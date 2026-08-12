@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
-import { fetchNewsThunk } from '../../store/slices/newsSlice';
-import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink, Share2 } from 'lucide-react';
+import { fetchNewsThunk, setCategoryFilter, setSearchQuery, setSourceFilter, setDateRange } from '../../store/slices/newsSlice';
+import { ChevronRight, User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink, Share2, Search, RefreshCw, Filter } from 'lucide-react';
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -23,24 +23,85 @@ const formatDate = (dateStr: string) => {
   return `${day}${suffix} ${fullMonths[date.getMonth()]}`;
 };
 
+const SOURCES = [
+  { value: 'All', label: 'All Sources' },
+  { value: 'crunchyroll', label: 'Crunchyroll' },
+  { value: 'animenewsnetwork', label: 'Anime News Network' },
+  { value: 'myanimelist', label: 'MyAnimeList' },
+  { value: 'animecorner', label: 'Anime Corner' },
+  { value: 'boxoffice', label: 'Box Office' },
+  { value: 'youtube', label: 'YouTube' }
+];
+
 const News: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { items: newsItems, loading, error } = useSelector((state: RootState) => state.news);
-  const [selectedCategory, setSelectedCategory] = useState<'All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series'>('All');
+  const { items: newsItems, loading, error, categoryFilter, searchQuery, sourceFilter, startDate, endDate, page, hasMore } = useSelector((state: RootState) => state.news);
   const [activeArticleId, setActiveArticleId] = useState<string | null>(null);
+  
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const categories: ('All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series')[] = ['All', 'Anime', 'Games', 'Movies', 'TV-Series'];
 
   useEffect(() => {
-    dispatch(fetchNewsThunk(selectedCategory));
-  }, [selectedCategory, dispatch]);
+    dispatch(fetchNewsThunk());
+  }, [dispatch]);
+
+  // Debounced search trigger
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(fetchNewsThunk({ page: 1, force: true }));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, dispatch]);
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    dispatch(setCategoryFilter(e.target.value as any));
+    dispatch(fetchNewsThunk({ page: 1, force: true }));
+  };
+
+  const handleSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    dispatch(setSourceFilter(e.target.value));
+    dispatch(fetchNewsThunk({ page: 1, force: true }));
+  };
+
+  const handleDateChange = (type: 'start' | 'end', value: string) => {
+    dispatch(setDateRange({
+      startDate: type === 'start' ? value : startDate,
+      endDate: type === 'end' ? value : endDate
+    }));
+    dispatch(fetchNewsThunk({ page: 1, force: true }));
+  };
+
+  const handleRefresh = () => {
+    dispatch(fetchNewsThunk({ page: 1, force: true }));
+  };
+
+  const handleIntersect = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && !loading && hasMore) {
+        dispatch(fetchNewsThunk({ page: page + 1 }));
+      }
+    },
+    [loading, hasMore, page, dispatch]
+  );
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(handleIntersect, {
+      root: null,
+      rootMargin: '200px',
+      threshold: 0,
+    });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [handleIntersect]);
 
   const activeArticle = newsItems.find(item => item.id === activeArticleId);
 
-  // Helper to format authors nicely
   const formatAuthorName = (author: string) => {
     if (!author) return 'Moctale Official';
-    // Title case formatting
     return author
       .split(' ')
       .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -49,7 +110,6 @@ const News: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in pb-12 relative">
-      {/* Title Header Row */}
       <div className="flex items-center justify-between pb-4 border-b border-white/5">
         <div className="flex items-center space-x-3">
           <FileText className="w-8 h-8 text-white" />
@@ -57,24 +117,74 @@ const News: React.FC = () => {
             Latest News
           </h1>
         </div>
-        <div className="flex items-center space-x-4">
-          {/* Category selection inline dropdown for a cleaner look */}
+      </div>
+
+      {/* Filters Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-anime-border pb-4">
+        
+        {/* Category & Source Selectors */}
+        <div className="flex space-x-3 overflow-x-auto pb-1 lg:pb-0">
           <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as any)}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer"
+            value={categoryFilter}
+            onChange={handleCategoryChange}
+            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer shrink-0"
           >
             {categories.map(cat => (
               <option key={cat} value={cat} className="bg-anime-bg text-white">{cat}</option>
             ))}
           </select>
-          <button className="p-2 hover:bg-white/5 rounded-xl transition-all cursor-pointer text-anime-text/60 hover:text-white">
-            <ChevronRight className="w-5 h-5 rotate-180" />
+
+          <select
+            value={sourceFilter}
+            onChange={handleSourceChange}
+            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer shrink-0"
+          >
+            {SOURCES.map(src => (
+              <option key={src.value} value={src.value} className="bg-anime-bg text-white">{src.label}</option>
+            ))}
+          </select>
+          
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            title="Refresh news"
+            className="p-2.5 rounded-xl text-anime-text hover:text-white hover:bg-white/5 transition-all shrink-0 disabled:opacity-40"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+        </div>
+
+        {/* Date Filters & Search */}
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+          <div className="flex items-center space-x-2 w-full md:w-auto">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => handleDateChange('start', e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-anime-primary w-full md:w-auto"
+            />
+            <span className="text-anime-text text-xs">to</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => handleDateChange('end', e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-anime-primary w-full md:w-auto"
+            />
+          </div>
+
+          <div className="relative w-full md:w-64">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+              placeholder="Search news..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-anime-primary"
+            />
+            <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3.5" />
+          </div>
         </div>
       </div>
 
-      {/* Loading State */}
       {loading && newsItems.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 space-y-4">
           <Loader2 className="w-10 h-10 text-anime-primary animate-spin" />
@@ -82,7 +192,6 @@ const News: React.FC = () => {
         </div>
       )}
 
-      {/* Error State */}
       {error && (
         <div className="glass-panel p-6 rounded-2xl border border-red-500/20 bg-red-500/5 flex items-center space-x-3 text-red-400">
           <AlertCircle className="w-5 h-5 shrink-0" />
@@ -92,18 +201,16 @@ const News: React.FC = () => {
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && newsItems.length === 0 && (
         <div className="glass-panel p-12 rounded-2xl border border-anime-border flex flex-col items-center justify-center text-center space-y-4">
           <FileText className="w-12 h-12 text-anime-text/40" />
           <h3 className="text-lg font-bold text-white font-fraunces">No News Found</h3>
           <p className="text-sm text-anime-text max-w-sm">
-            We couldn't find any articles in this category. Run the backend ingestion pipeline to populate the news feed.
+            We couldn't find any articles matching your filters.
           </p>
         </div>
       )}
 
-      {/* News Grid (3 Columns) */}
       {newsItems.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {newsItems.map((item) => (
@@ -112,17 +219,16 @@ const News: React.FC = () => {
               onClick={() => setActiveArticleId(item.id)}
               className="flex flex-col space-y-4 cursor-pointer group transition-all duration-300"
             >
-              {/* Card Image */}
               <div className="relative aspect-[16/11] rounded-2xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-anime-primary/20 transition-all duration-300">
                 <img
                   src={item.image}
                   alt={item.title}
                   className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <span className="absolute top-3 left-3 z-20 px-2.5 py-0.5 bg-black/60 border border-white/10 text-anime-primary text-[9px] font-bold rounded uppercase tracking-wider">
                   {item.category}
                 </span>
-                {/* Share Poster Button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -145,10 +251,8 @@ const News: React.FC = () => {
                 </button>
               </div>
 
-              {/* Card Body */}
               <div className="space-y-2.5 px-1">
                 <h3 className="text-sm md:text-[15px] font-semibold text-white leading-snug tracking-wide transition-all group-hover:text-anime-primary">
-                  {/* Underline first few words to simulate entity highlights from the design screenshot */}
                   <span className="underline decoration-white/20 group-hover:decoration-anime-primary/40 mr-1">
                     {item.title.split(' ').slice(0, 2).join(' ')}
                   </span>
@@ -166,13 +270,33 @@ const News: React.FC = () => {
         </div>
       )}
 
+      {/* Infinite scroll sentinel */}
+      {!error && (
+        <>
+          <div ref={sentinelRef} className="w-full h-10" />
+          {loading && newsItems.length > 0 && (
+            <div className="flex flex-col items-center justify-center py-8 space-y-2">
+              <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
+              <p className="text-xs text-anime-text/50">Fetching more news...</p>
+            </div>
+          )}
+          {hasMore && !loading && (
+            <div className="flex flex-col items-center justify-center py-8 space-y-2">
+              <Loader2 className="w-7 h-7 text-anime-primary animate-spin" />
+              <p className="text-xs text-anime-text/50">Scroll for more</p>
+            </div>
+          )}
+          {newsItems.length > 0 && !hasMore && (
+            <p className="text-center text-xs text-anime-text/30 py-4">All news loaded</p>
+          )}
+        </>
+      )}
 
       {/* Article Detail Drawer Modal */}
       {activeArticle && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex justify-end z-50 transition-opacity" onClick={() => setActiveArticleId(null)}>
           <div className="w-full max-w-2xl bg-anime-bg border-l border-anime-border h-full overflow-y-auto p-8 md:p-12 relative flex flex-col justify-between" onClick={(e) => e.stopPropagation()}>
             
-            {/* Close Button */}
             <button
               onClick={() => setActiveArticleId(null)}
               className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all cursor-pointer"
@@ -181,7 +305,6 @@ const News: React.FC = () => {
             </button>
 
             <div className="space-y-6">
-              {/* Image & category */}
               <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden border border-anime-border">
                 <img src={activeArticle.image} alt={activeArticle.title} className="w-full h-full object-cover" />
                 <span className="absolute bottom-4 left-4 px-3 py-1 bg-black/80 text-anime-primary text-xs font-bold rounded-lg uppercase tracking-wider">
@@ -189,7 +312,6 @@ const News: React.FC = () => {
                 </span>
               </div>
 
-              {/* Title & metadata */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-4 text-xs text-anime-text/50">
                   <span className="flex items-center space-x-1">
@@ -207,13 +329,11 @@ const News: React.FC = () => {
                 </h2>
               </div>
 
-              {/* Body */}
               <p className="text-sm md:text-base text-anime-text leading-relaxed whitespace-pre-line">
                 {activeArticle.content}
               </p>
             </div>
 
-            {/* Footer */}
             <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs text-anime-text/60">Category: <strong className="text-white">{activeArticle.category}</strong></span>
               <div className="flex items-center space-x-3">

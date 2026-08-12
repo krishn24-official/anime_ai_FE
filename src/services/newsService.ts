@@ -39,15 +39,28 @@ const getCategoryFallbackImage = (category: string, index: number): string => {
 };
 
 export const newsService = {
-  async fetchNews(category?: 'All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series'): Promise<NewsItem[]> {
+  async fetchNews(options: {
+    category?: 'All' | 'Anime' | 'Games' | 'Movies' | 'TV-Series';
+    page?: number;
+    limit?: number;
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+    source?: string;
+  } = {}): Promise<NewsItem[]> {
+    const { category, page = 1, limit = 20, startDate, endDate, search, source } = options;
     const params: Record<string, string | number> = {
-      page: 1,
-      limit: 20
+      page,
+      limit
     };
 
     if (category && category !== 'All') {
       params.category = category === 'TV-Series' ? 'TV Series' : category;
     }
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    if (search) params.search = search;
+    if (source && source !== 'All') params.source = source;
 
     const res = await apiClient.get<any>('/news', { params });
     const items = Array.isArray(res) ? res : res.items || [];
