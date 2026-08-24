@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Download, Share2, Loader2, Check } from 'lucide-react';
 import { toPng } from 'html-to-image';
@@ -49,12 +51,29 @@ const EventCardShareModal: React.FC<EventCardShareModalProps> = ({ isOpen, onClo
 
   if (!isOpen || !event) return null;
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!capturedDataUrl) return;
-    const link = document.createElement('a');
-    link.download = `${event.title.replace(/\s+/g, '_')}_card.png`;
-    link.href = capturedDataUrl;
-    link.click();
+    const fileName = `${event.title.replace(/\s+/g, '_')}_card.png`;
+    
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const base64Data = capturedDataUrl.split(',')[1];
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Documents
+        });
+        alert('Image saved to Documents!');
+      } catch (err) {
+        console.error('Download failed:', err);
+        alert('Failed to download image.');
+      }
+    } else {
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = capturedDataUrl;
+      link.click();
+    }
   };
 
   const handleCopy = async () => {

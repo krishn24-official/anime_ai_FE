@@ -725,15 +725,32 @@ const SharePosterModal: React.FC<SharePosterModalProps> = ({
   };
 
   // Download action
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const dataUrl = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `${posterType}_poster_${Date.now()}.png`;
-    link.href = dataUrl;
-    link.click();
+    const fileName = `${posterType}_poster_${Date.now()}.png`;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const base64Data = dataUrl.split(',')[1];
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Documents
+        });
+        alert('Image saved to Documents!');
+      } catch (err) {
+        console.error('Download failed:', err);
+        alert('Failed to save image.');
+      }
+    } else {
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = dataUrl;
+      link.click();
+    }
   };
 
   // Copy action
