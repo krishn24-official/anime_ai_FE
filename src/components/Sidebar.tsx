@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { Home, Newspaper, Calendar, Film, Gamepad2, Bot, User, Sparkles, Menu } from 'lucide-react';
+import { Home, Newspaper, Calendar, Film, Gamepad2, Bot, User, Sparkles, Menu, BookOpen } from 'lucide-react';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -69,7 +69,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         { name: 'Manage Ep & Ch', path: '/admin/episodes-chapters', icon: <Film className="w-5 h-5 shrink-0" /> },
         { name: 'Manage Characters', path: '/admin/characters', icon: <User className="w-5 h-5 shrink-0" /> },
         { name: 'Manage Actors', path: '/admin/actors', icon: <User className="w-5 h-5 shrink-0" /> },
-        { name: 'Manage Relationships', path: '/admin/relationships', icon: <User className="w-5 h-5 shrink-0" /> }
+        { name: 'Manage Relationships', path: '/admin/relationships', icon: <User className="w-5 h-5 shrink-0" /> },
+        { name: 'Manage Lore', path: '/admin/lore', icon: <BookOpen className="w-5 h-5 shrink-0" /> }
       ]
     });
   }

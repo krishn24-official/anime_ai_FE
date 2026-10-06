@@ -9,6 +9,7 @@ import authReducer from './slices/authSlice';
 import tierListReducer from './slices/tierListSlice';
 import trendingReducer from './slices/trendingSlice';
 import todaysReleasesReducer from './slices/todaysReleasesSlice';
+import loreAdminReducer from './slices/loreAdminSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     tierList: tierListReducer,
     trending: trendingReducer,
     todaysReleases: todaysReleasesReducer,
+    loreAdmin: loreAdminReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

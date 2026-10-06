@@ -25,6 +25,7 @@ import AdminRelationships from './features/adminRelationships/AdminRelationships
 import { AdminCharacters } from './features/adminCharacters/AdminCharacters';
 import { AdminActors } from './features/adminActors/AdminActors';
 
+const AdminLore = React.lazy(() => import('./features/adminLore/AdminLore'));
 const ActorDetail = React.lazy(() => import('./features/actors/ActorDetail'));
 const VoiceActorDetail = React.lazy(() => import('./features/voiceActors/VoiceActorDetail'));
 import ScrollToTop from './components/ScrollToTop';
@@ -241,6 +242,8 @@ const App: React.FC = () => {
         return "Upcoming Schedule";
       case '/admin/news':
         return "Admin News Hub";
+      case '/admin/lore':
+        return "Admin Lore Knowledge Base";
       case '/content':
         return "Media Library & Watchlist";
       case '/characters':
@@ -313,6 +316,7 @@ const App: React.FC = () => {
                 <Route path="manga" element={<div className="p-6 text-white">Manga Admin (Coming Soon)</div>} />
                 <Route path="characters" element={<AdminCharacters />} />
                 <Route path="actors" element={<AdminActors />} />
+                <Route path="lore" element={<AdminLore />} />
               </Route>
             </Routes>
           </React.Suspense>
