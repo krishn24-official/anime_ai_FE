@@ -45,7 +45,7 @@ export const AdminMovies: React.FC = () => {
       try {
         await movieAdminService.deleteMovie(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to delete movie");
       }
     }
@@ -56,7 +56,7 @@ export const AdminMovies: React.FC = () => {
       try {
         await movieAdminService.dismissDuplicate(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to dismiss duplicate");
       }
     }

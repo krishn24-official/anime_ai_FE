@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate, Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from './store';
+import type { RootState, AppDispatch } from './store';
+import { fetchCurrentUserThunk } from './store/slices/authSlice';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Home from './features/home/Home';
@@ -56,6 +57,16 @@ const App: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { currentUser } = useSelector((state: RootState) => state.auth);
+
+  // The user restored from localStorage may belong to an expired session. Re-validate it
+  // once on startup: apiClient refreshes the token if possible, otherwise the session is
+  // cleared (sessionExpired) instead of the UI still showing a stale (e.g. admin) user.
+  useEffect(() => {
+    if (localStorage.getItem('anime_ai_user')) {
+      (dispatch as AppDispatch)(fetchCurrentUserThunk());
+    }
+  }, [dispatch]);
+
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [notifications, setNotifications] = useState<ToastNotification[]>(() => {
     try {
@@ -69,7 +80,7 @@ const App: React.FC = () => {
         seen.add(n.title);
         return true;
       });
-    } catch (e) {
+    } catch {
       return [];
     }
   });

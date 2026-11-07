@@ -9,9 +9,47 @@ interface RequestOptions extends RequestInit {
   params?: Record<string, string | number>;
 }
 
+export interface AuthSessionUser {
+  id: string;
+  email: string;
+  username: string;
+  display_name?: string;
+  is_admin?: boolean;
+}
+
+export type AuthEvent =
+  | { type: 'refreshed'; user: AuthSessionUser; accessToken: string; refreshToken: string }
+  | { type: 'expired' };
+
+// Auth endpoints that must never trigger the refresh / guest-fallback logic
+// (they either issue credentials themselves or would loop).
+const CREDENTIAL_ENDPOINTS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/token',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/forgot-password',
+  '/auth/verify-otp',
+  '/auth/reset-password',
+];
+
 class ApiClient {
   private token: string | null = localStorage.getItem('anime_ai_token');
   private refreshToken: string | null = localStorage.getItem('anime_ai_refresh_token');
+  // Refresh tokens are single-use (rotated by the backend), so concurrent 401s
+  // must share one in-flight refresh instead of each spending the same token.
+  private refreshPromise: Promise<boolean> | null = null;
+  private authListeners = new Set<(event: AuthEvent) => void>();
+
+  onAuthEvent(listener: (event: AuthEvent) => void): () => void {
+    this.authListeners.add(listener);
+    return () => this.authListeners.delete(listener);
+  }
+
+  private emitAuthEvent(event: AuthEvent) {
+    this.authListeners.forEach((listener) => listener(event));
+  }
 
   setToken(token: string) {
     this.token = token;
@@ -60,32 +98,47 @@ class ApiClient {
       defaultHeaders['Content-Type'] = 'application/json';
     }
 
-    if (this.token) {
-      defaultHeaders['Authorization'] = `Bearer ${this.token}`;
-    }
+    const sentToken = this.token;
+    const send = (token: string | null) => {
+      const authHeaders: Record<string, string> = { ...defaultHeaders };
+      if (token) {
+        authHeaders['Authorization'] = `Bearer ${token}`;
+      }
+      return fetch(url, {
+        ...customOptions,
+        headers: {
+          ...authHeaders,
+          ...headers,
+        },
+      });
+    };
 
-    let response = await fetch(url, {
-      ...customOptions,
-      headers: {
-        ...defaultHeaders,
-        ...headers,
-      },
-    });
+    let response = await send(sentToken);
 
-    if (response.status === 401 && !endpoint.startsWith('/auth/')) {
-      this.clearTokens();
-      try {
-        const newToken = await this.ensureGuestSession();
-        defaultHeaders['Authorization'] = `Bearer ${newToken}`;
-        response = await fetch(url, {
-          ...customOptions,
-          headers: {
-            ...defaultHeaders,
-            ...headers,
-          },
-        });
-      } catch (authError) {
-        console.error('Failed to re-authenticate on 401:', authError);
+    const isCredentialEndpoint = CREDENTIAL_ENDPOINTS.some((p) => endpoint.startsWith(p));
+    if (response.status === 401 && !isCredentialEndpoint) {
+      // 1. Another request may already have refreshed the token while this one was in flight.
+      // 2. Otherwise exchange the refresh token for a new pair and retry as the same user.
+      const recovered =
+        (this.token !== null && this.token !== sentToken) || (await this.refreshSession());
+
+      if (recovered) {
+        response = await send(this.token);
+      } else {
+        // The real user's session is over: tell the app (clears currentUser) instead of
+        // silently continuing as someone else.
+        this.expireSession();
+
+        // /auth/me must never answer with the guest profile, or the guest would be
+        // stored as the current user.
+        if (!endpoint.startsWith('/auth/me')) {
+          try {
+            const guestToken = await this.ensureGuestSession();
+            response = await send(guestToken);
+          } catch (authError) {
+            console.error('Failed to re-authenticate on 401:', authError);
+          }
+        }
       }
     }
 
@@ -144,6 +197,61 @@ class ApiClient {
 
   async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+  }
+
+  /**
+   * Exchange the stored refresh token for a new access/refresh token pair.
+   * Resolves true if the session was renewed. Concurrent callers share one request.
+   */
+  refreshSession(): Promise<boolean> {
+    if (!this.refreshToken) return Promise.resolve(false);
+    if (!this.refreshPromise) {
+      const tokenToSpend = this.refreshToken;
+      this.refreshPromise = (async () => {
+        try {
+          const res = await fetch(`${BASE_URL}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: tokenToSpend }),
+          });
+          if (!res.ok) return false;
+          const data = await res.json();
+          if (!data?.access_token || !data?.refresh_token) return false;
+
+          this.setToken(data.access_token);
+          this.setRefreshToken(data.refresh_token);
+          if (data.user) {
+            localStorage.setItem('anime_ai_user', JSON.stringify(data.user));
+            this.emitAuthEvent({
+              type: 'refreshed',
+              user: data.user,
+              accessToken: data.access_token,
+              refreshToken: data.refresh_token,
+            });
+          }
+          return true;
+        } catch (err) {
+          console.error('Token refresh failed:', err);
+          return false;
+        } finally {
+          this.refreshPromise = null;
+        }
+      })();
+    }
+    return this.refreshPromise;
+  }
+
+  /**
+   * Clear the logged-in user's credentials and notify the app, but only if a real
+   * user was signed in (an expiring guest token is just re-issued silently).
+   */
+  private expireSession() {
+    const hadUser = localStorage.getItem('anime_ai_user') !== null;
+    this.clearTokens();
+    if (hadUser) {
+      localStorage.removeItem('anime_ai_user');
+      this.emitAuthEvent({ type: 'expired' });
+    }
   }
 
   /**

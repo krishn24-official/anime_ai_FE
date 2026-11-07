@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { Upload, X, Plus, Loader2 } from 'lucide-react';
+import { X, Plus, Loader2 } from 'lucide-react';
 import { tvSeriesAdminService } from '../../services/tvSeriesAdminService';
 import { actorService, type ActorItem } from '../../services/actorService';
 
@@ -54,7 +54,7 @@ export const TvSeriesForm: React.FC<TvSeriesFormProps> = ({ onSuccess, onCancel,
   
   React.useEffect(() => {
     actorService.listActors(1, 1000).then(res => {
-      let initialActors = res.items;
+      const initialActors = res.items;
       setAvailableActors(initialActors);
       
       // Fetch any cast actors that weren't in the first 1000

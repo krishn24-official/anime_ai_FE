@@ -1,7 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../store';
 import { searchService, type GlobalSearchResults } from '../../services/searchService';
 import { trendingService, type TrendingItem } from '../../services/trendingService';
@@ -9,7 +8,6 @@ import { Sparkles, Trash2, Loader2, AlertCircle, CheckCircle2, Search, X, Upload
 import { resolveContentImage } from '../../utils/resolveContentImage';
 
 const AdminTrending: React.FC = () => {
-  const navigate = useNavigate();
   const { currentUser, loading: authLoading } = useSelector((state: RootState) => state.auth);
 
   const [activeItems, setActiveItems] = useState<TrendingItem[]>([]);
@@ -39,8 +37,12 @@ const AdminTrending: React.FC = () => {
       setLoadingItems(true);
       const data = await trendingService.adminListTrending();
       setActiveItems(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setToast({
+        type: 'error',
+        message: `Could not load pinned items: ${err?.message || 'request failed'}`,
+      });
     } finally {
       setLoadingItems(false);
     }
@@ -86,14 +88,13 @@ const AdminTrending: React.FC = () => {
     setToast(null);
 
     try {
-      const formData = new FormData();
-      formData.append('content_type', selectedItem.type);
-      formData.append('content_id', selectedItem.id);
-      if (note) formData.append('note', note);
-      if (expiresAt) formData.append('expires_at', new Date(expiresAt).toISOString());
-      if (imageFile) formData.append('image', imageFile);
-
-      await trendingService.adminSetTrending(formData as any);
+      await trendingService.adminPin({
+        contentType: selectedItem.type,
+        contentId: selectedItem.id,
+        note: note || undefined,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
+        image: imageFile,
+      });
 
       setToast({ type: 'success', message: 'Item pinned to trending successfully!' });
       setSelectedItem(null);
@@ -112,10 +113,10 @@ const AdminTrending: React.FC = () => {
   const handleRemove = async (type: string, id: string) => {
     if (!window.confirm('Are you sure you want to remove this pinned item?')) return;
     try {
-      await trendingService.adminRemoveTrending(type, id);
+      await trendingService.adminUnpin(type, id);
       setToast({ type: 'success', message: 'Item removed from trending.' });
       loadTrending();
-    } catch (err: any) {
+    } catch {
       setToast({ type: 'error', message: 'Failed to remove item.' });
     }
   };
@@ -302,18 +303,18 @@ const AdminTrending: React.FC = () => {
           ) : (
             <div className="space-y-3">
               {activeItems.filter(i => i.pinned).map(item => (
-                <div key={`${item.content_type}-${item.content_id}`} className="flex items-center space-x-4 p-3 bg-white/5 border border-white/10 rounded-xl">
-                  {item.poster_image ? (
-                    <img src={item.poster_image} alt="" className="w-12 h-16 object-cover rounded-lg bg-black shrink-0" />
+                <div key={`${item.contentType}-${item.contentId}`} className="flex items-center space-x-4 p-3 bg-white/5 border border-white/10 rounded-xl">
+                  {item.posterImage ? (
+                    <img src={item.posterImage} alt="" className="w-12 h-16 object-cover rounded-lg bg-black shrink-0" />
                   ) : (
                     <div className="w-12 h-16 bg-white/10 rounded-lg shrink-0 flex items-center justify-center">?</div>
                   )}
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-white truncate">{item.title}</h4>
-                    <span className="text-[10px] text-anime-primary uppercase">{item.content_type} • {item.reason}</span>
+                    <span className="text-[10px] text-anime-primary uppercase">{item.contentType} • {item.reason}</span>
                   </div>
                   <button
-                    onClick={() => handleRemove(item.content_type, item.content_id)}
+                    onClick={() => handleRemove(item.contentType, item.contentId)}
                     className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />

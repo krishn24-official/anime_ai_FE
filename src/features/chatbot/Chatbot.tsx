@@ -194,8 +194,8 @@ const Chatbot: React.FC = () => {
   // Helper to format chatbot messages with simple Markdown
   const formatMessage = (text: string) => {
     return text.split('\n').map((line, idx) => {
-      let elements: React.ReactNode[] = [];
-      let currentText = line;
+      const elements: React.ReactNode[] = [];
+      const currentText = line;
       let key = 0;
 
       const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|<POSTER:.*?\|.*?>)/g;

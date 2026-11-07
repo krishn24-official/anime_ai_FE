@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { tvSeriesAdminService } from '../../services/tvSeriesAdminService';
 import type { AdminTvSeriesItem } from '../../services/tvSeriesAdminService';
-import { Trash2, Edit2, Loader2, Plus, Search, Filter, AlertCircle, RefreshCw, X } from 'lucide-react';
+import { Trash2, Edit2, Loader2, Plus, Search, AlertCircle, X } from 'lucide-react';
 import { TvSeriesForm } from './TvSeriesForm';
 
 const renderDate = (dateObj: any) => {
@@ -69,7 +69,7 @@ export const AdminTvSeries: React.FC = () => {
       try {
         await tvSeriesAdminService.deleteTvSeries(id);
         loadData();
-      } catch (err) {
+      } catch {
         alert("Failed to delete TV series");
       }
     }
@@ -80,7 +80,7 @@ export const AdminTvSeries: React.FC = () => {
       try {
         await tvSeriesAdminService.dismissDuplicate(id);
         loadData();
-      } catch (err) {
+      } catch {
         alert("Failed to dismiss duplicate");
       }
     }

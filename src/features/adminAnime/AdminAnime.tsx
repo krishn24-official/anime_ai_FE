@@ -53,7 +53,7 @@ export const AdminAnime: React.FC = () => {
       try {
         await animeAdminService.deleteAnime(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to delete anime");
       }
     }
@@ -64,7 +64,7 @@ export const AdminAnime: React.FC = () => {
       try {
         await animeAdminService.dismissDuplicate(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to dismiss duplicate");
       }
     }

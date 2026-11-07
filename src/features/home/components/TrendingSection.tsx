@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,6 +5,7 @@ import { SectionHeader } from './SectionHeader';
 import { type RootState, type AppDispatch } from '../../../store';
 import { fetchTrendingThunk } from '../../../store/slices/trendingSlice';
 import { Loader2, Share2 } from 'lucide-react';
+import type { TrendingItem } from '../../../domain/trending';
 
 const EventCardShareModal = React.lazy(() => import('../../../components/EventCardShareModal'));
 
@@ -23,10 +23,10 @@ export const TrendingSection: React.FC = () => {
     typeLabel: string;
   } | null>(null);
 
-  const handleShare = (e: React.MouseEvent, item: any) => {
+  const handleShare = (e: React.MouseEvent, item: TrendingItem) => {
     e.stopPropagation();
     setShareEventData({
-      poster: item.poster_image || '',
+      poster: item.posterImage || '',
       title: item.title || 'Trending',
       subtitle: item.note || '', // E.g., 'Trailer Released', 'New Movie'
       yearsAgo: '',
@@ -58,13 +58,13 @@ export const TrendingSection: React.FC = () => {
         <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {items.map((item) => (
             <div 
-              key={`${item.content_type}-${item.content_id}`}
-              onClick={() => navigate('/content', { state: { contentId: item.content_id, category: item.content_type } })}
+              key={`${item.contentType}-${item.contentId}`}
+              onClick={() => navigate('/content', { state: { contentId: item.contentId, category: item.contentType } })}
               className="group cursor-pointer relative rounded-2xl overflow-hidden border border-white/10 hover:border-anime-primary transition-all duration-300 hover:ring-2 hover:ring-anime-primary/20 hover:shadow-2xl hover:-translate-y-1 shrink-0 snap-start w-40 md:w-48 lg:w-56"
             >
               <div className="aspect-[2/3] w-full">
-                {item.poster_image ? (
-                  <img src={item.poster_image} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                {item.posterImage ? (
+                  <img src={item.posterImage} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 ) : (
                   <div className="w-full h-full bg-white/5 flex items-center justify-center">
                     <span className="text-white/20">No Image</span>

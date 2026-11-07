@@ -73,7 +73,7 @@ export const WeeklySuggestionsSection: React.FC = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col justify-end p-4">
                       {(() => {
-                        let label = item.content_type === 'movie' ? 'Movie' : 
+                        const label = item.content_type === 'movie' ? 'Movie' : 
                                     item.content_type === 'tv_series' ? 'TV Series' : 
                                     item.content_type === 'manga' ? 'Manga' : 'Anime';
                                     

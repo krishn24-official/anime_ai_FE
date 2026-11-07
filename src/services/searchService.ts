@@ -58,6 +58,15 @@ export interface SearchActorItem {
   };
 }
 
+export type SearchKind =
+  | 'characters'
+  | 'anime'
+  | 'manga'
+  | 'movies'
+  | 'tv_series'
+  | 'actors'
+  | 'organizations';
+
 export interface GlobalSearchResults {
   characters: SearchCharacterItem[];
   anime: SearchAnimeItem[];
@@ -65,6 +74,8 @@ export interface GlobalSearchResults {
   movies: SearchMovieItem[];
   tv_series: SearchTVSeriesItem[];
   actors: SearchActorItem[];
+  /** Best match across all kinds, chosen by the backend's relevance ranking. */
+  top_result?: { kind: SearchKind; id: string } | null;
 }
 
 export const searchService = {

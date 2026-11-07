@@ -41,7 +41,7 @@ export const AdminCharacters: React.FC = () => {
       try {
         await characterAdminService.deleteCharacter(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to delete character");
       }
     }

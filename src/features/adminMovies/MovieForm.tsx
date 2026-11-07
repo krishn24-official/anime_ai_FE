@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { Upload, X, Plus, Loader2 } from 'lucide-react';
+import { X, Plus, Loader2 } from 'lucide-react';
 import { movieAdminService } from '../../services/movieAdminService';
 import { actorService, type ActorItem } from '../../services/actorService';
 

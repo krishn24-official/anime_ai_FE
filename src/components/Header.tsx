@@ -6,6 +6,12 @@ import type { RootState, AppDispatch } from '../store';
 import { logoutUserThunk } from '../store/slices/authSlice';
 import { searchService } from '../services/searchService';
 import type { GlobalSearchResults } from '../services/searchService';
+import {
+  getTopSearchResult,
+  searchResultTitle,
+  type DisplayedSearchItem,
+  type DisplayedSearchKind,
+} from '../services/searchResults';
 
 interface HeaderProps {
   title?: string;
@@ -99,6 +105,24 @@ const Header: React.FC<HeaderProps> = ({
     (searchResults.actors && searchResults.actors.length > 0)
   );
 
+  const topResult = getTopSearchResult(searchResults);
+
+  // Same navigation as clicking the item in its category list.
+  const openSearchResult = (kind: DisplayedSearchKind, item: DisplayedSearchItem) => {
+    const title = searchResultTitle(kind, item);
+    if (kind === 'characters') {
+      navigate('/characters', { state: { autoOpenName: title } });
+    } else if (kind === 'actors') {
+      navigate(`/actors/${item._id}`);
+    } else {
+      const clickType = kind === 'movies' ? 'movie' : kind;
+      searchService.logSearchClick(clickType, item._id, searchQuery);
+      navigate('/content', { state: { searchQuery: title } });
+    }
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
+
   return (
     <header className={`h-[72px] fixed top-0 right-0 bg-anime-bg/95 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 sm:px-10 z-40 transition-all duration-300 w-full ${
       isSidebarCollapsed ? 'lg:w-[calc(100%-72px)]' : 'lg:w-[calc(100%-260px)]'
@@ -149,6 +173,27 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
               ) : (
                 <div className="p-4 space-y-4 divide-y divide-white/5">
+                  {/* Top result: best match across all categories */}
+                  {topResult && (
+                    <div className="first:pt-0">
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider block mb-2 px-1">Top result</span>
+                      <div
+                        onClick={() => openSearchResult(topResult.kind, topResult.item)}
+                        className="flex items-center space-x-3 p-2 bg-white/[0.06] hover:bg-white/10 border border-white/10 rounded-xl cursor-pointer transition-all"
+                      >
+                        <img
+                          src={topResult.image || 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=100'}
+                          alt={topResult.title}
+                          className="w-10 h-14 rounded-lg object-cover bg-white/5"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{topResult.title}</p>
+                          <p className="text-[10px] text-anime-text/60">{topResult.subtitle}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Characters */}
                   {searchResults.characters.length > 0 && (
                     <div className="pt-2 first:pt-0">

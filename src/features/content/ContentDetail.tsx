@@ -75,7 +75,7 @@ const ContentDetail: React.FC = () => {
       // Refetch comments
       const commentsRes = await contentService.fetchComments(category, data.id);
       setComments(commentsRes);
-    } catch (err) {
+    } catch {
       alert('Failed to post comment. Make sure you are logged in.');
     }
   };
@@ -114,7 +114,7 @@ const ContentDetail: React.FC = () => {
         }
         return c;
       }));
-    } catch (err) {
+    } catch {
       // Revert if failed
       let category: FrontendCategory = 'Anime';
       if (type === 'movie') category = 'Movies';

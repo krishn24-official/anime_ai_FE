@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { apiClient } from '../../services/apiClient';
 
 interface UserInfo {
@@ -98,7 +98,7 @@ export const logoutUserThunk = createAsyncThunk(
       apiClient.clearTokens();
       localStorage.removeItem('anime_ai_user');
       return null;
-    } catch (err: any) {
+    } catch {
       apiClient.clearTokens();
       localStorage.removeItem('anime_ai_user');
       return null;
@@ -155,7 +155,23 @@ const authSlice = createSlice({
     },
     setForgotPasswordEmail: (state, action) => {
       state.forgotPasswordEmail = action.payload;
-    }
+    },
+    // apiClient renewed the session with the refresh token
+    sessionRefreshed: (
+      state,
+      action: PayloadAction<{ user: UserInfo; accessToken: string; refreshToken: string }>
+    ) => {
+      state.currentUser = action.payload.user;
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
+    },
+    // apiClient could not renew the session: the user must log in again
+    sessionExpired: (state) => {
+      state.currentUser = null;
+      state.accessToken = null;
+      state.refreshToken = null;
+      state.error = 'Your session has expired. Please log in again.';
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -255,10 +271,19 @@ const authSlice = createSlice({
       })
       .addCase(fetchCurrentUserThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        // If the session just expired, keep the clearer "please log in again" message.
+        if (state.currentUser) {
+          state.error = action.payload as string;
+        }
       });
   },
 });
 
-export const { clearError, resetResetFlow, setForgotPasswordEmail } = authSlice.actions;
+export const {
+  clearError,
+  resetResetFlow,
+  setForgotPasswordEmail,
+  sessionRefreshed,
+  sessionExpired,
+} = authSlice.actions;
 export default authSlice.reducer;
