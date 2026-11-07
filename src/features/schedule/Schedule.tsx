@@ -168,7 +168,12 @@ const Schedule: React.FC = () => {
                           } else {
                             navigate(`/characters/${item.entityId}`);
                           }
-                        } else if (item.type !== 'event') {
+                        } else if (item.type === 'event') {
+                          // Open the anime/manga the event belongs to.
+                          if (item.contentType && item.contentId) {
+                            navigate(`/content/${item.contentType}/${item.contentId}`);
+                          }
+                        } else {
                           navigate('/content', { state: { searchQuery: item.name } });
                         }
                       }}

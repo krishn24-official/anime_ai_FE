@@ -69,3 +69,46 @@ export const getTopSearchResult = (results: GlobalSearchResults | null): TopSear
     image: imageOf(kind, item),
   };
 };
+
+/** Singular content type the rest of the API uses (ratings, trending, lore...). */
+export type SearchContentType = 'character' | 'actor' | 'anime' | 'manga' | 'movie' | 'tv_series';
+
+const CONTENT_TYPE: Record<DisplayedSearchKind, SearchContentType> = {
+  characters: 'character',
+  actors: 'actor',
+  anime: 'anime',
+  manga: 'manga',
+  movies: 'movie',
+  tv_series: 'tv_series',
+};
+
+/** One pickable search result, independent of its kind's wire format. */
+export interface SearchOption {
+  id: string;
+  kind: DisplayedSearchKind;
+  contentType: SearchContentType;
+  title: string;
+  image: string | null;
+  year: string | number | null;
+  /** The raw item, for callers that need kind-specific fields. */
+  item: DisplayedSearchItem;
+}
+
+/** Flatten global search results into options, in the given kind order. */
+export const flattenSearchResults = (
+  results: GlobalSearchResults | null,
+  kinds: DisplayedSearchKind[]
+): SearchOption[] => {
+  if (!results) return [];
+  return kinds.flatMap((kind) =>
+    ((results[kind] || []) as DisplayedSearchItem[]).map((item) => ({
+      id: item._id,
+      kind,
+      contentType: CONTENT_TYPE[kind],
+      title: searchResultTitle(kind, item),
+      image: imageOf(kind, item),
+      year: (item as SearchMovieItem).year ?? null,
+      item,
+    }))
+  );
+};

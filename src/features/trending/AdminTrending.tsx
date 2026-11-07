@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { type RootState } from '../../store';
-import { searchService, type GlobalSearchResults } from '../../services/searchService';
+import { ContentSearchPicker } from '../../components/search/ContentSearchPicker';
+import type { SearchOption } from '../../services/searchResults';
 import { trendingService, type TrendingItem } from '../../services/trendingService';
-import { Sparkles, Trash2, Loader2, AlertCircle, CheckCircle2, Search, X, UploadCloud } from 'lucide-react';
+import { Sparkles, Trash2, Loader2, AlertCircle, CheckCircle2, X, UploadCloud } from 'lucide-react';
 import { resolveContentImage } from '../../utils/resolveContentImage';
 
 const AdminTrending: React.FC = () => {
@@ -14,9 +15,6 @@ const AdminTrending: React.FC = () => {
   const [loadingItems, setLoadingItems] = useState(true);
 
   // Form State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<GlobalSearchResults | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{ id: string; type: string; title: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -48,33 +46,9 @@ const AdminTrending: React.FC = () => {
     }
   };
 
-  // Search Debounce
-  useEffect(() => {
-    const delayFn = setTimeout(async () => {
-      if (searchQuery.trim().length >= 2) {
-        setIsSearching(true);
-        try {
-          const res = (await searchService.globalSearch(searchQuery)) as any;
-          // Depending on how the interceptor returns data, might need to check if it's nested
-          setSearchResults(res.data || res); 
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setIsSearching(false);
-        }
-      } else {
-        setSearchResults(null);
-      }
-    }, 500);
-
-    return () => clearTimeout(delayFn);
-  }, [searchQuery]);
-
-  const handleSelectItem = (item: any, type: string, title: string) => {
-    setSelectedItem({ id: item._id, type, title });
-    setPreviewImage(resolveContentImage(item, type));
-    setSearchQuery('');
-    setSearchResults(null);
+  const handleSelectItem = (option: SearchOption) => {
+    setSelectedItem({ id: option.id, type: option.contentType, title: option.title });
+    setPreviewImage(resolveContentImage(option.item, option.contentType));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,47 +140,11 @@ const AdminTrending: React.FC = () => {
             <div className="space-y-2 relative">
               <label className="text-xs font-bold text-white uppercase">Search Content</label>
               {!selectedItem ? (
-                <div className="relative z-50">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search Anime, Manga, Movies, or TV Series..."
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-anime-primary outline-none"
-                  />
-                  <Search className="w-4 h-4 text-white/40 absolute left-4 top-3.5" />
-                  {isSearching && <Loader2 className="w-4 h-4 text-anime-primary animate-spin absolute right-4 top-3.5" />}
-                  
-                  {/* Search Results Dropdown */}
-                  {searchResults && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto p-2 space-y-2 z-50">
-                      {Object.entries(searchResults).map(([type, items]) => {
-                        if (!items || !Array.isArray(items) || items.length === 0 || type === 'characters' || type === 'actors') return null;
-                        return (
-                          <div key={type}>
-                            <div className="text-[10px] font-bold text-anime-primary uppercase px-2 py-1">{type}</div>
-                            {items.map((item: any, index: number) => {
-                              const title = item.title?.english || item.title?.romaji || item.title || item.name;
-                              const mappedType = type === 'tv_series' ? 'tv_series' : type === 'movies' ? 'movie' : type;
-                              return (
-                                <div 
-                                  key={item._id || item.id || index} 
-                                  onClick={() => handleSelectItem(item, mappedType, title)}
-                                  className="p-2 hover:bg-white/5 rounded-lg cursor-pointer text-xs text-white"
-                                >
-                                  {title}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
-                      {!Object.values(searchResults).some((arr: any) => arr && arr.length > 0) && (
-                        <div className="p-2 text-xs text-white/50 text-center">No results found</div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <ContentSearchPicker
+                  onSelect={handleSelectItem}
+                  placeholder="Search Anime, Manga, Movies, or TV Series..."
+                  size="sm"
+                />
               ) : (
                 <div className="space-y-4 p-4 bg-anime-primary/5 border border-anime-primary/20 rounded-xl">
                   <div className="flex items-start justify-between">

@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { characterAdminService } from '../../services/characterAdminService';
-import { apiClient } from '../../services/apiClient';
+import { searchEntities } from '../../services/relationshipAdminService';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useSearchResults } from '../../hooks/useSearchResults';
+
+// Stable search functions for useSearchResults (module level, so they never change).
+const searchTitles = (q: string) => searchEntities(q, ['anime', 'movie', 'tv_series'], 10);
+const searchManga = (q: string) => searchEntities(q, ['manga'], 10);
 
 interface CharacterFormProps {
   onSuccess: () => void;
@@ -50,37 +56,12 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
   
   // Search state for Anime
   const [animeQuery, setAnimeQuery] = useState('');
-  const [animeResults, setAnimeResults] = useState<any[]>([]);
+  const { results: animeResults } = useSearchResults(animeQuery, searchTitles);
   
   // Search state for Manga
   const [mangaQuery, setMangaQuery] = useState('');
-  const [mangaResults, setMangaResults] = useState<any[]>([]);
+  const { results: mangaResults } = useSearchResults(mangaQuery, searchManga);
 
-  useEffect(() => {
-    if (animeQuery.length >= 2) {
-      const delay = setTimeout(() => {
-        apiClient.get(`/admin/relationships/search-entities?q=${animeQuery}&types=anime,movie,tv_series&limit=10`)
-          .then((res: any) => setAnimeResults(res || []))
-          .catch(() => setAnimeResults([]));
-      }, 300);
-      return () => clearTimeout(delay);
-    } else {
-      setAnimeResults([]);
-    }
-  }, [animeQuery]);
-  
-  useEffect(() => {
-    if (mangaQuery.length >= 2) {
-      const delay = setTimeout(() => {
-        apiClient.get(`/admin/relationships/search-entities?q=${mangaQuery}&types=manga&limit=10`)
-          .then((res: any) => setMangaResults(res || []))
-          .catch(() => setMangaResults([]));
-      }, 300);
-      return () => clearTimeout(delay);
-    } else {
-      setMangaResults([]);
-    }
-  }, [mangaQuery]);
 
   const addTag = (state: string[], setState: any, val: string, setVal: any) => {
     if (val.trim() && !state.includes(val.trim())) {
@@ -105,7 +86,6 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
       setAnimeIds([...animeIds, id]);
     }
     setAnimeQuery('');
-    setAnimeResults([]);
   };
 
   const addMangaId = (id: string) => {
@@ -113,7 +93,6 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
       setMangaIds([...mangaIds, id]);
     }
     setMangaQuery('');
-    setMangaResults([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -322,22 +301,21 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Anime Appears In (IDs)</label>
             <div className="relative mb-2">
-              <input
-                type="text"
-                placeholder="Search anime to add..."
-                className="w-full bg-[#252525] border border-[#333] rounded px-3 py-2 text-white"
+              <SearchInput
                 value={animeQuery}
-                onChange={(e) => setAnimeQuery(e.target.value)}
+                onChange={setAnimeQuery}
+                placeholder="Search anime to add..."
+                size="sm"
               />
               {animeResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-[#1e1e1e] border border-[#333] rounded max-h-48 overflow-y-auto">
                   {animeResults.map(a => (
                     <div 
-                      key={a.id || a._id} 
+                      key={a.id} 
                       className="p-2 hover:bg-[#333] cursor-pointer text-sm text-white"
-                      onClick={() => addAnimeId(a.id || a._id)}
+                      onClick={() => addAnimeId(a.id)}
                     >
-                      {a.name || a.title?.english || a.title?.romaji || a.title?.japanese || a.id || a._id}
+                      {a.name || a.id}
                       <span className="ml-2 text-xs text-gray-500 uppercase">{a.entity_type || 'anime'}</span>
                     </div>
                   ))}
@@ -357,22 +335,21 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({ onSuccess, onCance
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Manga Appears In (IDs)</label>
             <div className="relative mb-2">
-              <input
-                type="text"
-                placeholder="Search manga to add..."
-                className="w-full bg-[#252525] border border-[#333] rounded px-3 py-2 text-white"
+              <SearchInput
                 value={mangaQuery}
-                onChange={(e) => setMangaQuery(e.target.value)}
+                onChange={setMangaQuery}
+                placeholder="Search manga to add..."
+                size="sm"
               />
               {mangaResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-[#1e1e1e] border border-[#333] rounded max-h-48 overflow-y-auto">
                   {mangaResults.map(m => (
                     <div 
-                      key={m.id || m._id} 
+                      key={m.id} 
                       className="p-2 hover:bg-[#333] cursor-pointer text-sm text-white"
-                      onClick={() => addMangaId(m.id || m._id)}
+                      onClick={() => addMangaId(m.id)}
                     >
-                      {m.name || m.id || m._id}
+                      {m.name || m.id}
                       <span className="ml-2 text-xs text-gray-500 uppercase">{m.entity_type || 'manga'}</span>
                     </div>
                   ))}

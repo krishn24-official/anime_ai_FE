@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Loader2, RefreshCw, X } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { movieAdminService } from '../../services/movieAdminService';
 import { MovieForm } from './MovieForm';
 
@@ -7,6 +9,7 @@ export const AdminMovies: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim());
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
   const [flaggedDuplicates, setFlaggedDuplicates] = useState(false);
@@ -20,7 +23,7 @@ export const AdminMovies: React.FC = () => {
     setLoading(true);
     try {
       const res = await movieAdminService.listMovies({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         include_deleted: includeDeleted,
         needs_review: needsReview,
         flagged_duplicates_only: flaggedDuplicates,
@@ -38,7 +41,7 @@ export const AdminMovies: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [search, includeDeleted, needsReview, flaggedDuplicates, page]);
+  }, [debouncedSearch, includeDeleted, needsReview, flaggedDuplicates, page]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this movie?")) {
@@ -90,12 +93,12 @@ export const AdminMovies: React.FC = () => {
 
       <div className="bg-anime-card rounded-2xl border border-white/5 overflow-hidden">
         <div className="p-4 border-b border-white/5 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <input 
-            type="text" 
-            placeholder="Search titles..." 
+          <SearchInput
             value={search}
-            onChange={e => { setSearch(e.target.value); setPage(0); }}
-            className="bg-anime-secondary border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-blue-600 w-full sm:w-64"
+            onChange={(value) => { setSearch(value); setPage(0); }}
+            placeholder="Search titles..."
+            size="sm"
+            className="w-full sm:w-64"
           />
           <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">

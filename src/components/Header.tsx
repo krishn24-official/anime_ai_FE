@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, User, LogOut, Menu, X } from 'lucide-react';
+import { Bell, User, LogOut, Menu, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store';
 import { logoutUserThunk } from '../store/slices/authSlice';
 import { searchService } from '../services/searchService';
-import type { GlobalSearchResults } from '../services/searchService';
+import { SearchInput } from './search/SearchInput';
+import { useSearch } from '../hooks/useSearchResults';
 import {
   getTopSearchResult,
   searchResultTitle,
@@ -44,9 +45,8 @@ const Header: React.FC<HeaderProps> = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<GlobalSearchResults | null>(null);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { data: searchResults, loading: isSearchLoading } = useSearch(searchQuery, searchService.globalSearch);
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -67,29 +67,6 @@ const Header: React.FC<HeaderProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (searchQuery.trim().length < 2) {
-      setSearchResults(null);
-      setIsSearchOpen(false);
-      return;
-    }
-
-    const delayDebounceFn = setTimeout(async () => {
-      setIsSearchLoading(true);
-      setIsSearchOpen(true);
-      try {
-        const results = await searchService.globalSearch(searchQuery.trim());
-        setSearchResults(results);
-      } catch (err) {
-        console.error("Search error:", err);
-      } finally {
-        setIsSearchLoading(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
 
   const handleLogout = async () => {
     await dispatch(logoutUserThunk());
@@ -146,19 +123,18 @@ const Header: React.FC<HeaderProps> = ({
       {/* CENTER: Global Search */}
       <div ref={searchContainerRef} className="flex-1 flex justify-center max-w-[560px] px-4 hidden md:flex relative z-50">
         <div className="relative w-full">
-          <input
-            type="text"
+          <SearchInput
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(value) => {
+              setSearchQuery(value);
+              setIsSearchOpen(value.trim().length >= 2);
+            }}
             onFocus={() => {
-              if (searchQuery.trim().length >= 2) {
-                setIsSearchOpen(true);
-              }
+              if (searchQuery.trim().length >= 2) setIsSearchOpen(true);
             }}
             placeholder="Search AniVerse..."
-            className="w-full bg-white/[0.04] border border-white/10 hover:bg-white/[0.12] focus:bg-white/[0.12] rounded-[14px] py-2.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-white/20 transition-all placeholder:text-anime-text/40 font-inter"
+            size="lg"
           />
-          <Search className="w-[18px] h-[18px] text-anime-text/50 absolute left-4 top-3" strokeWidth={2} />
 
           {isSearchOpen && (
             <div className="absolute left-0 mt-3 w-full bg-anime-bg/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[400px] overflow-y-auto">

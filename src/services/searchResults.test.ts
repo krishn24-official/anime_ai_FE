@@ -30,3 +30,27 @@ describe('getTopSearchResult', () => {
     expect(getTopSearchResult({ ...empty, top_result: { kind: 'anime', id: 'missing' } })).toBeNull();
   });
 });
+
+describe('flattenSearchResults', () => {
+  it('flattens the requested kinds, in order, with app-side fields', async () => {
+    const { flattenSearchResults } = await import('./searchResults');
+    const options = flattenSearchResults(
+      {
+        ...empty,
+        anime: [{ _id: 'anime_naruto', title: { romaji: 'NARUTO' }, images: { poster: 'n.jpg' }, year: 2002 }],
+        manga: [{ _id: 'manga_naruto', name: 'NARUTO', cover_image: 'm.jpg' }],
+        movies: [{ _id: 'movie_naruto', title: 'Naruto', year: '2007' }],
+      },
+      ['movies', 'anime']
+    );
+    expect(options.map((o) => [o.kind, o.contentType, o.id, o.title, o.image, o.year])).toEqual([
+      ['movies', 'movie', 'movie_naruto', 'Naruto', null, '2007'],
+      ['anime', 'anime', 'anime_naruto', 'NARUTO', 'n.jpg', 2002],
+    ]);
+  });
+
+  it('returns an empty list for no results', async () => {
+    const { flattenSearchResults } = await import('./searchResults');
+    expect(flattenSearchResults(null, ['anime'])).toEqual([]);
+  });
+});

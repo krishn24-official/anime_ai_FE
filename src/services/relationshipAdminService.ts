@@ -3,7 +3,7 @@ import { apiClient } from './apiClient';
 export interface RelationshipEntity {
   id: string;
   name: string;
-  entity_type: 'character' | 'organization';
+  entity_type: 'character' | 'organization' | 'anime' | 'manga' | 'movie' | 'tv_series';
   image: string;
 }
 
@@ -22,9 +22,20 @@ export interface CreateRelationshipPayload {
   overwrite: boolean;
 }
 
-export const searchEntities = async (query: string): Promise<RelationshipEntity[]> => {
+/**
+ * Ranked entity search (characters, organizations, anime, manga, movies, TV series).
+ * `types` limits the entity types, e.g. ['anime', 'movie', 'tv_series'].
+ */
+export const searchEntities = async (
+  query: string,
+  types?: string[],
+  limit?: number
+): Promise<RelationshipEntity[]> => {
   if (!query || query.length < 2) return [];
-  return apiClient.get('/admin/relationships/search-entities', { params: { q: query } });
+  const params: Record<string, string | number> = { q: query };
+  if (types?.length) params.types = types.join(',');
+  if (limit) params.limit = limit;
+  return apiClient.get('/admin/relationships/search-entities', { params });
 };
 
 export const checkRelationship = async (sourceId: string, targetId: string, relationship: string): Promise<RelationshipDuplicateCheck | null> => {

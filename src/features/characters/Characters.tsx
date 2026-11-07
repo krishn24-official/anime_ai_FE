@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchCharactersData, fetchMoreCharactersThunk, searchCharactersThunk } from '../../store/slices/characterSlice';
-import { Calendar, Search, Gift, Loader2, Sparkles, MessageCircle, Share2 } from 'lucide-react';
+import { Calendar, Gift, Loader2, Sparkles, MessageCircle, Share2 } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Characters: React.FC = () => {
@@ -48,20 +50,8 @@ const Characters: React.FC = () => {
   }, [location, characters, birthdays, navigate]);
 
   const isFirstRender = useRef(true);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm);
   const [isSearchActive, setIsSearchActive] = useState(false);
-
-  // Handle live search dispatch without losing focus
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 300);
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -115,6 +105,8 @@ const Characters: React.FC = () => {
       return matchesGender && matchesAnime;
     })
     .sort((a, b) => {
+      // While searching, keep the server's relevance order (best match first).
+      if (isSearchActive) return 0;
       if (sortOrder === 'asc') {
         return a.name.localeCompare(b.name);
       } else {
@@ -203,16 +195,12 @@ const Characters: React.FC = () => {
           <option value="desc" className="bg-anime-bg text-white">Name: Z to A</option>
         </select>
 
-        <div className="relative w-full md:w-80 md:ml-auto">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="Search characters..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-anime-primary"
-          />
-          <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3.5" />
-        </div>
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Search characters..."
+          className="w-full md:w-80 md:ml-auto"
+        />
       </div>
 
       {error && (
