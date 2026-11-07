@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from './store';
 import { fetchCurrentUserThunk } from './store/slices/authSlice';
 import Sidebar from './components/Sidebar';
+import { PageErrorBoundary } from './components/PageErrorBoundary';
 import Header from './components/Header';
 import Home from './features/home/Home';
 const Characters = React.lazy(() => import('./features/characters/Characters'));
@@ -295,6 +296,7 @@ const App: React.FC = () => {
 
         {/* Content body offset for fixed Header */}
         <main className="pt-24 px-4 sm:px-8 pb-8 min-h-screen">
+          <PageErrorBoundary resetKey={location.pathname}>
           <React.Suspense fallback={
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
               <div className="w-12 h-12 border-4 border-anime-primary/20 border-t-anime-primary rounded-full animate-spin"></div>
@@ -331,6 +333,7 @@ const App: React.FC = () => {
               </Route>
             </Routes>
           </React.Suspense>
+          </PageErrorBoundary>
         </main>
       </div>
 

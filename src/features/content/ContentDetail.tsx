@@ -179,7 +179,7 @@ const ContentDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white animate-fade-in -mx-4 sm:-mx-8 -mt-24 pb-20">
       {/* Hero Banner Section */}
-      <div className="relative w-full h-[60vh] md:h-[75vh] flex items-end">
+      <div className="relative w-full min-h-[60vh] md:min-h-[75vh] flex items-end">
         {/* Background Image */}
         <div className="absolute inset-0">
           <img 
@@ -195,7 +195,7 @@ const ContentDetail: React.FC = () => {
         {/* Back Button */}
         <button 
           onClick={() => navigate(-1)}
-          className="absolute top-28 left-8 p-2 bg-black/40 hover:bg-black/80 rounded-full border border-white/10 transition-all z-20"
+          className="absolute top-24 sm:top-28 left-4 sm:left-8 p-2 bg-black/40 hover:bg-black/80 rounded-full border border-white/10 transition-all z-20"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -213,7 +213,7 @@ const ContentDetail: React.FC = () => {
         )}
 
         {/* Content Details Overlay */}
-        <div className="relative z-10 w-full px-8 pb-12 flex flex-col md:flex-row gap-8 items-end">
+        <div className="relative z-10 w-full px-4 sm:px-8 pt-40 md:pt-0 pb-12 flex flex-col md:flex-row gap-8 items-end">
           {/* Floating Poster */}
           <div className="hidden md:block shrink-0 w-64 rounded-xl overflow-hidden shadow-2xl shadow-black/80 border border-white/10 translate-y-16">
             <img src={posterImg} alt="Poster" className="w-full aspect-[2/3] object-cover" />
@@ -229,12 +229,12 @@ const ContentDetail: React.FC = () => {
               <span>{durationText}</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold font-fraunces text-white leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-fraunces text-white leading-tight break-words">
               {data.title}
             </h1>
 
             {/* Meta Info Grid */}
-            <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm mt-4">
+            <div className="flex flex-wrap gap-x-6 sm:gap-x-8 gap-y-4 text-sm mt-4">
               <div>
                 <span className="block text-gray-400 text-xs mb-1">Directed By</span>
                 <span className="font-semibold">{directorText}</span>
@@ -276,7 +276,7 @@ const ContentDetail: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl px-8 pt-24 space-y-16">
+      <div className="max-w-7xl px-4 sm:px-8 pt-12 md:pt-24 space-y-12 md:space-y-16">
         
         {/* Overview & Genres */}
         <section className="space-y-4">

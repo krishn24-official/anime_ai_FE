@@ -176,8 +176,8 @@ const AdminRelationships: React.FC = () => {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="sm:p-6 max-w-4xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold text-white">Manage Relationships</h1>
         <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
           <input 
@@ -190,13 +190,13 @@ const AdminRelationships: React.FC = () => {
         </label>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] mb-6">
-        <div className="grid grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="bg-[#1a1a1a] p-4 sm:p-6 rounded-lg border border-[#333] mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {renderPicker("Source Entity", source, setSource, sourceQuery, setSourceQuery, sourceResults, sourceError)}
           {renderPicker("Target Entity", target, setTarget, targetQuery, setTargetQuery, targetResults, targetError, targetInputRef)}
         </div>
 
-        <div className="grid grid-cols-2 gap-6 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Relationship Word</label>
             <input

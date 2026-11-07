@@ -402,14 +402,14 @@ const Chatbot: React.FC = () => {
             </div>
 
             {/* Text Input & Submit */}
-            <div className="relative flex-1 flex items-center">
+            <div className="relative flex-1 min-w-0 flex items-center">
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={status === 'typing'}
                 placeholder={selectedImage ? "Add an optional caption for character recognition..." : "Type your message to the companion..."}
-                className="flex-1 bg-black/40 border border-white/10 focus:border-anime-primary rounded-xl py-3.5 pl-4 pr-12 text-xs text-white focus:outline-none placeholder:text-anime-text/40 transition-all"
+                className="flex-1 min-w-0 w-full bg-black/40 border border-white/10 focus:border-anime-primary rounded-xl py-3.5 pl-4 pr-12 text-xs text-white focus:outline-none placeholder:text-anime-text/40 transition-all"
               />
               <button
                 type="submit"

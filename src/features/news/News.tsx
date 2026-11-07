@@ -126,14 +126,14 @@ const News: React.FC = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-anime-border pb-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-anime-border pb-4">
         
         {/* Category & Source Selectors */}
-        <div className="flex space-x-3 overflow-x-auto pb-1 lg:pb-0">
+        <div className="flex items-center gap-3 w-full xl:w-auto">
           <select
             value={categoryFilter}
             onChange={handleCategoryChange}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer shrink-0"
+            className="flex-1 min-w-0 sm:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer"
           >
             {categories.map(cat => (
               <option key={cat} value={cat} className="bg-anime-bg text-white">{cat}</option>
@@ -143,7 +143,7 @@ const News: React.FC = () => {
           <select
             value={sourceFilter}
             onChange={handleSourceChange}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer shrink-0"
+            className="flex-1 min-w-0 sm:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer"
           >
             {SOURCES.map(src => (
               <option key={src.value} value={src.value} className="bg-anime-bg text-white">{src.label}</option>
@@ -161,7 +161,7 @@ const News: React.FC = () => {
         </div>
 
         {/* Date Filters & Search */}
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
           <div className="flex items-center space-x-2 w-full md:w-auto">
             <input
               type="date"

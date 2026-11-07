@@ -166,7 +166,7 @@ export const AdminEpisodesChapters: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-black text-white min-h-screen">
+    <div className="sm:p-6 bg-black text-white min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Manage Episodes & Chapters</h1>
       
       <div className="mb-8 bg-gray-900 p-4 rounded-lg">

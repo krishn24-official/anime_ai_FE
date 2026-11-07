@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, User, LogOut, Menu, X } from 'lucide-react';
+import { Bell, User, LogOut, Menu, X, Search } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../store';
@@ -46,11 +46,20 @@ const Header: React.FC<HeaderProps> = ({
   
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // Phones: the search bar is hidden behind a button and opens below the header.
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { data: searchResults, loading: isSearchLoading } = useSearch(searchQuery, searchService.globalSearch);
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // The input is always mounted (just hidden on phones), so autoFocus would not
+  // fire when the phone search bar opens: focus it explicitly.
+  useEffect(() => {
+    if (isMobileSearchOpen) searchInputRef.current?.focus();
+  }, [isMobileSearchOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -98,14 +107,15 @@ const Header: React.FC<HeaderProps> = ({
     }
     setSearchQuery('');
     setIsSearchOpen(false);
+    setIsMobileSearchOpen(false);
   };
 
   return (
-    <header className={`h-[72px] fixed top-0 right-0 bg-anime-bg/95 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 sm:px-10 z-40 transition-all duration-300 w-full ${
+    <header className={`h-[72px] fixed top-0 right-0 bg-anime-bg/95 backdrop-blur-md border-b border-white/5 flex items-center justify-between gap-2 px-4 sm:px-10 z-40 transition-all duration-300 w-full ${
       isSidebarCollapsed ? 'lg:w-[calc(100%-72px)]' : 'lg:w-[calc(100%-260px)]'
     }`}>
       {/* LEFT: Page Title */}
-      <div className="flex items-center space-x-3 w-auto lg:w-1/4 min-w-0 shrink-0">
+      <div className="flex items-center space-x-3 min-w-0 flex-1 md:flex-none md:w-auto lg:w-1/4">
         {/* Mobile Hamburger menu */}
         <button
           onClick={onToggleMobileSidebar}
@@ -115,13 +125,16 @@ const Header: React.FC<HeaderProps> = ({
           <Menu className="w-[18px] h-[18px]" strokeWidth={2} />
         </button>
 
-        <h1 className="text-lg md:text-xl lg:text-2xl font-bold font-fraunces text-white tracking-tight truncate">
+        <h1 className="min-w-0 text-base sm:text-lg md:text-xl lg:text-2xl font-bold font-fraunces text-white tracking-tight truncate">
           {title}
         </h1>
       </div>
       
       {/* CENTER: Global Search */}
-      <div ref={searchContainerRef} className="flex-1 flex justify-center max-w-[560px] px-4 hidden md:flex relative z-50">
+      <div
+        ref={searchContainerRef}
+        className={`${isMobileSearchOpen ? 'flex' : 'hidden'} md:flex absolute md:relative top-full md:top-auto inset-x-0 md:inset-x-auto md:flex-1 justify-center md:max-w-[560px] px-4 py-3 md:py-0 bg-anime-bg md:bg-transparent border-b border-white/5 md:border-0 z-50`}
+      >
         <div className="relative w-full">
           <SearchInput
             value={searchQuery}
@@ -134,10 +147,11 @@ const Header: React.FC<HeaderProps> = ({
             }}
             placeholder="Search AniVerse..."
             size="lg"
+            inputRef={searchInputRef}
           />
 
           {isSearchOpen && (
-            <div className="absolute left-0 mt-3 w-full bg-anime-bg/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[400px] overflow-y-auto">
+            <div className="absolute left-0 mt-3 w-full bg-[#14161B] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[60vh] md:max-h-[400px] overflow-y-auto overscroll-contain">
               {isSearchLoading ? (
                 <div className="p-6 text-center text-xs text-anime-text/60 flex items-center justify-center space-x-2">
                   <span className="animate-spin inline-block w-4 h-4 border-2 border-anime-primary border-t-transparent rounded-full" />
@@ -362,7 +376,16 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* RIGHT: Notifications & Profile */}
-      <div className="flex items-center justify-end space-x-3 w-auto lg:w-1/4">
+      <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0 lg:w-1/4">
+        {/* Search toggle (phones only) */}
+        <button
+          type="button"
+          onClick={() => setIsMobileSearchOpen((open) => !open)}
+          aria-label={isMobileSearchOpen ? 'Close search' : 'Open search'}
+          className="md:hidden p-2.5 rounded-[14px] bg-white/5 hover:bg-white/10 text-white cursor-pointer transition-all"
+        >
+          {isMobileSearchOpen ? <X className="w-[18px] h-[18px]" /> : <Search className="w-[18px] h-[18px]" />}
+        </button>
         {/* Notifications */}
         <div ref={notificationsRef} className="relative">
           <button 
@@ -379,7 +402,7 @@ const Header: React.FC<HeaderProps> = ({
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-3 w-80 bg-[#14161B] border border-white/10 ring-1 ring-black/50 rounded-2xl shadow-2xl overflow-hidden z-50">
+            <div className="fixed inset-x-4 top-[76px] sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-3 sm:w-80 bg-[#14161B] border border-white/10 ring-1 ring-black/50 rounded-2xl shadow-2xl overflow-hidden z-50">
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <span className="text-xs font-bold text-white uppercase tracking-wider">Notifications</span>
                 {notifications.length > 0 && (

@@ -85,13 +85,13 @@ const Schedule: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {dateMode === 'single' ? (
               <input
                 type="date"
                 value={singleDate}
                 onChange={(e) => setSingleDate(e.target.value)}
-                className="bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-anime-primary [color-scheme:dark]"
+                className="min-w-0 flex-1 sm:flex-none bg-black/50 border border-white/10 rounded-xl px-2 sm:px-3 py-1.5 text-sm text-white focus:outline-none focus:border-anime-primary [color-scheme:dark]"
               />
             ) : (
               <>
@@ -99,14 +99,14 @@ const Schedule: React.FC = () => {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-anime-primary [color-scheme:dark]"
+                  className="min-w-0 flex-1 sm:flex-none bg-black/50 border border-white/10 rounded-xl px-2 sm:px-3 py-1.5 text-sm text-white focus:outline-none focus:border-anime-primary [color-scheme:dark]"
                 />
                 <span className="text-anime-text text-xs">to</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-anime-primary [color-scheme:dark]"
+                  className="min-w-0 flex-1 sm:flex-none bg-black/50 border border-white/10 rounded-xl px-2 sm:px-3 py-1.5 text-sm text-white focus:outline-none focus:border-anime-primary [color-scheme:dark]"
                 />
               </>
             )}
