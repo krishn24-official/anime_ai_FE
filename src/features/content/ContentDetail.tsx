@@ -293,33 +293,79 @@ const ContentDetail: React.FC = () => {
           </div>
         </section>
 
-        {/* Trailers & Videos */}
+        {/* Trailers: trailers[0] is also the hero "Play" button */}
         {data.trailers && data.trailers.length > 0 && (
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold">Trailers & Videos</h2>
+            <h2 className="text-2xl font-bold">Trailers</h2>
             <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
               {data.trailers.map((t: any, i: number) => {
                 const yId = getYouTubeId(t.url);
                 if (!yId) return null;
                 return (
-                  <div 
-                    key={i} 
+                  <div
+                    key={t.url || i}
                     onClick={() => setActiveTrailerUrl(t.url)}
-                    className="shrink-0 w-72 group cursor-pointer space-y-3"
+                    className="shrink-0 w-64 sm:w-72 group cursor-pointer space-y-3"
                   >
                     <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-[#62E7E0] transition-colors">
-                      <img 
-                        src={`https://img.youtube.com/vi/${yId}/mqdefault.jpg`} 
-                        alt={t.label} 
+                      <img
+                        src={`https://img.youtube.com/vi/${yId}/mqdefault.jpg`}
+                        alt={t.label}
+                        loading="lazy"
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                         <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Play className="w-5 h-5 ml-1 fill-white" />
-                         </div>
+                        <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Play className="w-5 h-5 ml-1 fill-white" />
+                        </div>
                       </div>
                     </div>
-                    <p className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-1">{t.label || `Video ${i+1}`}</p>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-1">{t.label || `Video ${i + 1}`}</p>
+                      {t.type && t.type !== t.label && (
+                        <p className="text-[11px] uppercase tracking-wider text-gray-500">{t.type}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Other videos: featurettes, clips, behind the scenes */}
+        {data.extras && data.extras.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold">Videos & Extras</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+              {data.extras.map((t: any, i: number) => {
+                const yId = getYouTubeId(t.url);
+                if (!yId) return null;
+                return (
+                  <div
+                    key={t.url || i}
+                    onClick={() => setActiveTrailerUrl(t.url)}
+                    className="shrink-0 w-64 sm:w-72 group cursor-pointer space-y-3"
+                  >
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-[#62E7E0] transition-colors">
+                      <img
+                        src={`https://img.youtube.com/vi/${yId}/mqdefault.jpg`}
+                        alt={t.label}
+                        loading="lazy"
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Play className="w-5 h-5 ml-1 fill-white" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-1">{t.label || `Video ${i + 1}`}</p>
+                      {t.type && t.type !== t.label && (
+                        <p className="text-[11px] uppercase tracking-wider text-gray-500">{t.type}</p>
+                      )}
+                    </div>
                   </div>
                 );
               })}
