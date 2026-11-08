@@ -21,13 +21,10 @@ const initialState: ChatState = {
 
 import { chatService } from '../../services/chatService';
 
-// Routing rule: send EVERYTHING to /chat.
-// The backend /chat endpoint handles characters, relationships, and has
-// fast-path intercepts for news, birthdays, and recommendations that
-// bypass Gemini entirely.
-const shouldRouteToChat = (): boolean => {
-  return true;
-};
+// Routing rule: messages with an image go to /chat (image recognition); all
+// text goes to /agent, which has the episode & chapter guide, the rebuilt lore,
+// recommendations, and the Gemini -> Groq model fallback.
+const shouldRouteToChat = (hasImage: boolean): boolean => hasImage;
 
 export const sendMessage = createAsyncThunk(
   'chat/sendMessage',
@@ -49,8 +46,8 @@ export const sendMessage = createAsyncThunk(
     dispatch(setStatus('typing'));
 
     try {
-      if (imageBase64 || shouldRouteToChat()) {
-        // Image attached or character/relationship query → POST /chat
+      if (shouldRouteToChat(Boolean(imageBase64))) {
+        // Image attached → POST /chat
         const res = await chatService.sendChatMessage(text, imageBase64, imageMediaType);
         const botMsg: ChatMessage = {
           id: `msg_b_${Date.now()}`,
