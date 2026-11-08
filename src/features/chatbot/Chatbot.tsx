@@ -226,7 +226,7 @@ const Chatbot: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col justify-between glass-panel rounded-2xl border border-anime-border overflow-hidden animate-fade-in relative">
+    <div className="h-[calc(100dvh-8rem-var(--bottom-nav-h))] flex flex-col justify-between glass-panel rounded-2xl border border-anime-border overflow-hidden animate-fade-in relative">
       
       {/* Chat Header */}
       <div className="px-6 py-4 bg-white/5 border-b border-anime-border flex items-center justify-between">

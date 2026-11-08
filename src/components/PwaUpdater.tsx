@@ -18,7 +18,7 @@ export const PwaUpdater: React.FC = () => {
   if (!needRefresh) return null;
 
   return (
-    <div className="fixed bottom-24 left-6 right-6 md:left-auto md:right-6 md:w-80 z-[9999] bg-anime-bg/95 backdrop-blur-md border border-[#62E7E0]/45 p-4 rounded-2xl shadow-2xl flex flex-col space-y-3 animate-fade-in font-inter">
+    <div className="fixed bottom-[calc(1.5rem+var(--bottom-nav-h))] left-6 right-6 md:left-auto md:right-6 md:w-80 z-[9999] bg-anime-bg/95 backdrop-blur-md border border-[#62E7E0]/45 p-4 rounded-2xl shadow-2xl flex flex-col space-y-3 animate-fade-in font-inter">
       <div className="flex justify-between items-start">
         <div>
           <h4 className="text-sm font-bold text-white flex items-center gap-2">

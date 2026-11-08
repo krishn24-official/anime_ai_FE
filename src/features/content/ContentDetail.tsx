@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { TrailerModal } from '../../components/TrailerModal';
+import { getYouTubeId } from '../../utils/youtube';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Play, Eye, Bookmark, Clock, ArrowLeft, Heart } from 'lucide-react';
 import { contentService } from '../../services/contentService';
@@ -154,12 +156,6 @@ const ContentDetail: React.FC = () => {
   // Mock background if none exists, using poster as fallback
   const bgImg = data.images?.banner || posterImg;
   
-  const getYouTubeId = (url: string) => {
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
   const mainTrailerUrl = data.trailers?.[0]?.url || data.trailer_url;
   const mainTrailerId = getYouTubeId(mainTrailerUrl);
 
@@ -642,26 +638,7 @@ const ContentDetail: React.FC = () => {
 
       </div>
 
-      {/* Trailer Modal */}
-      {activeTrailerUrl && getYouTubeId(activeTrailerUrl) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
-          <div className="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10">
-            <button 
-              onClick={() => setActiveTrailerUrl(null)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-all cursor-pointer"
-            >
-              ✕
-            </button>
-            <iframe 
-              src={`https://www.youtube.com/embed/${getYouTubeId(activeTrailerUrl)}?autoplay=1`}
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-            ></iframe>
-          </div>
-        </div>
-      )}
+      <TrailerModal url={activeTrailerUrl} onClose={() => setActiveTrailerUrl(null)} />
     </div>
   );
 };

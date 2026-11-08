@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, User, LogOut, Menu, X, Search } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
+import { Bell, User, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { RootState, AppDispatch } from '../store';
-import { logoutUserThunk } from '../store/slices/authSlice';
+import { ProfileMenu } from './ProfileMenu';
 import { searchService } from '../services/searchService';
 import { SearchInput } from './search/SearchInput';
 import { useSearch } from '../hooks/useSearchResults';
@@ -27,27 +25,28 @@ interface HeaderProps {
   onClearNotifications?: () => void;
   onDismissNotification?: (id: string) => void;
   onToggleMobileSidebar?: () => void;
+  /** Phones: the search bar is hidden and opens below the header (from the bottom nav). */
+  isMobileSearchOpen?: boolean;
+  onMobileSearchChange?: (open: boolean) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  title = "Welcome back, Otaku!", 
+const Header: React.FC<HeaderProps> = ({
+  title = "Welcome back, Otaku!",
   isSidebarCollapsed = false,
   notifications = [],
   onClearNotifications,
   onDismissNotification,
-  onToggleMobileSidebar
+  onToggleMobileSidebar,
+  isMobileSearchOpen = false,
+  onMobileSearchChange,
 }) => {
-  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { currentUser } = useSelector((state: RootState) => state.auth);
-  
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  // Phones: the search bar is hidden behind a button and opens below the header.
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { data: searchResults, loading: isSearchLoading } = useSearch(searchQuery, searchService.globalSearch);
 
   const profileRef = useRef<HTMLDivElement>(null);
@@ -77,11 +76,6 @@ const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    await dispatch(logoutUserThunk());
-    navigate('/');
-  };
-
   const hasResults = searchResults && (
     searchResults.characters.length > 0 ||
     searchResults.anime.length > 0 ||
@@ -107,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({
     }
     setSearchQuery('');
     setIsSearchOpen(false);
-    setIsMobileSearchOpen(false);
+    onMobileSearchChange?.(false);
   };
 
   return (
@@ -377,15 +371,17 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* RIGHT: Notifications & Profile */}
       <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0 lg:w-1/4">
-        {/* Search toggle (phones only) */}
-        <button
-          type="button"
-          onClick={() => setIsMobileSearchOpen((open) => !open)}
-          aria-label={isMobileSearchOpen ? 'Close search' : 'Open search'}
-          className="md:hidden p-2.5 rounded-[14px] bg-white/5 hover:bg-white/10 text-white cursor-pointer transition-all"
-        >
-          {isMobileSearchOpen ? <X className="w-[18px] h-[18px]" /> : <Search className="w-[18px] h-[18px]" />}
-        </button>
+        {/* Close the phone search panel (it is opened from the bottom nav) */}
+        {isMobileSearchOpen && (
+          <button
+            type="button"
+            onClick={() => onMobileSearchChange?.(false)}
+            aria-label="Close search"
+            className="md:hidden p-2.5 rounded-[14px] bg-white/5 hover:bg-white/10 text-white cursor-pointer transition-all"
+          >
+            <X className="w-[18px] h-[18px]" />
+          </button>
+        )}
         {/* Notifications */}
         <div ref={notificationsRef} className="relative">
           <button 
@@ -457,8 +453,8 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Profile */}
-        <div ref={profileRef} className="relative">
+        {/* Profile (phones and tablets use the bottom nav) */}
+        <div ref={profileRef} className="relative hidden lg:block">
           <button 
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="w-10 h-10 rounded-[14px] bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer border border-transparent outline-none"
@@ -468,27 +464,8 @@ const Header: React.FC<HeaderProps> = ({
           </button>
           
           {isProfileOpen && (
-            <div className="absolute right-0 top-full mt-3 w-56 bg-[#14161B] border border-white/10 ring-1 ring-black/50 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="p-4 border-b border-white/5">
-                <p className="text-sm font-semibold text-white truncate">
-                  {currentUser?.display_name || currentUser?.username || 'Guest User'}
-                </p>
-                <p className="text-[10px] text-anime-secondary font-medium mt-0.5">
-                  Rank: S-Tier
-                </p>
-              </div>
-              <div className="p-1.5">
-                <button 
-                  onClick={() => {
-                    handleLogout();
-                    setIsProfileOpen(false);
-                  }}
-                  className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-anime-text hover:bg-red-500/10 hover:text-red-400 transition-all cursor-pointer text-left"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Log Out</span>
-                </button>
-              </div>
+            <div className="absolute right-0 top-full mt-3 w-56 bg-anime-card border border-white/10 ring-1 ring-black/50 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              <ProfileMenu onDone={() => setIsProfileOpen(false)} />
             </div>
           )}
         </div>

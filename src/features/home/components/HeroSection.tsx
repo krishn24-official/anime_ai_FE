@@ -1,137 +1,161 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { getOptimizedImageUrl } from '../../../services/imageHelper';
+import { ChevronLeft, ChevronRight, ExternalLink, Play } from 'lucide-react';
+import type { HeroSlide } from '../../../domain/home';
+import { TrailerModal } from '../../../components/TrailerModal';
+import { useHeroFeed } from '../hooks/useHeroFeed';
+import { imageSrcSet, primaryAction, slideBadge, slideSubtitle } from '../heroSlideMeta';
 
-interface Slide {
-  id: string;
-  title: string;
-  subtitle: string;
-  image: string;
-  route: string;
-  ctaText: string;
-}
+const AUTOPLAY_MS = 7000;
+const SWIPE_PX = 50;
+const HEIGHT = 'h-[460px] sm:h-[420px] xl:h-[440px]';
 
-interface HeroSectionProps {
-  slides: Slide[];
-}
+const reducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ slides }) => {
+export const HeroSection: React.FC = () => {
+  const { slides, loading } = useHeroFeed();
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+  const touchX = useRef<number | null>(null);
+
+  const count = slides.length;
+  const go = useCallback((step: number) => setIndex((i) => (i + step + count) % count), [count]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
+    if (count < 2 || paused || trailerUrl || reducedMotion()) return;
+    const timer = setInterval(() => !document.hidden && go(1), AUTOPLAY_MS);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [count, paused, trailerUrl, go, index]);
 
-  const handleNextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const closeTrailer = useCallback(() => setTrailerUrl(null), []);
+
+  if (loading) return <div className={`${HEIGHT} rounded-2xl bg-anime-card animate-pulse`} />;
+  if (!count) return null;
+
+  const openDetails = (s: HeroSlide) => s.content && navigate(`/content/${s.content.type}/${s.content.id}`);
+  const runPrimary = (s: HeroSlide) => {
+    const action = primaryAction(s);
+    if (action === 'trailer') setTrailerUrl(s.videoUrl);
+    else if (action === 'article') window.open(s.linkUrl!, '_blank', 'noopener,noreferrer');
+    else openDetails(s);
   };
-
-  const handlePrevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  if (!slides.length) return null;
 
   return (
-    <div className="relative h-[500px] md:h-[600px] rounded-2xl overflow-hidden group bg-anime-bg">
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-            index === currentSlide ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-[0.98] z-0 pointer-events-none'
-          }`}
-        >
-          {/* Background Image with Dark Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-anime-bg via-anime-bg/40 to-transparent z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-anime-bg/90 via-anime-bg/60 to-transparent z-10" />
-          
-          <img
-            src={getOptimizedImageUrl(slide.image, 1200)}
-            srcSet={`${getOptimizedImageUrl(slide.image, 600)} 600w, ${getOptimizedImageUrl(slide.image, 1200)} 1200w`}
-            sizes="(max-width: 640px) 600px, 1200px"
-            alt={slide.title}
-            width={1200}
-            height={600}
-            loading={index === 0 ? "eager" : "lazy"}
-            {...(index === 0 ? { fetchPriority: "high" } : {})}
-            className="absolute inset-0 w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-[6000ms]"
-          />
+    <section
+      aria-roledescription="carousel"
+      aria-label="Highlights"
+      className={`relative ${HEIGHT} rounded-2xl overflow-hidden bg-anime-card border border-white/5`}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      onKeyDown={(e) => (e.key === 'ArrowRight' ? go(1) : e.key === 'ArrowLeft' && go(-1))}
+      onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
+      onTouchEnd={(e) => {
+        const dx = e.changedTouches[0].clientX - (touchX.current ?? 0);
+        if (touchX.current !== null && Math.abs(dx) > SWIPE_PX) go(dx < 0 ? 1 : -1);
+        touchX.current = null;
+      }}
+    >
+      {slides.map((s, i) => {
+        const active = i === index;
+        const action = primaryAction(s);
+        const subtitle = slideSubtitle(s);
+        return (
+          <div
+            key={s.key}
+            aria-hidden={!active}
+            className={`absolute inset-0 transition-opacity duration-700 ${active ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+          >
+            <img
+              src={s.image}
+              srcSet={imageSrcSet(s.image)}
+              sizes="(max-width: 768px) 780px, 1280px"
+              alt=""
+              loading={i === 0 ? 'eager' : 'lazy'}
+              className={`absolute inset-0 w-full h-full object-cover ${s.imageIsWide ? 'object-[70%_center]' : 'object-top md:blur-2xl md:scale-110 md:opacity-60'}`}
+            />
+            {!s.imageIsWide && (
+              <img
+                src={s.image}
+                alt=""
+                loading="lazy"
+                className="hidden md:block absolute right-8 lg:right-20 top-1/2 -translate-y-1/2 h-[70%] lg:h-[78%] aspect-[2/3] object-cover rounded-xl shadow-2xl shadow-black/60 border border-white/10 z-[1]"
+              />
+            )}
+            {/* Readability: bottom fade on phones, left fade on wide screens */}
+            <div className="absolute inset-0 bg-gradient-to-t from-anime-bg via-anime-bg/75 to-anime-bg/10 md:bg-gradient-to-r md:from-anime-bg/95 md:via-anime-bg/70 md:to-transparent" />
 
-          {/* Content */}
-          <div className="relative z-20 h-full flex flex-col justify-end pb-16 px-10 md:px-16 max-w-3xl space-y-5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] px-3 py-1 bg-white/10 text-white rounded-full border border-white/20 w-fit backdrop-blur-md">
-              Editor's Spotlight
-            </span>
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-fraunces text-white leading-tight tracking-tight drop-shadow-md">
-              {slide.title}
-            </h1>
-            
-            {/* Metadata Row */}
-            <div className="flex items-center space-x-3 text-xs font-mono text-anime-text/80 uppercase tracking-widest">
-              <span>Anime</span>
-              <span className="w-1 h-1 rounded-full bg-white/30" />
-              <span>Studio MAPPA</span>
-              <span className="w-1 h-1 rounded-full bg-white/30" />
-              <span>2026</span>
-            </div>
-
-            <p className="text-white/80 font-inter text-sm md:text-base leading-relaxed max-w-xl">
-              {slide.subtitle}
-            </p>
-            
-            <div className="pt-4 flex items-center space-x-4">
-              <button
-                onClick={() => navigate(slide.route)}
-                className="flex items-center space-x-2 px-7 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-white/90 transition-all duration-200 cursor-pointer"
-              >
-                <span>{slide.ctaText}</span>
-              </button>
-              <button
-                onClick={() => navigate(slide.route)}
-                className="flex items-center justify-center px-4 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl transition-all duration-200 cursor-pointer backdrop-blur-md"
-              >
-                <ArrowRight className="w-5 h-5" />
-              </button>
+            <div className={`relative z-[2] h-full flex flex-col justify-end md:justify-center gap-3 sm:gap-4 px-5 pb-14 sm:px-10 md:pt-6 md:pb-12 lg:px-20 max-w-2xl ${s.imageIsWide ? '' : 'md:max-w-[58%]'}`}>
+              <span className="w-fit px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.15em] text-white bg-anime-primary/25 border border-anime-primary/50 backdrop-blur-sm">
+                {slideBadge(s)}
+              </span>
+              <h2 className="text-3xl sm:text-4xl xl:text-5xl font-bold font-fraunces text-white leading-tight line-clamp-2">
+                {s.title}
+              </h2>
+              {subtitle && (
+                <p className="text-base sm:text-xl font-semibold text-anime-primary line-clamp-1">{subtitle}</p>
+              )}
+              {s.description && (
+                <p className="text-sm sm:text-base text-white/80 leading-relaxed line-clamp-2 xl:line-clamp-3 max-w-xl">
+                  {s.description}
+                </p>
+              )}
+              <div className="flex flex-wrap items-center gap-3 pt-1 sm:pt-2">
+                <button
+                  onClick={() => runPrimary(s)}
+                  tabIndex={active ? 0 : -1}
+                  className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-violet-200 text-anime-bg font-semibold text-sm sm:text-base hover:bg-white transition-colors cursor-pointer"
+                >
+                  {action === 'trailer' && <Play className="w-4 h-4 fill-current" />}
+                  {action === 'trailer' ? 'Watch Trailer' : action === 'article' ? 'Read Story' : 'View Details'}
+                  {action === 'article' && <ExternalLink className="w-4 h-4" />}
+                </button>
+                {action !== 'details' && s.content && (
+                  <button
+                    onClick={() => openDetails(s)}
+                    tabIndex={active ? 0 : -1}
+                    className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full border border-white/40 text-white font-semibold text-sm sm:text-base hover:bg-white/10 transition-colors cursor-pointer"
+                  >
+                    Details
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
-      {/* Carousel Buttons */}
-      <button
-        onClick={handlePrevSlide}
-        aria-label="Previous slide"
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 p-3 bg-black/40 hover:bg-white/10 border border-white/10 hover:border-white/30 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-md cursor-pointer"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-      <button
-        onClick={handleNextSlide}
-        aria-label="Next slide"
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 p-3 bg-black/40 hover:bg-white/10 border border-white/10 hover:border-white/30 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-md cursor-pointer"
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
+      {count > 1 && (
+        <>
+          {[-1, 1].map((step) => (
+            <button
+              key={step}
+              onClick={() => go(step)}
+              aria-label={step < 0 ? 'Previous slide' : 'Next slide'}
+              className={`hidden lg:flex absolute top-1/2 -translate-y-1/2 ${step < 0 ? 'left-4' : 'right-4'} z-20 w-11 h-11 items-center justify-center rounded-full bg-black/40 border border-white/15 text-white hover:bg-white/15 backdrop-blur-md transition-colors cursor-pointer`}
+            >
+              {step < 0 ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+            </button>
+          ))}
+          <div className="absolute bottom-5 left-5 sm:left-10 lg:left-20 z-20 flex gap-2">
+            {slides.map((s, i) => (
+              <button
+                key={s.key}
+                onClick={() => setIndex(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                aria-current={i === index}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === index ? 'w-8 bg-anime-primary' : 'w-4 bg-white/30 hover:bg-white/60'}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
-      {/* Indicators */}
-      <div className="absolute bottom-6 right-10 md:right-16 z-30 flex space-x-2">
-        {slides.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentSlide(idx)}
-            aria-label={`Go to slide ${idx + 1}`}
-            className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-              idx === currentSlide ? 'bg-white w-6' : 'bg-white/30 w-1.5 hover:bg-white/60'
-            }`}
-          />
-        ))}
-      </div>
-    </div>
+      <TrailerModal url={trailerUrl} onClose={closeTrailer} />
+    </section>
   );
 };
