@@ -2,7 +2,9 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store';
 import { fetchNewsThunk, setCategoryFilter, setSearchQuery, setSourceFilter, setDateRange } from '../../store/slices/newsSlice';
-import { User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink, Share2, Search, RefreshCw } from 'lucide-react';
+import { User, Calendar, X, Loader2, AlertCircle, FileText, Play, ExternalLink, Share2, RefreshCw } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -46,13 +48,17 @@ const News: React.FC = () => {
     dispatch(fetchNewsThunk());
   }, [dispatch]);
 
-  // Debounced search trigger
+  // Fetch page 1 whenever the (debounced) search query changes
+  // (skipped on mount: the effect above already loads page 1)
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
+  const isFirstSearchRun = useRef(true);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      dispatch(fetchNewsThunk({ page: 1, force: true }));
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery, dispatch]);
+    if (isFirstSearchRun.current) {
+      isFirstSearchRun.current = false;
+      return;
+    }
+    dispatch(fetchNewsThunk({ page: 1, force: true }));
+  }, [debouncedSearchQuery, dispatch]);
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch(setCategoryFilter(e.target.value as any));
@@ -120,14 +126,14 @@ const News: React.FC = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-anime-border pb-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-anime-border pb-4">
         
         {/* Category & Source Selectors */}
-        <div className="flex space-x-3 overflow-x-auto pb-1 lg:pb-0">
+        <div className="flex items-center gap-3 w-full xl:w-auto">
           <select
             value={categoryFilter}
             onChange={handleCategoryChange}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer shrink-0"
+            className="flex-1 min-w-0 sm:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer"
           >
             {categories.map(cat => (
               <option key={cat} value={cat} className="bg-anime-bg text-white">{cat}</option>
@@ -137,7 +143,7 @@ const News: React.FC = () => {
           <select
             value={sourceFilter}
             onChange={handleSourceChange}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer shrink-0"
+            className="flex-1 min-w-0 sm:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-anime-primary cursor-pointer"
           >
             {SOURCES.map(src => (
               <option key={src.value} value={src.value} className="bg-anime-bg text-white">{src.label}</option>
@@ -155,7 +161,7 @@ const News: React.FC = () => {
         </div>
 
         {/* Date Filters & Search */}
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
           <div className="flex items-center space-x-2 w-full md:w-auto">
             <input
               type="date"
@@ -172,16 +178,12 @@ const News: React.FC = () => {
             />
           </div>
 
-          <div className="relative w-full md:w-64">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-              placeholder="Search news..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-anime-primary"
-            />
-            <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3.5" />
-          </div>
+          <SearchInput
+            value={searchQuery}
+            onChange={(value) => dispatch(setSearchQuery(value))}
+            placeholder="Search news..."
+            className="w-full md:w-64"
+          />
         </div>
       </div>
 

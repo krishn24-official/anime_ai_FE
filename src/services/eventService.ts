@@ -109,10 +109,13 @@ export const eventService = {
             id: `ev_${e._id}_${dateStr}`,
             date: dateStr,
             type: 'event',
-            name: e.name || 'Event',
-            anime: e.anime_ids ? e.anime_ids.map(formatAnimeId).join(', ') : 'Various',
-            image: e.images?.poster || e.images?.banner || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&q=80',
-            description: e.description || 'Upcoming event!'
+            // Events carry a title; the backend adds the parent anime/manga title and poster.
+            name: e.title || e.name || 'Event',
+            anime: e.parent_title || (e.anime_ids ? e.anime_ids.map(formatAnimeId).join(', ') : 'Various'),
+            image: e.poster_image || e.images?.poster || e.images?.banner || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&q=80',
+            description: e.description || 'Upcoming event!',
+            contentType: e.parent_type || null,
+            contentId: e.parent_id || null
           });
         });
 

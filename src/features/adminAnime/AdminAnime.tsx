@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Loader2, RefreshCw, X } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { animeAdminService } from '../../services/animeAdminService';
 import type { AdminAnimeItem } from '../../services/animeAdminService';
 import { AnimeForm } from './AnimeForm';
@@ -15,6 +17,7 @@ export const AdminAnime: React.FC = () => {
   const [items, setItems] = useState<AdminAnimeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim());
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
   const [flaggedDuplicates, setFlaggedDuplicates] = useState(false);
@@ -28,7 +31,7 @@ export const AdminAnime: React.FC = () => {
     setLoading(true);
     try {
       const res = await animeAdminService.listAnimeAdmin({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         include_deleted: includeDeleted,
         needs_review: needsReview,
         flagged_duplicates_only: flaggedDuplicates,
@@ -46,14 +49,14 @@ export const AdminAnime: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [search, includeDeleted, needsReview, flaggedDuplicates, page]);
+  }, [debouncedSearch, includeDeleted, needsReview, flaggedDuplicates, page]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this anime?")) {
       try {
         await animeAdminService.deleteAnime(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to delete anime");
       }
     }
@@ -64,7 +67,7 @@ export const AdminAnime: React.FC = () => {
       try {
         await animeAdminService.dismissDuplicate(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to dismiss duplicate");
       }
     }
@@ -81,7 +84,7 @@ export const AdminAnime: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="sm:p-6 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Manage Anime</h1>
@@ -98,12 +101,12 @@ export const AdminAnime: React.FC = () => {
 
       <div className="bg-anime-card rounded-2xl border border-white/5 overflow-hidden">
         <div className="p-4 border-b border-white/5 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <input 
-            type="text" 
-            placeholder="Search titles..." 
+          <SearchInput
             value={search}
-            onChange={e => { setSearch(e.target.value); setPage(0); }}
-            className="bg-anime-secondary border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-anime-primary w-full sm:w-64"
+            onChange={(value) => { setSearch(value); setPage(0); }}
+            placeholder="Search titles..."
+            size="sm"
+            className="w-full sm:w-64"
           />
           <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">

@@ -7,12 +7,12 @@ import {
   fetchCommonWords,
   type RelationshipEntity 
 } from '../../services/relationshipAdminService';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useSearchResults } from '../../hooks/useSearchResults';
 
 const AdminRelationships: React.FC = () => {
   const [sourceQuery, setSourceQuery] = useState('');
   const [targetQuery, setTargetQuery] = useState('');
-  const [sourceResults, setSourceResults] = useState<RelationshipEntity[]>([]);
-  const [targetResults, setTargetResults] = useState<RelationshipEntity[]>([]);
   
   const [source, setSource] = useState<RelationshipEntity | null>(null);
   const [target, setTarget] = useState<RelationshipEntity | null>(null);
@@ -29,8 +29,8 @@ const AdminRelationships: React.FC = () => {
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [keepSource, setKeepSource] = useState(true);
   const [sessionLog, setSessionLog] = useState<{msg: string, time: Date}[]>([]);
-  const [sourceError, setSourceError] = useState<string | null>(null);
-  const [targetError, setTargetError] = useState<string | null>(null);
+  const { results: sourceResults, error: sourceError } = useSearchResults(sourceQuery, searchEntities);
+  const { results: targetResults, error: targetError } = useSearchResults(targetQuery, searchEntities);
   
   const targetInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,44 +38,6 @@ const AdminRelationships: React.FC = () => {
     fetchRelationshipTypes().then(res => setRelationshipTypes(res || []));
     fetchCommonWords().then(res => setCommonWords(res || []));
   }, []);
-
-  useEffect(() => {
-    if (sourceQuery.length >= 2) {
-      setSourceError(null);
-      const delayFn = setTimeout(() => {
-        searchEntities(sourceQuery)
-          .then(res => setSourceResults(res || []))
-          .catch(err => {
-            console.error(err);
-            setSourceError("Couldn't load results");
-            setSourceResults([]);
-          });
-      }, 300);
-      return () => clearTimeout(delayFn);
-    } else {
-      setSourceResults([]);
-      setSourceError(null);
-    }
-  }, [sourceQuery]);
-
-  useEffect(() => {
-    if (targetQuery.length >= 2) {
-      setTargetError(null);
-      const delayFn = setTimeout(() => {
-        searchEntities(targetQuery)
-          .then(res => setTargetResults(res || []))
-          .catch(err => {
-            console.error(err);
-            setTargetError("Couldn't load results");
-            setTargetResults([]);
-          });
-      }, 300);
-      return () => clearTimeout(delayFn);
-    } else {
-      setTargetResults([]);
-      setTargetError(null);
-    }
-  }, [targetQuery]);
 
   useEffect(() => {
     if (source && target && relationship.trim()) {
@@ -177,13 +139,12 @@ const AdminRelationships: React.FC = () => {
         </div>
       ) : (
         <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            className="w-full bg-[#1e1e1e] border border-[#333] rounded px-3 py-2 text-white focus:outline-none focus:border-red-500"
-            placeholder={`Search ${label.toLowerCase()}...`}
+          <SearchInput
+            inputRef={inputRef}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={setQuery}
+            placeholder={`Search ${label.toLowerCase()}...`}
+            size="sm"
           />
           {error && (
             <div className="absolute z-50 w-full mt-1 bg-red-900/90 border border-red-500 rounded p-2 text-white text-sm">
@@ -215,8 +176,8 @@ const AdminRelationships: React.FC = () => {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="sm:p-6 max-w-4xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold text-white">Manage Relationships</h1>
         <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
           <input 
@@ -229,13 +190,13 @@ const AdminRelationships: React.FC = () => {
         </label>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] mb-6">
-        <div className="grid grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="bg-[#1a1a1a] p-4 sm:p-6 rounded-lg border border-[#333] mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {renderPicker("Source Entity", source, setSource, sourceQuery, setSourceQuery, sourceResults, sourceError)}
           {renderPicker("Target Entity", target, setTarget, targetQuery, setTargetQuery, targetResults, targetError, targetInputRef)}
         </div>
 
-        <div className="grid grid-cols-2 gap-6 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Relationship Word</label>
             <input

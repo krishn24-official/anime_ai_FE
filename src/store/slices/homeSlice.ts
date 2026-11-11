@@ -3,14 +3,6 @@ import type { BirthdayEntity } from '../../types';
 import { eventService } from '../../services/eventService';
 
 interface HomeState {
-  slides: {
-    id: string;
-    title: string;
-    subtitle: string;
-    image: string;
-    route: string;
-    ctaText: string;
-  }[];
   birthdays: BirthdayEntity[];
   animeAnniversaries: any[];
   mangaAnniversaries: any[];
@@ -98,40 +90,6 @@ export const fetchHomeDataThunk = createAsyncThunk(
 );
 
 const initialState: HomeState = {
-  slides: [
-    {
-      id: 's1',
-      title: "Today's Special Birthdays!",
-      subtitle: "Celebrate with Naruto Uzumaki, Gojo Satoru, and more who share their special day today!",
-      image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80',
-      route: '/characters',
-      ctaText: 'View All Celebrations'
-    },
-    {
-      id: 's2',
-      title: "Latest Anime & Gaming News",
-      subtitle: "Demon Slayer Infinity Castle Movie Trilogy Announced, GTA VI Rumors & More!",
-      image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
-      route: '/news',
-      ctaText: 'Read Latest News'
-    },
-    {
-      id: 's3',
-      title: "Try the Anime AI Chatbot",
-      subtitle: "Ask character backstories, general anime trivia, recommendations, and gaming guides.",
-      image: 'https://images.unsplash.com/photo-1531747118685-ca8fa6e08806?w=800&auto=format&fit=crop&q=80',
-      route: '/chatbot',
-      ctaText: 'Chat Now'
-    },
-    {
-      id: 's4',
-      title: "Akinator Character Guesser",
-      subtitle: "Think of an anime character or actor and let our AI guess who it is!",
-      image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-      route: '/games',
-      ctaText: 'Play Game'
-    }
-  ],
   birthdays: getDynamicBirthdays(),
   animeAnniversaries: [],
   mangaAnniversaries: [],

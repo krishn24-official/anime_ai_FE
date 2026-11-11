@@ -1,24 +1,20 @@
 // @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../store';
-import { searchService, type GlobalSearchResults } from '../../services/searchService';
+import { ContentSearchPicker } from '../../components/search/ContentSearchPicker';
+import type { SearchOption } from '../../services/searchResults';
 import { trendingService, type TrendingItem } from '../../services/trendingService';
-import { Sparkles, Trash2, Loader2, AlertCircle, CheckCircle2, Search, X, UploadCloud } from 'lucide-react';
+import { Sparkles, Trash2, Loader2, AlertCircle, CheckCircle2, X, UploadCloud } from 'lucide-react';
 import { resolveContentImage } from '../../utils/resolveContentImage';
 
 const AdminTrending: React.FC = () => {
-  const navigate = useNavigate();
   const { currentUser, loading: authLoading } = useSelector((state: RootState) => state.auth);
 
   const [activeItems, setActiveItems] = useState<TrendingItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
 
   // Form State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<GlobalSearchResults | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{ id: string; type: string; title: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -39,40 +35,20 @@ const AdminTrending: React.FC = () => {
       setLoadingItems(true);
       const data = await trendingService.adminListTrending();
       setActiveItems(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setToast({
+        type: 'error',
+        message: `Could not load pinned items: ${err?.message || 'request failed'}`,
+      });
     } finally {
       setLoadingItems(false);
     }
   };
 
-  // Search Debounce
-  useEffect(() => {
-    const delayFn = setTimeout(async () => {
-      if (searchQuery.trim().length >= 2) {
-        setIsSearching(true);
-        try {
-          const res = (await searchService.globalSearch(searchQuery)) as any;
-          // Depending on how the interceptor returns data, might need to check if it's nested
-          setSearchResults(res.data || res); 
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setIsSearching(false);
-        }
-      } else {
-        setSearchResults(null);
-      }
-    }, 500);
-
-    return () => clearTimeout(delayFn);
-  }, [searchQuery]);
-
-  const handleSelectItem = (item: any, type: string, title: string) => {
-    setSelectedItem({ id: item._id, type, title });
-    setPreviewImage(resolveContentImage(item, type));
-    setSearchQuery('');
-    setSearchResults(null);
+  const handleSelectItem = (option: SearchOption) => {
+    setSelectedItem({ id: option.id, type: option.contentType, title: option.title });
+    setPreviewImage(resolveContentImage(option.item, option.contentType));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,14 +62,13 @@ const AdminTrending: React.FC = () => {
     setToast(null);
 
     try {
-      const formData = new FormData();
-      formData.append('content_type', selectedItem.type);
-      formData.append('content_id', selectedItem.id);
-      if (note) formData.append('note', note);
-      if (expiresAt) formData.append('expires_at', new Date(expiresAt).toISOString());
-      if (imageFile) formData.append('image', imageFile);
-
-      await trendingService.adminSetTrending(formData as any);
+      await trendingService.adminPin({
+        contentType: selectedItem.type,
+        contentId: selectedItem.id,
+        note: note || undefined,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
+        image: imageFile,
+      });
 
       setToast({ type: 'success', message: 'Item pinned to trending successfully!' });
       setSelectedItem(null);
@@ -112,10 +87,10 @@ const AdminTrending: React.FC = () => {
   const handleRemove = async (type: string, id: string) => {
     if (!window.confirm('Are you sure you want to remove this pinned item?')) return;
     try {
-      await trendingService.adminRemoveTrending(type, id);
+      await trendingService.adminUnpin(type, id);
       setToast({ type: 'success', message: 'Item removed from trending.' });
       loadTrending();
-    } catch (err: any) {
+    } catch {
       setToast({ type: 'error', message: 'Failed to remove item.' });
     }
   };
@@ -165,47 +140,11 @@ const AdminTrending: React.FC = () => {
             <div className="space-y-2 relative">
               <label className="text-xs font-bold text-white uppercase">Search Content</label>
               {!selectedItem ? (
-                <div className="relative z-50">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search Anime, Manga, Movies, or TV Series..."
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs text-white focus:border-anime-primary outline-none"
-                  />
-                  <Search className="w-4 h-4 text-white/40 absolute left-4 top-3.5" />
-                  {isSearching && <Loader2 className="w-4 h-4 text-anime-primary animate-spin absolute right-4 top-3.5" />}
-                  
-                  {/* Search Results Dropdown */}
-                  {searchResults && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-[#0f172a] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto p-2 space-y-2 z-50">
-                      {Object.entries(searchResults).map(([type, items]) => {
-                        if (!items || !Array.isArray(items) || items.length === 0 || type === 'characters' || type === 'actors') return null;
-                        return (
-                          <div key={type}>
-                            <div className="text-[10px] font-bold text-anime-primary uppercase px-2 py-1">{type}</div>
-                            {items.map((item: any, index: number) => {
-                              const title = item.title?.english || item.title?.romaji || item.title || item.name;
-                              const mappedType = type === 'tv_series' ? 'tv_series' : type === 'movies' ? 'movie' : type;
-                              return (
-                                <div 
-                                  key={item._id || item.id || index} 
-                                  onClick={() => handleSelectItem(item, mappedType, title)}
-                                  className="p-2 hover:bg-white/5 rounded-lg cursor-pointer text-xs text-white"
-                                >
-                                  {title}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
-                      {!Object.values(searchResults).some((arr: any) => arr && arr.length > 0) && (
-                        <div className="p-2 text-xs text-white/50 text-center">No results found</div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <ContentSearchPicker
+                  onSelect={handleSelectItem}
+                  placeholder="Search Anime, Manga, Movies, or TV Series..."
+                  size="sm"
+                />
               ) : (
                 <div className="space-y-4 p-4 bg-anime-primary/5 border border-anime-primary/20 rounded-xl">
                   <div className="flex items-start justify-between">
@@ -302,18 +241,18 @@ const AdminTrending: React.FC = () => {
           ) : (
             <div className="space-y-3">
               {activeItems.filter(i => i.pinned).map(item => (
-                <div key={`${item.content_type}-${item.content_id}`} className="flex items-center space-x-4 p-3 bg-white/5 border border-white/10 rounded-xl">
-                  {item.poster_image ? (
-                    <img src={item.poster_image} alt="" className="w-12 h-16 object-cover rounded-lg bg-black shrink-0" />
+                <div key={`${item.contentType}-${item.contentId}`} className="flex items-center space-x-4 p-3 bg-white/5 border border-white/10 rounded-xl">
+                  {item.posterImage ? (
+                    <img src={item.posterImage} alt="" className="w-12 h-16 object-cover rounded-lg bg-black shrink-0" />
                   ) : (
                     <div className="w-12 h-16 bg-white/10 rounded-lg shrink-0 flex items-center justify-center">?</div>
                   )}
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-white truncate">{item.title}</h4>
-                    <span className="text-[10px] text-anime-primary uppercase">{item.content_type} • {item.reason}</span>
+                    <span className="text-[10px] text-anime-primary uppercase">{item.contentType} • {item.reason}</span>
                   </div>
                   <button
-                    onClick={() => handleRemove(item.content_type, item.content_id)}
+                    onClick={() => handleRemove(item.contentType, item.contentId)}
                     className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />

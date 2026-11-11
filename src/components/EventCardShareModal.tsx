@@ -152,7 +152,7 @@ const EventCardShareModal: React.FC<EventCardShareModalProps> = ({ isOpen, onClo
             className="w-full h-full object-cover"
           />
 
-          {/* Gradient overlay — exactly matching TodaysEventsSection */}
+          {/* Gradient overlay — matching the home page PosterCard */}
           <div
             style={{
               position: 'absolute',

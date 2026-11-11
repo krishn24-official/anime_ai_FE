@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { characterAdminService, type AdminCharacterItem } from '../../services/characterAdminService';
 import { CharacterForm } from './CharacterForm';
 
@@ -7,6 +9,7 @@ export const AdminCharacters: React.FC = () => {
   const [items, setItems] = useState<AdminCharacterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim());
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
@@ -18,7 +21,7 @@ export const AdminCharacters: React.FC = () => {
     setLoading(true);
     try {
       const res = await characterAdminService.listCharactersAdmin({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         include_deleted: includeDeleted,
         limit: 20,
         skip: page * 20
@@ -34,14 +37,14 @@ export const AdminCharacters: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [search, includeDeleted, page]);
+  }, [debouncedSearch, includeDeleted, page]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this character?")) {
       try {
         await characterAdminService.deleteCharacter(id);
         fetchItems();
-      } catch (err) {
+      } catch {
         alert("Failed to delete character");
       }
     }
@@ -59,7 +62,7 @@ export const AdminCharacters: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="sm:p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">Manage Characters</h1>
         <button
@@ -87,15 +90,12 @@ export const AdminCharacters: React.FC = () => {
         <div className="bg-[#1a1a1a] rounded-lg border border-[#333] overflow-hidden">
           <div className="p-4 border-b border-[#333] flex flex-wrap gap-4 items-center justify-between">
             <div className="flex flex-1 gap-4 min-w-[300px]">
-              <input
-                type="text"
-                placeholder="Search characters by name..."
-                className="flex-1 bg-[#252525] border border-[#333] rounded px-4 py-2 text-white"
+              <SearchInput
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(0);
-                }}
+                onChange={(value) => { setSearch(value); setPage(0); }}
+                placeholder="Search characters by name..."
+                size="sm"
+                className="flex-1"
               />
             </div>
             <div className="flex items-center gap-4">

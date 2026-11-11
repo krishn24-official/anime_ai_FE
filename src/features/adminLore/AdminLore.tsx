@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import {
@@ -9,12 +9,12 @@ import {
   clearLastUploadResult,
   clearDeleteError,
 } from '../../store/slices/loreAdminSlice';
-import { searchService, type GlobalSearchResults } from '../../services/searchService';
+import { ContentSearchPicker } from '../../components/search/ContentSearchPicker';
+import type { SearchOption } from '../../services/searchResults';
 import {
   BookOpen,
   Upload,
   Trash2,
-  Search,
   FileText,
   Loader2,
   CheckCircle2,
@@ -48,13 +48,6 @@ export const AdminLore: React.FC = () => {
     deleteError,
   } = useSelector((state: RootState) => state.loreAdmin);
 
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<SelectedSeries[]>([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
   // Selection & upload state
   const [selectedSeries, setSelectedSeries] = useState<SelectedSeries | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -70,92 +63,9 @@ export const AdminLore: React.FC = () => {
   // Status for selected series
   const currentStatus = selectedSeries ? statusBySeriesId[selectedSeries.id] : null;
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Debounced search
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setIsDropdownOpen(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const res: GlobalSearchResults = await searchService.globalSearch(searchQuery.trim());
-        const items: SelectedSeries[] = [];
-
-        // Map Anime
-        (res.anime || []).forEach((a) => {
-          const title = a.title?.english || a.title?.romaji || a.title?.japanese || 'Untitled Anime';
-          items.push({
-            id: a._id,
-            title,
-            type: 'anime',
-            image: a.images?.poster,
-            year: a.year,
-          });
-        });
-
-        // Map Movies
-        (res.movies || []).forEach((m) => {
-          items.push({
-            id: m._id,
-            title: m.title || 'Untitled Movie',
-            type: 'movie',
-            image: m.images?.poster,
-            year: m.year,
-          });
-        });
-
-        // Map TV Series
-        (res.tv_series || []).forEach((tv) => {
-          items.push({
-            id: tv._id,
-            title: tv.title || 'Untitled TV Series',
-            type: 'tv_series',
-            image: tv.images?.poster,
-            year: tv.year,
-          });
-        });
-
-        // Map Manga
-        (res.manga || []).forEach((mg) => {
-          items.push({
-            id: mg._id,
-            title: mg.name || 'Untitled Manga',
-            type: 'manga',
-            image: mg.cover_image,
-          });
-        });
-
-        setSearchResults(items);
-        setIsDropdownOpen(items.length > 0);
-      } catch (err) {
-        console.error('Failed to search content for lore:', err);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
   // When a series is selected, fetch its lore status
   const handleSelectSeries = (series: SelectedSeries) => {
     setSelectedSeries(series);
-    setIsDropdownOpen(false);
-    setSearchQuery('');
     dispatch(clearUploadError());
     dispatch(clearLastUploadResult());
     dispatch(fetchLoreStatusThunk(series.id));
@@ -265,7 +175,7 @@ export const AdminLore: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 md:p-8 space-y-8 animate-fade-in">
+    <div className="w-full max-w-5xl mx-auto sm:p-4 md:p-8 space-y-8 animate-fade-in">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
@@ -367,79 +277,19 @@ export const AdminLore: React.FC = () => {
             </div>
 
             {!selectedSeries ? (
-              <div ref={dropdownRef} className="relative z-40">
-                <div className="relative flex items-center">
-                  <Search className="absolute left-3.5 w-4 h-4 text-anime-text/40 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => {
-                      if (searchResults.length > 0) setIsDropdownOpen(true);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        setIsDropdownOpen(false);
-                      }
-                    }}
-                    placeholder="Search by title (e.g. Attack on Titan, Naruto, Loki)..."
-                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-sm text-white placeholder-anime-text/40 focus:outline-none focus:border-anime-primary/50 focus:ring-1 focus:ring-anime-primary/50 transition"
-                  />
-                  {isSearching && (
-                    <Loader2 className="absolute right-3.5 w-4 h-4 text-anime-primary animate-spin" />
-                  )}
-                  {!isSearching && searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3.5 text-anime-text/40 hover:text-white transition cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Dropdown Results */}
-                {isDropdownOpen && searchResults.length > 0 && (
-                  <div className="absolute left-0 right-0 top-full mt-2 bg-[#14161B] border border-white/15 ring-1 ring-black/50 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 overflow-hidden">
-                    <div className="max-h-72 overflow-y-auto scrollbar-thin divide-y divide-white/10 overscroll-contain">
-                      {searchResults.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() => handleSelectSeries(item)}
-                          className="p-3 bg-[#14161B] hover:bg-white/10 flex items-center justify-between gap-3 cursor-pointer transition select-none"
-                        >
-                          <div className="flex items-center space-x-3 min-w-0">
-                            {item.image ? (
-                              <img
-                                src={item.image}
-                                alt=""
-                                className="w-9 h-12 object-cover rounded-md bg-black/40 shrink-0 border border-white/10"
-                              />
-                            ) : (
-                              <div className="w-9 h-12 rounded-md bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-anime-text/40">
-                                <FileText className="w-4 h-4" />
-                              </div>
-                            )}
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-white truncate">{item.title}</p>
-                              <div className="flex items-center space-x-2 mt-0.5">
-                                <span className="text-[11px] font-mono text-anime-text/50 truncate">
-                                  {item.id}
-                                </span>
-                                {item.year && (
-                                  <span className="text-[11px] text-anime-text/40">({item.year})</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="shrink-0">{renderTypeBadge(item.type)}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ContentSearchPicker
+                kinds={['anime', 'movies', 'tv_series', 'manga']}
+                placeholder="Search by title (e.g. Attack on Titan, Naruto, Loki)..."
+                onSelect={(option: SearchOption) =>
+                  handleSelectSeries({
+                    id: option.id,
+                    title: option.title,
+                    type: option.contentType as SelectedSeries['type'],
+                    image: option.image || undefined,
+                    year: option.year ?? undefined,
+                  })
+                }
+              />
             ) : (
               /* Selected Series Banner */
               <div className="p-4 rounded-xl bg-black/40 border border-anime-primary/30 flex items-center justify-between gap-4">

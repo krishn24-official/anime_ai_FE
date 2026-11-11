@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { Upload, X, Loader2 } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { animeAdminService } from '../../services/animeAdminService';
 
 interface AnimeFormProps {
@@ -21,16 +21,13 @@ export const AnimeForm: React.FC<AnimeFormProps> = ({ onSuccess, onCancel, initi
     }).catch(console.error);
   }, []);
   const [titleRomaji, setTitleRomaji] = useState(initialData?.title?.romaji || '');
-  const [titleJapanese, setTitleJapanese] = useState(initialData?.title?.japanese || '');
+  const [titleJapanese] = useState(initialData?.title?.japanese || '');
   
-  const [synonyms, setSynonyms] = useState<string[]>(initialData?.synonyms || []);
-  const [newSynonym, setNewSynonym] = useState('');
+  const [synonyms] = useState<string[]>(initialData?.synonyms || []);
   
-  const [genres, setGenres] = useState<string[]>(initialData?.genres || []);
-  const [newGenre, setNewGenre] = useState('');
+  const [genres] = useState<string[]>(initialData?.genres || []);
   
-  const [studios, setStudios] = useState<string[]>(initialData?.studios || []);
-  const [newStudio, setNewStudio] = useState('');
+  const [studios] = useState<string[]>(initialData?.studios || []);
   
   const [animeType, setAnimeType] = useState(initialData?.type || 'TV');
   const [source, setSource] = useState(initialData?.source || 'Original');
@@ -62,21 +59,7 @@ export const AnimeForm: React.FC<AnimeFormProps> = ({ onSuccess, onCancel, initi
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   
-  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>, state: string[], setState: any, val: string, setVal: any) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (val.trim() && !state.includes(val.trim())) {
-        setState([...state, val.trim()]);
-        setVal('');
-      }
-    }
-  };
   
-  const removeTag = (index: number, state: string[], setState: any) => {
-    const newTags = [...state];
-    newTags.splice(index, 1);
-    setState(newTags);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

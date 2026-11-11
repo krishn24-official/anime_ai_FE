@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { episodeChapterAdminService } from '../../services/episodeChapterAdminService';
 import type { CreateEpisodePayload, UpdateEpisodePayload, CreateChapterPayload, UpdateChapterPayload } from '../../services/episodeChapterAdminService';
-import { searchService } from '../../services/searchService';
+import { ContentSearchPicker } from '../../components/search/ContentSearchPicker';
 
 export const AdminEpisodesChapters: React.FC = () => {
   const [parentType, setParentType] = useState<'anime' | 'tv_series' | 'manga'>('anime');
@@ -11,11 +11,8 @@ export const AdminEpisodesChapters: React.FC = () => {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Autocomplete State
-  const [parentSearchQuery, setParentSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const searchTimeoutRef = useRef<any>(null);
+  // Selected parent (picked with the shared search picker)
+  const [parentTitle, setParentTitle] = useState('');
 
   // Form State
   const [isEditing, setIsEditing] = useState(false);
@@ -53,34 +50,6 @@ export const AdminEpisodesChapters: React.FC = () => {
     fetchItems();
     resetForm();
   }, [parentType, parentId]);
-
-  useEffect(() => {
-    if (!parentSearchQuery.trim() || parentSearchQuery.trim().length < 2) {
-      setSearchResults([]);
-      setShowDropdown(false);
-      return;
-    }
-    
-    // Don't search if we just selected an item (query matches ID, or is fully resolved)
-    // We'll rely on the user typing.
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        const results = await searchService.globalSearch(parentSearchQuery);
-        if (parentType === 'anime') setSearchResults(results.anime || []);
-        else if (parentType === 'tv_series') setSearchResults(results.tv_series || []);
-        else if (parentType === 'manga') setSearchResults(results.manga || []);
-        setShowDropdown(true);
-      } catch (err) {
-        console.error("Search failed", err);
-      }
-    }, 300);
-
-    return () => {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    };
-  }, [parentSearchQuery, parentType]);
 
   const resetForm = () => {
     setIsEditing(false);
@@ -197,7 +166,7 @@ export const AdminEpisodesChapters: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-black text-white min-h-screen">
+    <div className="sm:p-6 bg-black text-white min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Manage Episodes & Chapters</h1>
       
       <div className="mb-8 bg-gray-900 p-4 rounded-lg">
@@ -208,8 +177,7 @@ export const AdminEpisodesChapters: React.FC = () => {
             onChange={(e: any) => { 
               setParentType(e.target.value); 
               setParentId(''); 
-              setParentSearchQuery('');
-              setSearchResults([]);
+              setParentTitle('');
             }}
             className="p-2 bg-gray-800 text-white rounded border border-gray-700"
           >
@@ -217,52 +185,30 @@ export const AdminEpisodesChapters: React.FC = () => {
             <option value="tv_series">TV Series</option>
             <option value="manga">Manga</option>
           </select>
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder={`Search ${parentType.toUpperCase()}...`}
-              value={parentSearchQuery}
-              onChange={(e) => {
-                setParentSearchQuery(e.target.value);
-                if (parentId) setParentId(''); // clear selected ID if they type again
-              }}
-              onFocus={() => {
-                if (searchResults.length > 0) setShowDropdown(true);
-              }}
-              className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700"
-            />
-            {showDropdown && searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded shadow-lg max-h-60 overflow-y-auto">
-                {searchResults.map((item) => {
-                  const title = parentType === 'anime' 
-                    ? (item.title.english || item.title.romaji || item.title.japanese || item.title)
-                    : (item.title || item.name);
-                  return (
-                    <div 
-                      key={item._id}
-                      onClick={() => {
-                        setParentId(item._id);
-                        setParentSearchQuery(title);
-                        setShowDropdown(false);
-                      }}
-                      className="p-3 cursor-pointer hover:bg-gray-700 flex items-center gap-3"
-                    >
-                      {item.images?.poster || item.cover_image ? (
-                        <img src={item.images?.poster || item.cover_image} alt="poster" className="w-8 h-12 object-cover rounded" />
-                      ) : (
-                        <div className="w-8 h-12 bg-gray-600 rounded"></div>
-                      )}
-                      <div>
-                        <div className="font-semibold">{title}</div>
-                        <div className="text-xs text-gray-400">ID: {item._id}</div>
-                      </div>
-                    </div>
-                  );
-                })}
+          <div className="flex-1">
+            {parentId ? (
+              <div className="flex items-center justify-between gap-3 p-2 bg-gray-800 rounded border border-gray-700">
+                <div className="min-w-0">
+                  <div className="font-semibold truncate">{parentTitle}</div>
+                  <div className="text-xs text-gray-400">ID: {parentId}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setParentId(''); setParentTitle(''); }}
+                  className="text-xs px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 shrink-0"
+                >
+                  Change
+                </button>
               </div>
+            ) : (
+              <ContentSearchPicker
+                key={parentType}
+                kinds={[parentType]}
+                placeholder={`Search ${parentType === 'tv_series' ? 'TV series' : parentType}...`}
+                size="sm"
+                onSelect={(option) => { setParentId(option.id); setParentTitle(option.title); }}
+              />
             )}
-            
-            {/* Click outside listener could go here, but simple blur is tricky with clicks. Let's rely on selection. */}
           </div>
         </div>
       </div>

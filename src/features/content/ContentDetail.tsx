@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { TrailerModal } from '../../components/TrailerModal';
+import { getYouTubeId } from '../../utils/youtube';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Play, Eye, Bookmark, Clock, ArrowLeft, Heart } from 'lucide-react';
 import { contentService } from '../../services/contentService';
@@ -75,7 +77,7 @@ const ContentDetail: React.FC = () => {
       // Refetch comments
       const commentsRes = await contentService.fetchComments(category, data.id);
       setComments(commentsRes);
-    } catch (err) {
+    } catch {
       alert('Failed to post comment. Make sure you are logged in.');
     }
   };
@@ -114,7 +116,7 @@ const ContentDetail: React.FC = () => {
         }
         return c;
       }));
-    } catch (err) {
+    } catch {
       // Revert if failed
       let category: FrontendCategory = 'Anime';
       if (type === 'movie') category = 'Movies';
@@ -154,12 +156,6 @@ const ContentDetail: React.FC = () => {
   // Mock background if none exists, using poster as fallback
   const bgImg = data.images?.banner || posterImg;
   
-  const getYouTubeId = (url: string) => {
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
   const mainTrailerUrl = data.trailers?.[0]?.url || data.trailer_url;
   const mainTrailerId = getYouTubeId(mainTrailerUrl);
 
@@ -179,7 +175,7 @@ const ContentDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white animate-fade-in -mx-4 sm:-mx-8 -mt-24 pb-20">
       {/* Hero Banner Section */}
-      <div className="relative w-full h-[60vh] md:h-[75vh] flex items-end">
+      <div className="relative w-full min-h-[60vh] md:min-h-[75vh] flex items-end">
         {/* Background Image */}
         <div className="absolute inset-0">
           <img 
@@ -195,7 +191,7 @@ const ContentDetail: React.FC = () => {
         {/* Back Button */}
         <button 
           onClick={() => navigate(-1)}
-          className="absolute top-28 left-8 p-2 bg-black/40 hover:bg-black/80 rounded-full border border-white/10 transition-all z-20"
+          className="absolute top-24 sm:top-28 left-4 sm:left-8 p-2 bg-black/40 hover:bg-black/80 rounded-full border border-white/10 transition-all z-20"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -213,7 +209,7 @@ const ContentDetail: React.FC = () => {
         )}
 
         {/* Content Details Overlay */}
-        <div className="relative z-10 w-full px-8 pb-12 flex flex-col md:flex-row gap-8 items-end">
+        <div className="relative z-10 w-full px-4 sm:px-8 pt-40 md:pt-0 pb-12 flex flex-col md:flex-row gap-8 items-end">
           {/* Floating Poster */}
           <div className="hidden md:block shrink-0 w-64 rounded-xl overflow-hidden shadow-2xl shadow-black/80 border border-white/10 translate-y-16">
             <img src={posterImg} alt="Poster" className="w-full aspect-[2/3] object-cover" />
@@ -229,12 +225,12 @@ const ContentDetail: React.FC = () => {
               <span>{durationText}</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold font-fraunces text-white leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-fraunces text-white leading-tight break-words">
               {data.title}
             </h1>
 
             {/* Meta Info Grid */}
-            <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm mt-4">
+            <div className="flex flex-wrap gap-x-6 sm:gap-x-8 gap-y-4 text-sm mt-4">
               <div>
                 <span className="block text-gray-400 text-xs mb-1">Directed By</span>
                 <span className="font-semibold">{directorText}</span>
@@ -276,7 +272,7 @@ const ContentDetail: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl px-8 pt-24 space-y-16">
+      <div className="max-w-7xl px-4 sm:px-8 pt-12 md:pt-24 space-y-12 md:space-y-16">
         
         {/* Overview & Genres */}
         <section className="space-y-4">
@@ -293,33 +289,79 @@ const ContentDetail: React.FC = () => {
           </div>
         </section>
 
-        {/* Trailers & Videos */}
+        {/* Trailers: trailers[0] is also the hero "Play" button */}
         {data.trailers && data.trailers.length > 0 && (
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold">Trailers & Videos</h2>
+            <h2 className="text-2xl font-bold">Trailers</h2>
             <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
               {data.trailers.map((t: any, i: number) => {
                 const yId = getYouTubeId(t.url);
                 if (!yId) return null;
                 return (
-                  <div 
-                    key={i} 
+                  <div
+                    key={t.url || i}
                     onClick={() => setActiveTrailerUrl(t.url)}
-                    className="shrink-0 w-72 group cursor-pointer space-y-3"
+                    className="shrink-0 w-64 sm:w-72 group cursor-pointer space-y-3"
                   >
                     <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-[#62E7E0] transition-colors">
-                      <img 
-                        src={`https://img.youtube.com/vi/${yId}/mqdefault.jpg`} 
-                        alt={t.label} 
+                      <img
+                        src={`https://img.youtube.com/vi/${yId}/mqdefault.jpg`}
+                        alt={t.label}
+                        loading="lazy"
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                         <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Play className="w-5 h-5 ml-1 fill-white" />
-                         </div>
+                        <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Play className="w-5 h-5 ml-1 fill-white" />
+                        </div>
                       </div>
                     </div>
-                    <p className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-1">{t.label || `Video ${i+1}`}</p>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-1">{t.label || `Video ${i + 1}`}</p>
+                      {t.type && t.type !== t.label && (
+                        <p className="text-[11px] uppercase tracking-wider text-gray-500">{t.type}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Other videos: featurettes, clips, behind the scenes */}
+        {data.extras && data.extras.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold">Videos & Extras</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+              {data.extras.map((t: any, i: number) => {
+                const yId = getYouTubeId(t.url);
+                if (!yId) return null;
+                return (
+                  <div
+                    key={t.url || i}
+                    onClick={() => setActiveTrailerUrl(t.url)}
+                    className="shrink-0 w-64 sm:w-72 group cursor-pointer space-y-3"
+                  >
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group-hover:border-[#62E7E0] transition-colors">
+                      <img
+                        src={`https://img.youtube.com/vi/${yId}/mqdefault.jpg`}
+                        alt={t.label}
+                        loading="lazy"
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Play className="w-5 h-5 ml-1 fill-white" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-1">{t.label || `Video ${i + 1}`}</p>
+                      {t.type && t.type !== t.label && (
+                        <p className="text-[11px] uppercase tracking-wider text-gray-500">{t.type}</p>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -596,26 +638,7 @@ const ContentDetail: React.FC = () => {
 
       </div>
 
-      {/* Trailer Modal */}
-      {activeTrailerUrl && getYouTubeId(activeTrailerUrl) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
-          <div className="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10">
-            <button 
-              onClick={() => setActiveTrailerUrl(null)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-all cursor-pointer"
-            >
-              ✕
-            </button>
-            <iframe 
-              src={`https://www.youtube.com/embed/${getYouTubeId(activeTrailerUrl)}?autoplay=1`}
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-            ></iframe>
-          </div>
-        </div>
-      )}
+      <TrailerModal url={activeTrailerUrl} onClose={() => setActiveTrailerUrl(null)} />
     </div>
   );
 };

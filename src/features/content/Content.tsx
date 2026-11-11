@@ -8,7 +8,9 @@ import {
   setActiveTab,
   setShowWatchlistOnly
 } from '../../store/slices/contentSlice';
-import { Plus, Check, MessageSquare, Eye, Loader2, Search, RefreshCw } from 'lucide-react';
+import { Plus, Check, MessageSquare, Eye, Loader2, RefreshCw } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import type { FrontendCategory } from '../../services/contentService';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -27,14 +29,17 @@ const Content: React.FC = () => {
     dispatch(fetchContentData());
   }, [dispatch]);
 
-  // Debounced search trigger
+  // Fetch page 1 whenever the (debounced) search query changes
+  // (skipped on mount: the effect above already loads page 1)
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
+  const isFirstSearchRun = useRef(true);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      // Fetch page 1 when search query changes
-      dispatch(fetchContentData({ page: 1, force: true }));
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery, dispatch]);
+    if (isFirstSearchRun.current) {
+      isFirstSearchRun.current = false;
+      return;
+    }
+    dispatch(fetchContentData({ page: 1, force: true }));
+  }, [debouncedSearchQuery, dispatch]);
 
   useEffect(() => {
     if (location.state) {
@@ -175,16 +180,13 @@ const Content: React.FC = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="relative w-full md:w-80">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-            placeholder="Search content..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-anime-primary"
-          />
-          <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3.5" />
-        </div>
+        <SearchInput
+          value={searchQuery}
+          onChange={(value) => dispatch(setSearchQuery(value))}
+          placeholder="Search content..."
+          loading={loading && !!searchQuery}
+          className="w-full md:w-80"
+        />
       </div>
 
       {/* Loading & Error States */}

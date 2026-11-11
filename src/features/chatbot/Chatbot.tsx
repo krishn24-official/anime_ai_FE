@@ -194,8 +194,8 @@ const Chatbot: React.FC = () => {
   // Helper to format chatbot messages with simple Markdown
   const formatMessage = (text: string) => {
     return text.split('\n').map((line, idx) => {
-      let elements: React.ReactNode[] = [];
-      let currentText = line;
+      const elements: React.ReactNode[] = [];
+      const currentText = line;
       let key = 0;
 
       const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|<POSTER:.*?\|.*?>)/g;
@@ -226,7 +226,7 @@ const Chatbot: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col justify-between glass-panel rounded-2xl border border-anime-border overflow-hidden animate-fade-in relative">
+    <div className="h-[calc(100dvh-8rem-var(--bottom-nav-h))] flex flex-col justify-between glass-panel rounded-2xl border border-anime-border overflow-hidden animate-fade-in relative">
       
       {/* Chat Header */}
       <div className="px-6 py-4 bg-white/5 border-b border-anime-border flex items-center justify-between">
@@ -402,14 +402,14 @@ const Chatbot: React.FC = () => {
             </div>
 
             {/* Text Input & Submit */}
-            <div className="relative flex-1 flex items-center">
+            <div className="relative flex-1 min-w-0 flex items-center">
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={status === 'typing'}
                 placeholder={selectedImage ? "Add an optional caption for character recognition..." : "Type your message to the companion..."}
-                className="flex-1 bg-black/40 border border-white/10 focus:border-anime-primary rounded-xl py-3.5 pl-4 pr-12 text-xs text-white focus:outline-none placeholder:text-anime-text/40 transition-all"
+                className="flex-1 min-w-0 w-full bg-black/40 border border-white/10 focus:border-anime-primary rounded-xl py-3.5 pl-4 pr-12 text-xs text-white focus:outline-none placeholder:text-anime-text/40 transition-all"
               />
               <button
                 type="submit"

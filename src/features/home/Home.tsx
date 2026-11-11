@@ -1,63 +1,52 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import type { RootState, AppDispatch } from '../../store';
+import React, { useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../../store';
 import { fetchHomeDataThunk } from '../../store/slices/homeSlice';
-
 import { HeroSection } from './components/HeroSection';
 import { TrendingSection } from './components/TrendingSection';
-import { BirthdaySection } from './components/BirthdaySection';
+import { TodaysHighlightsSection } from './components/TodaysHighlightsSection';
 import { AISection } from './components/AISection';
-import { TodaysReleasesSection } from './components/TodaysReleasesSection';
-import { TodaysEventsSection } from './components/TodaysEventsSection';
 import { WeeklySuggestionsSection } from './components/WeeklySuggestionsSection';
+
+/** MM-DD, the format birthdays are stored in. */
+const todayMonthDay = () => {
+  const d = new Date();
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 const Home: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  
-  const { slides, birthdays, animeAnniversaries, mangaAnniversaries, episodeAnniversaries, chapterAnniversaries, movieAnniversaries, tvSeriesAnniversaries } = useSelector((state: RootState) => state.home);
+  const home = useSelector((state: RootState) => state.home);
 
-  // Fetch home data on mount
   useEffect(() => {
     dispatch(fetchHomeDataThunk());
   }, [dispatch]);
 
-  const todayStr = (() => {
-    const today = new Date();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${month}-${day}`;
-  })();
-
-  const todayBirthdays = birthdays.filter(b => b.dob === todayStr);
+  const birthdays = useMemo(() => home.birthdays.filter((b) => b.dob === todayMonthDay()), [home.birthdays]);
+  const anniversaries = useMemo(
+    () => ({
+      anime: home.animeAnniversaries,
+      manga: home.mangaAnniversaries,
+      movie: home.movieAnniversaries,
+      tv_series: home.tvSeriesAnniversaries,
+      episode: home.episodeAnniversaries,
+      chapter: home.chapterAnniversaries,
+    }),
+    [home],
+  );
 
   return (
-    <div className="space-y-16 lg:space-y-24 animate-fade-in pb-20 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-      {/* 1. Hero Story */}
-      <HeroSection slides={slides} />
-      
-      {/* 2. Trending Now */}
+    <div className="space-y-10 sm:space-y-14 animate-fade-in pb-20 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <HeroSection />
       <TrendingSection />
-
-      {/* 3. Today's Birthdays */}
-      <BirthdaySection birthdays={todayBirthdays} />
-
-      {/* 4. Today's Events */}
-      <TodaysEventsSection 
-        animeAnniversaries={animeAnniversaries}
-        mangaAnniversaries={mangaAnniversaries}
-        episodeAnniversaries={episodeAnniversaries}
-        chapterAnniversaries={chapterAnniversaries}
-        movieAnniversaries={movieAnniversaries}
-        tvSeriesAnniversaries={tvSeriesAnniversaries}
-      />
-
-      {/* 5. Today's Releases */}
-      <TodaysReleasesSection />
-
-      {/* 6. AI Companion Dashboard */}
-      <AISection />
-
-      {/* 7. This Week's Picks */}
+      <div className="flex flex-col xl:flex-row gap-10 xl:gap-6">
+        <div className="flex-1 min-w-0">
+          <TodaysHighlightsSection anniversaries={anniversaries} birthdays={birthdays} />
+        </div>
+        <div className="xl:w-[360px] shrink-0">
+          <AISection />
+        </div>
+      </div>
       <WeeklySuggestionsSection />
     </div>
   );

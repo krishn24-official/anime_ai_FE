@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { actorService, type ActorItem } from '../../services/actorService';
 import { actorAdminService } from '../../services/actorAdminService';
 import { ActorForm } from './ActorForm';
@@ -9,6 +11,7 @@ export const AdminActors: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim());
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingActor, setEditingActor] = useState<ActorItem | null>(null);
@@ -19,8 +22,8 @@ export const AdminActors: React.FC = () => {
       setError(null);
       
       let data;
-      if (search.trim()) {
-        data = await actorService.searchActors(search);
+      if (debouncedSearch) {
+        data = await actorService.searchActors(debouncedSearch);
         setActors(data);
       } else {
         const response = await actorService.listActors(1, 100);
@@ -34,11 +37,8 @@ export const AdminActors: React.FC = () => {
   };
 
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      fetchActors();
-    }, 500);
-    return () => clearTimeout(delayDebounce);
-  }, [search]);
+    fetchActors();
+  }, [debouncedSearch]);
 
   const handleDelete = async (actorId: string) => {
     if (!window.confirm("Are you sure you want to delete this actor?")) return;
@@ -69,16 +69,12 @@ export const AdminActors: React.FC = () => {
 
       <div className="bg-[#0B0B0C] border border-white/10 rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-white/10">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-            <input
-              type="text"
-              placeholder="Search actors by name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-blue-600"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search actors by name..."
+            className="max-w-md"
+          />
         </div>
 
         {error ? (

@@ -1,18 +1,41 @@
 @import "tailwindcss";
 
+/* Height of the mobile bottom nav (components/BottomNav.tsx); 0 where the sidebar shows. */
+:root {
+  --bottom-nav-h: calc(4rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 1024px) {
+  :root {
+    --bottom-nav-h: 0px;
+  }
+}
+
+/* Brand palette: the `anime-*` utility classes used across the app. */
+@theme {
+  --color-anime-bg: #0B0A12;
+  --color-anime-card: #15131F;
+  --color-anime-border: #2A2638;
+  --color-anime-text: #ECE9F5;
+  --color-anime-primary: #A855F7;
+  --color-anime-secondary: #7C3AED;
+  --color-anime-purple: #8B5CF6;
+  --color-anime-pink: #EC4899;
+  --color-anime-yellow: #FACC15;
+}
+
 :root {
   /* Semantic Color Tokens */
-  --bg-primary: #0D0D0F;
-  --bg-surface: #14161B;
-  --bg-elevated: #1A1D23;
-  --bg-hover: #232730;
+  --bg-primary: #0B0A12;
+  --bg-surface: #13111C;
+  --bg-elevated: #1A1726;
+  --bg-hover: #241F33;
   --border-subtle: rgba(255, 255, 255, 0.04);
   
   --text-primary: #EDEAE2;
   --text-secondary: #9A968C;
   --text-muted: #77746D;
 
-  --accent-interactive: #62E7E0;
+  --accent-interactive: #A855F7;
   --accent-indigo: #33475A;
   --accent-gold: #B08D57;
   --accent-red: #A6382A;
@@ -29,8 +52,8 @@
     overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
     /* Extremely subtle background gradient for v2.0 */
     background-image: 
-      radial-gradient(at 10% 20%, rgba(51, 71, 90, 0.03) 0px, transparent 40%),
-      radial-gradient(at 90% 80%, rgba(98, 231, 224, 0.02) 0px, transparent 40%);
+      radial-gradient(at 10% 20%, rgba(124, 58, 237, 0.06) 0px, transparent 40%),
+      radial-gradient(at 90% 80%, rgba(168, 85, 247, 0.04) 0px, transparent 40%);
     background-attachment: fixed;
   }
 

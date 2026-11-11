@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { RootState, AppDispatch } from '../../store';
@@ -10,6 +10,8 @@ import {
   clearSearchResults
 } from '../../store/slices/tierListSlice';
 import { Plus, Trash, Save, ArrowLeft, Search, Move, Lock, Globe, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import type { Tier, TierListItem } from '../../types';
 
 const defaultTiers: Tier[] = [
@@ -41,7 +43,7 @@ const TierListEditor: React.FC = () => {
   const [dragOverTierIdx, setDragOverTierIdx] = useState<number | null>(null);
   const [dragOverPool, setDragOverPool] = useState(false);
 
-  const searchTimerRef = useRef<any>(null);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery.trim());
 
   // Load list details if editing
   useEffect(() => {
@@ -154,22 +156,14 @@ const TierListEditor: React.FC = () => {
     }
   };
 
-  // Debounced search
+  // Search as the user types (debounced)
   useEffect(() => {
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-
-    if (searchQuery.trim().length >= 2) {
-      searchTimerRef.current = setTimeout(() => {
-        dispatch(searchContentThunk({ query: searchQuery, contentType: selectedType }));
-      }, 500);
+    if (debouncedSearchQuery.length >= 2) {
+      dispatch(searchContentThunk({ query: debouncedSearchQuery, contentType: selectedType }));
     } else {
       dispatch(clearSearchResults());
     }
-
-    return () => {
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    };
-  }, [searchQuery, selectedType, dispatch]);
+  }, [debouncedSearchQuery, selectedType, dispatch]);
 
   const handleAddTier = () => {
     const randomColors = ['#f72585', '#7209b7', '#3f37c9', '#4cc9f0', '#ffb703', '#fb8500', '#2ec4b6'];
@@ -584,16 +578,12 @@ const TierListEditor: React.FC = () => {
 
             {/* Inputs & Dropdown */}
             <div className="space-y-3">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Type character/anime name..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-anime-primary"
-                />
-                <Search className="w-4 h-4 text-anime-text/40 absolute left-3 top-3.5" />
-              </div>
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Type character/anime name..."
+                size="sm"
+              />
 
               <select
                 value={selectedType}

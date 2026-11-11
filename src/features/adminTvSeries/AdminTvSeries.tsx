@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { tvSeriesAdminService } from '../../services/tvSeriesAdminService';
 import type { AdminTvSeriesItem } from '../../services/tvSeriesAdminService';
-import { Trash2, Edit2, Loader2, Plus, Search, Filter, AlertCircle, RefreshCw, X } from 'lucide-react';
+import { Trash2, Edit2, Loader2, Plus, AlertCircle, X } from 'lucide-react';
+import { SearchInput } from '../../components/search/SearchInput';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { TvSeriesForm } from './TvSeriesForm';
 
 const renderDate = (dateObj: any) => {
@@ -22,8 +24,8 @@ export const AdminTvSeries: React.FC = () => {
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
   const [flaggedDuplicates, setFlaggedDuplicates] = useState(false);
-  const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput.trim());
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 50;
@@ -53,12 +55,6 @@ export const AdminTvSeries: React.FC = () => {
     loadData();
   }, [includeDeleted, needsReview, flaggedDuplicates, search, page]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    setPage(1);
-  };
-
   const handleEdit = (item: AdminTvSeriesItem) => {
     setEditingItem(item);
     setShowForm(true);
@@ -69,7 +65,7 @@ export const AdminTvSeries: React.FC = () => {
       try {
         await tvSeriesAdminService.deleteTvSeries(id);
         loadData();
-      } catch (err) {
+      } catch {
         alert("Failed to delete TV series");
       }
     }
@@ -80,7 +76,7 @@ export const AdminTvSeries: React.FC = () => {
       try {
         await tvSeriesAdminService.dismissDuplicate(id);
         loadData();
-      } catch (err) {
+      } catch {
         alert("Failed to dismiss duplicate");
       }
     }
@@ -96,7 +92,7 @@ export const AdminTvSeries: React.FC = () => {
   const inactiveTabClass = "px-4 py-2 rounded-lg font-medium text-sm transition-colors bg-white/5 text-white/50 hover:bg-white/10 hover:text-white";
 
   return (
-    <div className="p-6">
+    <div className="sm:p-6">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white mb-2">Manage TV Series</h1>
@@ -136,16 +132,13 @@ export const AdminTvSeries: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
-            <input 
-              type="text" 
-              placeholder="Search by title..." 
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-anime-primary transition-colors w-64"
-            />
-          </form>
+          <SearchInput
+            value={searchInput}
+            onChange={(value) => { setSearchInput(value); setPage(1); }}
+            placeholder="Search by title..."
+            size="sm"
+            className="w-64"
+          />
           
           <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
             <input 

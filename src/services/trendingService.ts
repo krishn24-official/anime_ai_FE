@@ -1,30 +1,33 @@
 import { apiClient } from './apiClient';
+import type { PinTrendingInput, TrendingItem } from '../domain/trending';
+import { toTrendingItem, type TrendingItemDto } from './trendingMapper';
 
-export interface TrendingItem {
-  content_type: string;
-  content_id: string;
-  title: string;
-  poster_image: string | null;
-  reason: string;
-  pinned: boolean;
-  set_at: string;
-  note?: string;
-}
+export type { TrendingItem } from '../domain/trending';
 
 export const trendingService = {
   fetchTrending: async (limit: number = 10): Promise<TrendingItem[]> => {
-    return await apiClient.get<TrendingItem[]>('/content/trending', { params: { limit } });
-  },
-
-  adminSetTrending: async (payload: FormData) => {
-    return await apiClient.post('/admin/trending', payload);
-  },
-
-  adminRemoveTrending: async (contentType: string, contentId: string) => {
-    return await apiClient.delete(`/admin/trending/${contentType}/${contentId}`);
+    const dtos = await apiClient.get<TrendingItemDto[]>('/content/trending', { params: { limit } });
+    return dtos.map(toTrendingItem);
   },
 
   adminListTrending: async (): Promise<TrendingItem[]> => {
-    return await apiClient.get<TrendingItem[]>('/admin/trending');
-  }
+    const dtos = await apiClient.get<TrendingItemDto[]>('/admin/trending');
+    return dtos.map(toTrendingItem);
+  },
+
+  adminPin: async (input: PinTrendingInput): Promise<void> => {
+    const form = new FormData();
+    form.append('content_type', input.contentType);
+    form.append('content_id', input.contentId);
+    if (input.note) form.append('note', input.note);
+    if (input.expiresAt) form.append('expires_at', input.expiresAt);
+    if (input.image) form.append('image', input.image);
+    await apiClient.post('/admin/trending', form);
+  },
+
+  adminUnpin: async (contentType: string, contentId: string): Promise<void> => {
+    await apiClient.delete(
+      `/admin/trending/${encodeURIComponent(contentType)}/${encodeURIComponent(contentId)}`
+    );
+  },
 };

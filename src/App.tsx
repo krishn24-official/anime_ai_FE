@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate, Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from './store';
+import type { RootState, AppDispatch } from './store';
+import { fetchCurrentUserThunk } from './store/slices/authSlice';
 import Sidebar from './components/Sidebar';
+import { PageErrorBoundary } from './components/PageErrorBoundary';
 import Header from './components/Header';
+import { BottomNav } from './components/BottomNav';
 import Home from './features/home/Home';
 const Characters = React.lazy(() => import('./features/characters/Characters'));
 const CharacterDetail = React.lazy(() => import('./features/characters/CharacterDetail'));
@@ -55,7 +58,18 @@ const App: React.FC = () => {
   const dispatch = useDispatch();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const { currentUser } = useSelector((state: RootState) => state.auth);
+
+  // The user restored from localStorage may belong to an expired session. Re-validate it
+  // once on startup: apiClient refreshes the token if possible, otherwise the session is
+  // cleared (sessionExpired) instead of the UI still showing a stale (e.g. admin) user.
+  useEffect(() => {
+    if (localStorage.getItem('anime_ai_user')) {
+      (dispatch as AppDispatch)(fetchCurrentUserThunk());
+    }
+  }, [dispatch]);
+
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [notifications, setNotifications] = useState<ToastNotification[]>(() => {
     try {
@@ -69,7 +83,7 @@ const App: React.FC = () => {
         seen.add(n.title);
         return true;
       });
-    } catch (e) {
+    } catch {
       return [];
     }
   });
@@ -102,9 +116,10 @@ const App: React.FC = () => {
 
 
 
-  // Close mobile sidebar on route change
+  // Close mobile sidebar and search on route change
   useEffect(() => {
     setIsMobileSidebarOpen(false);
+    setIsMobileSearchOpen(false);
   }, [location.pathname]);
 
   // Establish WebSocket connection for live news alerts
@@ -280,10 +295,13 @@ const App: React.FC = () => {
           onClearNotifications={() => setNotifications([])}
           onDismissNotification={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          isMobileSearchOpen={isMobileSearchOpen}
+          onMobileSearchChange={setIsMobileSearchOpen}
         />
 
         {/* Content body offset for fixed Header */}
-        <main className="pt-24 px-4 sm:px-8 pb-8 min-h-screen">
+        <main className="pt-24 px-4 sm:px-8 pb-[calc(2rem+var(--bottom-nav-h))] min-h-screen">
+          <PageErrorBoundary resetKey={location.pathname}>
           <React.Suspense fallback={
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
               <div className="w-12 h-12 border-4 border-anime-primary/20 border-t-anime-primary rounded-full animate-spin"></div>
@@ -320,10 +338,13 @@ const App: React.FC = () => {
               </Route>
             </Routes>
           </React.Suspense>
+          </PageErrorBoundary>
         </main>
       </div>
 
       {/* Toast Notification Container */}
+      <BottomNav isSearchOpen={isMobileSearchOpen} onSearch={() => setIsMobileSearchOpen((open) => !open)} />
+
       <div className="fixed top-6 right-6 z-[9999] space-y-4 max-w-sm w-full pointer-events-none">
         {toasts.map(toast => (
           <div
