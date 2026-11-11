@@ -8,3 +8,12 @@ export const LazyShareModal: React.FC<React.ComponentProps<typeof EventCardShare
     <EventCardShareModal {...props} />
   </Suspense>
 );
+
+const BirthdayShareModal = React.lazy(() => import('./BirthdayShareModal'));
+
+/** The themed birthday poster modal, loaded on first open. */
+export const LazyBirthdayShareModal: React.FC<React.ComponentProps<typeof BirthdayShareModal>> = (props) => (
+  <Suspense fallback={null}>
+    <BirthdayShareModal {...props} />
+  </Suspense>
+);

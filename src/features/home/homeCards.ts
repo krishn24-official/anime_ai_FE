@@ -23,6 +23,8 @@ export interface HomeCard {
   target: CardTarget;
   /** Text for the shareable poster; omitted = no share button. */
   share?: { title: string; subtitle: string; yearsAgo: string; typeLabel: string };
+  /** Set on birthday cards: sharing opens the themed birthday poster instead. */
+  birthday?: { name: string; date: Date };
 }
 
 export const TYPE_LABELS: Record<string, string> = {
@@ -79,6 +81,7 @@ export const birthdayCard = (b: BirthdayEntity, today = new Date()): HomeCard =>
     yearsAgo: today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
     typeLabel: '',
   },
+  birthday: { name: b.name, date: today },
 });
 
 /** Raw "on this day" anniversaries, as returned by the events API. */

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EpisodeChapterSummaryModal } from '../../content/EpisodeChapterSummaryModal';
-import { LazyShareModal } from '../../../components/LazyShareModal';
+import { LazyBirthdayShareModal, LazyShareModal } from '../../../components/LazyShareModal';
 import type { HomeCard } from '../homeCards';
 
 /**
@@ -37,7 +37,15 @@ export const useCardActions = () => {
         type={summary?.type ?? 'episode'}
         contentId={summary?.id ?? ''}
       />
-      {shared?.share && (
+      {shared?.birthday ? (
+        <LazyBirthdayShareModal
+          isOpen
+          onClose={() => setShared(null)}
+          name={shared.birthday.name}
+          date={shared.birthday.date}
+          image={shared.image}
+        />
+      ) : shared?.share && (
         <LazyShareModal isOpen onClose={() => setShared(null)} event={{ ...shared.share, poster: shared.image ?? '' }} />
       )}
     </>
