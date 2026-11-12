@@ -10,8 +10,6 @@ import { SectionHeader } from './SectionHeader';
 import { PosterCard } from './PosterCard';
 import { PosterRail } from './PosterRail';
 
-const MAX_CARDS = 20; // the rest are one tap away via "See All"
-
 interface Props {
   anniversaries: AnniversaryGroups;
   birthdays: BirthdayEntity[];
@@ -70,7 +68,8 @@ export const TodaysHighlightsSection: React.FC<Props> = ({ anniversaries, birthd
       </div>
       <div role="tabpanel">
         <PosterRail label={active.label}>
-          {active.cards.slice(0, MAX_CARDS).map((card) => <PosterCard key={card.key} card={card} onOpen={open} onShare={share} />)}
+          {/* All cards: images load lazily, and "See All" doesn't list today's items. */}
+          {active.cards.map((card) => <PosterCard key={card.key} card={card} onOpen={open} onShare={share} />)}
         </PosterRail>
       </div>
       {modals}
